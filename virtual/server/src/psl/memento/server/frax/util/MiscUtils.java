@@ -23,17 +23,6 @@ public class MiscUtils {
     sLoggingConfigured = false;
     sClassLoader = ClassLoader.getSystemClassLoader();
     rebuildClassLoaderPaths();
-/*    
-    try {
-      System.out.println(Arrays.asList(((URLClassLoader) sClassLoader).getURLs()));
-      System.out.println();      
-      Class c = sClassLoader.loadClass("psl.memento.server.frax.FTPExtractor");      
-      c.newInstance();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
-    }
- */
   }
   
 	private MiscUtils() {
