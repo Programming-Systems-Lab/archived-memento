@@ -1,0 +1,24 @@
+
+cat ANTONY | grep -v : | grep -v ">" | tr '0123456789~@#$%^&*()_+`-=[]\\;,./{}|:"<>?!\047\133' ' ' | tr '[A-Z]' '[a-z]' >! ANTONYx
+cat TEMPEST | grep -v : | grep -v ">" | tr '0123456789~@#$%^&*()_+`-=[]\\;,./{}|:"<>?!\047\133' ' ' | tr '[A-Z]' '[a-z]' >! TEMPESTx
+
+
+% Create a 'topic' text file called shakes.txt with two lines:
+% ANTONYx
+% TEMPESTx 
+%
+
+% Create a 'question' file called quest.txt with two lines:
+% Do you like Antony?
+% What is the Tempest about?
+%
+
+grok -f shakes.txt -o plays -c
+
+% Start pvm by calling
+% pvm pvmall
+%
+
+grp_serv | sweeperM -topics shakes.txt -questions quest.txt -stats plays.stats -counts plays.counts
+
+
