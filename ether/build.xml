@@ -1,0 +1,163 @@
+<!-- Buko O. -->
+<!-- Last update: 12/18/02 -->
+<!-- Build file for the Ether server -->
+
+<project name="EtherServer" default="compile">
+
+	<!-- project-wide properties -->
+   <property name="project.name" value="Ether Server" />
+	<property name="project.version" value="0.1" />
+   <property name="project.title"
+				 value="${project.name} - ${project.version}" />
+	<property name="project.author.name" value="Buko Obele" />
+	<property name="project.author.email" value="buko@cs.columbia.edu" />
+
+	<!-- setup the project directories -->
+	<property name="src.dir" location="src" />
+	<property name="src.test.dir" location="test" />
+	<property name="lib.dir" location="lib" />
+	<property name="build.dir" location="build" />
+	<property name="build.classes.dir" location="${build.dir}/classes" />
+	<property name="build.test.classes.dir" location="${build.dir}/test" />
+
+	<property name="doc.dir" location="xdoc" />
+	<property name="javadoc.dir" location="${doc.dir}/javadoc" />
+	<property name="doc.bin.dir" location="${doc.dir}/bin" />
+
+	<property name="dist.dir" location="dist" />
+	<property name="dist.bin.dir" location="${dist.dir}/bin" />
+	<property name="dist.doc.dir" location="${dist.dir}/doc" />
+	<property name="dist.javadoc.dir" location="${dist.doc.dir}/javadoc" />
+	<property name="dist.lib.dir" location="${dist.dir}/libs" />
+	<property name="jarfile.name"
+				 value="${project.name}-${project.version}.jar" />
+	<property name="jarfile.path" value="${dist.dir}/${jarfile.name}" />
+
+   <!-- compile options -->
+	<property name="${build.debug}" value="off" />
+
+   <!-- setup the project paths -->
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="${build.dir}/classes" />
+		<pathelement location="${build.dir}/test" />
+	</path>
+
+	<!-- create directories used for building -->
+	<target name="init">
+		<tstamp/>
+
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.classes.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- compile java sources -->
+	<target name="compile" depends="init">
+		<property name="build.optimize" value="false" />
+		<javac
+			destdir="${build.classes.dir}"
+			debug="${build.debug}"
+			srcdir="${src.dir}"
+			>
+			<classpath refid="compile.classpath" />
+			<include name="**/*.java" />
+		</javac>
+
+		<!-- copy resources -->
+		<copy todir="${build.classes.dir}">
+			<fileset
+				dir="${src.dir}"
+				includes="**/*.properties, **/*.dtd, **/*.xml, **/*.xsd"
+				/>
+		</copy>
+	</target>
+
+	<!-- Javadoc target, builds documentation -->
+	<target name="javadoc" depends="compile">
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc
+			author="true"
+			destdir="${javadoc.dir}"
+			packagenames="psl.memento.ether.*"
+			sourcepath="${src.dir}"
+			use="true"
+			version="true"
+			windowtitle="Ether Server Documentation"
+			private="false"
+			>
+			<classpath refid="compile.classpath" />
+		</javadoc>
+	</target>
+
+	<!-- build the jarfile -->
+	<target name="archive" depends="compile, create-manifest">
+		<jar
+			destfile="${jarfile.path}"
+			index="true"
+			manifest="${build.dir}/MANIFEST.MF"
+			>
+			<fileset dir="${build.classes.dir}" />
+			<metainf dir="${doc.dir}/META-INF/" />
+		</jar>
+	</target>
+
+	<!-- create the manifest -->
+	<target name="create-manifest" depends="init">
+		<manifest file="${build.dir}/MANIFEST.MF">
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Built-On" value="${timestamp.isoformat}" />
+			<attribute name="Main-Class" value="psl.memento.ether.StartServer" />
+		</manifest>
+	</target>
+
+	<!-- create a complete source distribution -->
+	<target name="dist" depends="archive, javadoc">
+	   
+		<!-- copy the javadoc to the dist folder -->
+		<mkdir dir="${dist.javadoc.dir}" />
+		<copy todir="${dist.javadoc.dir}">
+			<fileset dir="${javadoc.dir}" />
+		</copy>
+
+		<!-- copy the regular documentation to the dist folder -->
+		<mkdir dir="${dist.doc.dir}" />
+		<copy todir="${dist.doc.dir}">
+			<fileset dir="${doc.dir}" excludes="bin, META-INF" />
+		</copy>
+
+		<!-- copy the run scripts -->
+		<mkdir dir="${dist.bin.dir}" />
+		<copy todir="${dist.bin.dir}">
+			<fileset dir="${doc.bin.dir}" />
+		</copy>
+
+		<!-- copy the source files -->
+		<mkdir dir="${dist.dir}/src" />
+		<copy todir="${dist.dir}/src">
+			<fileset dir="${src.dir}" />
+		</copy>
+
+		<!-- copy the library files -->
+		<mkdir dir="${dist.lib.dir}" />
+		<copy todir="${dist.lib.dir}">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- delete all build artifacts -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${build.classes.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+</project>
+
