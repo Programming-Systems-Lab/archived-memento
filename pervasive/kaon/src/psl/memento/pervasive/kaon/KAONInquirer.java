@@ -91,11 +91,18 @@ public class KAONInquirer {
 
 	public KAONInquirer(KAONConnection cnt) {
 		this();
-		connection = cnt;
+		try {
+			connection = cnt;
+			oimodel = connection.openOIModelLogical(ontologyName);
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 	public void connect() {
-		System.out.print("Connecting to SQL database...");
+		System.out.println("Connecting to SQL database...");
+		System.out.println("\tServer URI: " + serverUri);
 		Map parameters = new HashMap();
 		parameters.put(DirectKAONConnection.SERVER_URI, serverUri);
 		parameters.put(DirectKAONConnection.PASSWORD, password);
@@ -103,7 +110,7 @@ public class KAONInquirer {
 		try {
 			DirectKAONConnection directconnect = new DirectKAONConnection(parameters);
 			connection = directconnect.getConnection();
-			oimodel = connection.openOIModelLogical("ontology");
+			oimodel = connection.openOIModelLogical(ontologyName);
 		} catch(Exception e) {
 			System.out.println(e);
 		}
