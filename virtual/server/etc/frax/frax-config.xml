@@ -52,12 +52,6 @@
       dependencies="libs/pgjdbc2.jar|libs/mysql-connector-java-2.0.14-bin.jar"
       prefer-cache="false"
     />
-    <extractor
-      class="psl.memento.server.frax.CVSExtractor"
-      schemes="cvs"
-      dependencies="libs/jcvsii.jar|libs/mindbright.jar"
-      prefer-cache="true"
-    />
   </extractors>
   
   <!-- Content plugs. -->

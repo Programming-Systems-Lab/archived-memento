@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2000/10/XMLSchema">
+
+  <xsd:element name="frax-config">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="metadata-cache">
+          <xsd:complexType>
+            <xsd:simpleContent>
+              <xsd:extension base="xsd:string">
+                <xsd:attribute name="vendor" type="xsd:string"/>
+                <xsd:attribute name="jena-db-type" type="xsd:string"/>
+                <xsd:attribute name="location" type="xsd:string"/>
+                <xsd:attribute name="smart-cache" type="xsd:string"/>
+              </xsd:extension>
+            </xsd:simpleContent>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="oracle">
+          <xsd:complexType>
+            <xsd:simpleContent>
+              <xsd:extension base="xsd:string">
+                <xsd:attribute name="host" type="xsd:string"/>
+                <xsd:attribute name="port" type="xsd:string"/>
+              </xsd:extension>
+            </xsd:simpleContent>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="extractors">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="extractor">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                      <xsd:attribute name="class" type="xsd:string"/>
+                      <xsd:attribute name="schemes" type="xsd:string"/>
+                      <xsd:attribute name="dependencies" type="xsd:string"/>
+                      <xsd:attribute name="prefer-cache" type="xsd:string"/>
+                    </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="plugs">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="plug">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                      <xsd:attribute name="class" type="xsd:string"/>
+                      <xsd:attribute name="types" type="xsd:string"/>
+                      <xsd:attribute name="dependencies" type="xsd:string"/>
+                    </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="extension-map">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="map-entry">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                      <xsd:attribute name="ext" type="xsd:string"/>
+                      <xsd:attribute name="mimetype" type="xsd:string"/>
+                    </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="dbms-vendors">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="vendor">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:string">
+                      <xsd:attribute name="name" type="xsd:string"/>
+                      <xsd:attribute name="class" type="xsd:string"/>
+                    </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+</xsd:schema>

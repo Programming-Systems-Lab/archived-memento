@@ -12,3 +12,8 @@ To run the GUI front end:
 
 To run the command-line front end:
   - Run frax.bat.
+
+ADDITIONAL NOTES:
+
+  - Hold SHIFT while pressing "Extract" in the GUI front end to force
+    a metadata reload.
