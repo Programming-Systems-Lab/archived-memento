@@ -25,12 +25,6 @@ public class DefaultObjectModeler extends ObjectModelerBase
 	initialize();
     }
     
-    protected static Property[] properties = {
-	HTMLVocab.kLinks.getProperty(),
-	HTMLVocab.kImages.getProperty(),
-	FileVocab.kContents.getProperty()
-    };
-    
     protected void initialize() {
 	defineRules();
 	defineViews();
@@ -68,4 +62,10 @@ public class DefaultObjectModeler extends ObjectModelerBase
     public Object[] getVocabsToSearch() {
 	return properties;
     } 
+    
+    protected static Property[] properties = {
+	HTMLVocab.kLinks.getProperty(),
+	HTMLVocab.kImages.getProperty(),
+	FileVocab.kContents.getProperty()
+    };    
 }
