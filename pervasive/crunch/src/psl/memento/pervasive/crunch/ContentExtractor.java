@@ -2624,19 +2624,25 @@ public class ContentExtractor implements ProxyFilter {
         
         //method specified by the Document object.
         
-        OutputFormat format = new OutputFormat(iNode,"ISO8859-1", true);
-        
-        
+        OutputFormat format = null;
+	
+	//according to the java documentation, all compliant JVM's should support the
+	//ISO-8859-1 encoding.
+	format = new OutputFormat(iNode, "ISO-8859-1", true);
         
         //Get the printer
-        
         HTMLSerializer printer = new HTMLSerializer(iOut, format);
         
         try {
             
             printer.serialize(iNode);
             
-        }catch (Exception e) {
+	} catch (UnsupportedEncodingException uue) {
+	    
+	    System.out.println("Error: your system does not support the ISO-8859-1 encoding.");
+	    uue.printStackTrace();
+        
+	} catch (Exception e) {
             
             e.printStackTrace();
             
