@@ -60,12 +60,6 @@
 #include "isound/renderer.h"
 #include "isound/wrapper.h"
 
-//*** Xerces Includes ***//
-#include "xercesc/parsers/XercesDOMParser.hpp"
-#include "xercesc/dom/DOM.hpp"
-#include "xercesc/sax/HandlerBase.hpp"
-#include "xercesc/util/XMLString.hpp"
-#include "xercesc/util/PlatformUtils.hpp"
 
 //*** Chime Includes***//
 #include "ChimeSystemDriver.h"
@@ -382,10 +376,7 @@ bool ChimeSystemDriver::HandleEvent (iEvent& event)
 			}
             break;
         case csevMouseMove:
-            if(chSelectedEntity && chSelectedEntity->GetEntityType () == ENTITY_TYPE_OBJECT)
-			{
-                MoveSelectedObject(event);
-			}
+            HandleMouseMove (event);
             break;
 	}
 
@@ -600,6 +591,10 @@ bool ChimeSystemDriver::Initialize ()
   return true;
 }
 
+
+/************************************************************************
+ * Initialize default envirnoment (setup user, load initial sector, etc.
+ ************************************************************************/
 bool ChimeSystemDriver::InitializeEnvironment ()
 {
   // Build the initial CHIME environment //
@@ -716,23 +711,25 @@ bool ChimeSystemDriver::LoadLibraries (char *libname)
 	return true;
 }
 
+
 /************************************************************
  * Handle a left-button mouse single click
  ************************************************************/
-bool ChimeSystemDriver::HandleLeftMouseClick(iEvent &Event)
+bool ChimeSystemDriver::HandleLeftMouseClick (iEvent &Event)
 {
-	// Find the point on the creen where the user clicked
-	csVector2   screenPoint;
-	screenPoint.x = Event.Mouse.x;
-	screenPoint.y = chApplication->bound.Height() - Event.Mouse.y - 1;
-	csLastMousePosition.Set (screenPoint);
+	// See if a mesh was selected
+	chSelectedEntity = SelectEntity (Event.Mouse.x, Event.Mouse.y);
+	if (chSelectedEntity)
+		printf("Entity selected.\n");
 
 	// Close csEntityMenu if one was opened before
 	CloseMenu ();
-
-	// See if a mesh was selected
-	chSelectedEntity = SelectEntity (chView->GetCamera(), &screenPoint);
-
+	
+	// If an entity was selected, perform the appropriate action
+	if (chSelectedEntity)
+	{
+		chSelectedEntity->HandleLeftMouseClick(Event);
+	}
 	return true;
 }
 
@@ -741,8 +738,8 @@ bool ChimeSystemDriver::HandleLeftMouseClick(iEvent &Event)
  ************************************************************/
 bool ChimeSystemDriver::HandleLeftMouseDoubleClick(iEvent &Event)
 {
-	// First, make sure that the correct entity is selected
-	HandleLeftMouseClick (Event);
+	// See if a mesh was selected
+	chSelectedEntity = SelectEntity (Event.Mouse.x, Event.Mouse.y);
 
 	// Close csEntityMenu if one was opened before
 	CloseMenu ();
@@ -750,7 +747,7 @@ bool ChimeSystemDriver::HandleLeftMouseDoubleClick(iEvent &Event)
 	// If an entity was selected, perform the appropriate action
 	if (chSelectedEntity)
 	{
-		chSelectedEntity->ActivateEntity ();
+		//chSelectedEntity->HandleLeftMouseDoubleClick(Event);
 	}
 	return true;
 }
@@ -760,66 +757,71 @@ bool ChimeSystemDriver::HandleLeftMouseDoubleClick(iEvent &Event)
  ************************************************************/
 bool ChimeSystemDriver::HandleRightMouseClick(iEvent &Event)
 {
-	// First, make sure that the correct entity is selected
-	HandleLeftMouseClick (Event);
+	// See if a mesh was selected
+	chSelectedEntity = SelectEntity (Event.Mouse.x, Event.Mouse.y);
 
+	// Close csEntityMenu if one was opened before
+	CloseMenu ();
+	
 	// If an entity was selected, perform the appropriate action
 	if (chSelectedEntity)
 	{
-		CloseMenu ();
-		csEntityMenu = new csMenu (chApplication, csmfs3D, 0);
-		csEntityMenu->SetFont (csFontServer->GetFont (chMenuFont));
-		chSelectedEntity->SetupEntityMenu (csEntityMenu);
-		csEntityMenu->SetPos (Event.Mouse.x - 3, Event.Mouse.y + 3);
+		chSelectedEntity->HandleRightMouseClick(Event);
 	}
-
 	return true;
 }
 
 /************************************************************
+ * Handle a right-button mouse double click
+ ************************************************************/
+bool ChimeSystemDriver::HandleRightMouseDoubleClick(iEvent &Event)
+{
+	// See if a mesh was selected
+	chSelectedEntity = SelectEntity (Event.Mouse.x, Event.Mouse.y);
+
+	// Close csEntityMenu if one was opened before
+	CloseMenu ();
+	
+	// If an entity was selected, perform the appropriate action
+	if (chSelectedEntity)
+	{
+		chSelectedEntity->HandleRightMouseDoubleClick(Event);
+	}
+	return true;
+}
+
+
+/************************************************************
  * Move selected mesh to new location pointed by mouse
  ************************************************************/
-bool ChimeSystemDriver::MoveSelectedObject (iEvent &Event)
+bool ChimeSystemDriver::HandleMouseMove (iEvent &Event)
 {
 	if (chSelectedEntity && csEntityMenu)
 		return false;
+
+	if (!chSelectedEntity)
+		return true;
 	
 	csVector2 p (Event.Mouse.x, chApplication->bound.Height()-Event.Mouse.y);
 	
-	ChimeSectorObject *object = (ChimeSectorObject*) chSelectedEntity;
-	object->SetObjectLocation (p, chView->GetCamera ());
+	chSelectedEntity->HandleMouseMove (csLastMousePosition, p, chView->GetCamera ());
 
 	csLastMousePosition.Set (p);
 
 	return true;
 }
 
-/************************************************************
- * Find the mesh closest to the coordinate clicked by mouse
- ************************************************************/
-ChimeSectorEntity* ChimeSystemDriver::SelectEntity (iCamera *camera, csVector2 *screenCoord)
-{
-
-	csVector3 v;
-	csVector2 p (screenCoord->x, screenCoord->y);
-	camera->InvPerspective (p, 1, v);
-	
-	csVector3 vw = chView->GetCamera()->GetTransform().This2Other(v);
-	csVector3 origin = chView->GetCamera()->GetTransform().GetO2TTranslation();
-	csVector3 isect;
-
-	return chCurrentSector->SelectEntity (origin, origin + (vw-origin) * 20, isect);
-}
 
 /************************************************************
- * Print error reports to standard output
+ * Returns a newly created menu
  ************************************************************/
-void ChimeSystemDriver::Report(char* source, char* message)
+csMenu* ChimeSystemDriver::CreateMenu (int x, int y)
 {
-	if (chDebugMode == DEBUG)
-		csReport (csObjectRegistry, CS_REPORTER_SEVERITY_ERROR, source,	message);
-	else
-		printf("CHIME encountered a problem. Attempting to continue...\n");
+	CloseMenu ();
+	csEntityMenu = new csMenu (chApplication, csmfs3D, 0);
+	csEntityMenu->SetFont (csFontServer->GetFont (chMenuFont));
+
+	return csEntityMenu;
 }
 
 /************************************************************
@@ -837,6 +839,38 @@ bool ChimeSystemDriver::CloseMenu ()
 		catch (...) {return false;}
 	}
 	return true;
+}
+
+/************************************************************
+ * Select a sector entity that corresponds to given
+ * screen coordinates
+ ************************************************************/
+ChimeSectorEntity* ChimeSystemDriver::SelectEntity (float x, float y)
+{
+
+	// Find the point on the creen where the user clicked
+	csVector2 screenCoord (x, chApplication->bound.Height() - y - 1);
+	csLastMousePosition.Set (screenCoord);
+
+	csVector3 v;
+	chView->GetCamera ()->InvPerspective (screenCoord, 1, v);
+	
+	csVector3 vw = chView->GetCamera()->GetTransform().This2Other(v);
+	csVector3 origin = chView->GetCamera()->GetTransform().GetO2TTranslation();
+	csVector3 isect;
+
+	return chCurrentSector->SelectEntity (origin, origin + (vw-origin) * 20, isect);
+}
+
+/************************************************************
+ * Print error reports to standard output
+ ************************************************************/
+void ChimeSystemDriver::Report(char* source, char* message)
+{
+	if (chDebugMode == DEBUG)
+		csReport (csObjectRegistry, CS_REPORTER_SEVERITY_ERROR, source,	message);
+	else
+		printf("CHIME encountered a problem. Attempting to continue...\n");
 }
 
 /***********************************************************

@@ -91,8 +91,8 @@ bool ChimeUser::PlaceUser (csVector3 const &location, iSector* room)
  *****************************************************************/
 bool ChimeUser::MoveUser (csVector3 const direction, float fps, bool checkVertical)
 {
-	chUserCamera->Move (direction, true);
-	return true;
+	//chUserCamera->Move (direction, true);
+	//return true;
 	
 	// Find the new position where the user would end up
 	csVector3 vel (direction);

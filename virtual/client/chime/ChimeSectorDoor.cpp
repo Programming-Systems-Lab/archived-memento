@@ -42,10 +42,10 @@ ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon,
 
 
 /*****************************************************************
- * IsDoorPolygon: returns true if the passed polygon is the
+ * IsEntitySelected: returns true if the passed polygon is the
  * same as the one used to represent this door
  *****************************************************************/
-bool ChimeSectorDoor::IsDoorPolygon (iPolygon3D *polygon)
+bool ChimeSectorDoor::IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon)
 {
 	if (polygon == csDoorPolygon)
 		return true;
@@ -236,28 +236,31 @@ bool ChimeSectorDoor::SetDoorVisible (bool flag)
 
 
 /*****************************************************************
- * ActivateEntity: for this type of entity, door,
- * this function connects to the target sector's default room
- * and opens the door
+ * HandleLeftMouseDoubleClick: 
+ * Door is opened by 1) loading the sector, 2) creating portal
+ * to new sector
  *****************************************************************/
-bool ChimeSectorDoor::ActivateEntity () 
+void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event) 
 {
 	if (ConnectDoorToTarget (true))
 	{
 		OpenDoor ();
 		driver->Redraw ();
-		return true;
 	}
-	else
-		return false;
 }
 
 
+
 /*****************************************************************
- * SetupEntityMenu: add options for editing an active door
+ * HandleRightMouseClick: 
+ * Menu is created.
  *****************************************************************/
-void ChimeSectorDoor::SetupEntityMenu (csMenu *csEntityMenu)
+void ChimeSectorDoor::HandleRightMouseClick (iEvent &event) 
 {
-	(void)new csMenuItem (csEntityMenu, "OPEN DOOR", -1);
-	(void)new csMenuItem (csEntityMenu, "LINK DOOR", -1);
+	csMenu* menu = driver->CreateMenu (event.Mouse.x, event.Mouse.y);
+	char mText [100];
+	strcpy (mText, "DOOR: ");
+	strcat (mText, strEntityName);
+	(void)new csMenuItem (menu, mText, -1);
+	menu->SetPos (event.Mouse.x - 3, event.Mouse.y + 3);
 }

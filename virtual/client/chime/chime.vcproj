@@ -162,6 +162,9 @@
 				RelativePath="ChimeSector.cpp">
 			</File>
 			<File
+				RelativePath="ChimeSectorActiveObject.cpp">
+			</File>
+			<File
 				RelativePath="ChimeSectorDoor.cpp">
 			</File>
 			<File

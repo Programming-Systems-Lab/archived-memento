@@ -403,7 +403,7 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 
 		// add this object to the list of active objects
 		if (objectMesh)
-			chActiveEntities->Push (new ChimeSectorObject (object->strObjectName, objectMesh, 
+			chActiveEntities->Push (new ChimeSectorActiveObject (object->strObjectName, objectMesh, 
 			&(object->location), room, object->strObjectModel));
 	}
 
@@ -735,6 +735,7 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
 	// HitBeam fills hit polygons passed to it as the third parameter
 	iPolygon3D **polygons = (iPolygon3D**) malloc ( sizeof(iPolygon3D));
 	polygons[0] = (iPolygon3D*) malloc ( sizeof(iPolygon3D));
+	polygons[0] = NULL;
 
 	// Intersect the beam to find the mesh
 	mesh = chCurrentRoom->HitBeam (start, end, isect, polygons);
@@ -746,19 +747,14 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
 	// Prepare pointers for possible active entities
 	ChimeSectorEntity *entity = NULL;
 
+	if (mesh) printf("Mesh selected\n");
+	if (polygons[0]) printf("Polygon selected\n");
+
 	for (int i = 0; i < chActiveEntities->Length (); i++)
 	{
 		entity = (ChimeSectorEntity*) chActiveEntities->Get (i);
-		if (polygons[0] && entity->GetEntityType () == ENTITY_TYPE_DOOR)
-		{
-			if (((ChimeSectorDoor*)entity)->IsDoorPolygon (polygons[0]))
-				return entity;
-		}
-		if (entity->GetEntityType () == ENTITY_TYPE_OBJECT)
-		{
-			if (((ChimeSectorObject*)entity)->IsObjectMesh (mesh))
-				return entity;
-		}
+		if (entity->IsEntitySelected (mesh, polygons[0]))
+			return entity;
 	}
 
 	return NULL;

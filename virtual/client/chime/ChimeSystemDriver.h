@@ -100,11 +100,11 @@ private:
   bool HandleLeftMouseClick (iEvent &Event);							//respond to a single click from left mouse button
   bool HandleLeftMouseDoubleClick (iEvent &Event);						//respond to a double click from right mouse button
   bool HandleRightMouseClick (iEvent &Event);							//respond to single click from right mouse button
+  bool HandleRightMouseDoubleClick (iEvent &Event);						//respond to double click from right mouse button
+  bool HandleMouseMove (iEvent &Event);									//move an active object following mouse movement
   bool CloseMenu ();													//destroy a 2D menu if one exists
-  bool MoveSelectedObject (iEvent &Event);								//move an active object following mouse movement
-  ChimeSectorEntity* SelectEntity (iCamera *camera,						//select an entity pointed to by the mouse click
-	  csVector2 *screenCoord);
-  void SelectVisibleObjects (csVector* iEntityList,					//select only those entities that are visible in the current view
+  ChimeSectorEntity* SelectEntity (float x, float y);					//select an entity pointed to by the mouse click
+  void SelectVisibleObjects (csVector* iEntityList,						//select only those entities that are visible in the current view
 	  csVector *iVisibleObjectList);
   void DrawLabels ();													//draw 2D labels for the entities which are visible
 
@@ -132,6 +132,7 @@ public:
   bool InitializeEnvironment ();										//initialize environment
   void Start ();														//start the csEngine
   void Report(char *source, char *message);								//print error report to standard output
+  csMenu* CreateMenu (int x, int y);									//create new menu at given location
   void SetDebugMode (int mode);											//set debugging mode
   void SetApplication (ChimeApp *app);									//set controlling ChimeApp
   void SetOnGround (bool flag);											//set user on ground/not on ground
