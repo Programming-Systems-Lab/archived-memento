@@ -1,7 +1,5 @@
 package psl.memento.virtual.server.vem;
 
-package vem;
-
 /*
  * LayoutParameters.java
  *
