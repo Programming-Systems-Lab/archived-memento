@@ -21,30 +21,24 @@ import java.util.Map;
  */
 public class JdbcOneConnectionSource extends ConnectionSourceBase
     implements ConnectionSource {
-  private static final String kErrorNoVC =
-    "VendorCoupler reference necessary for handling DB URIs.";
-      
  	public JdbcOneConnectionSource(VendorCoupler iVC) {
     super(iVC);    
     loadDriver(iVC.getDriverClassName());
 	}
   
-  
+/*  
   public JdbcOneConnectionSource(String iDriverClassName) {
     super(null);
     loadDriver(iDriverClassName);
   }
+*/
   
   private void loadDriver(String iDriverClassName) {
 		try {
-			Class.forName(iDriverClassName);
+			Class.forName(iDriverClassName);      
 		} catch (ClassNotFoundException ex) {
 			throw new java.lang.RuntimeException("Cannot load the DB driver.", ex);
 		}
-  }
-  
-  public Connection obtainConnection(URI iDbURI) throws SQLException {
-    throw new IllegalStateException(kErrorNoVC);
   }
 	
 	/**

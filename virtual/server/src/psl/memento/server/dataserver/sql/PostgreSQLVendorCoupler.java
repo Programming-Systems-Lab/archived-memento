@@ -9,38 +9,38 @@ public class PostgreSQLVendorCoupler implements VendorCoupler {
   private static final String kErrorBadDbURI = "Bad db: URI.";  
   
   public String getJdbcURL(URI iDbURI) {
-    StringBuffer sb = new StringBuffer(100);    
-    sb.append("jdbc:postgresql:");
     
     String host = iDbURI.getHost();
     int port = iDbURI.getPort();
-    String path = iDbURI.getPath();
+    String db = iDbURI.getPath();
+    String userInfo = iDbURI.getUserInfo();
     
-    if (path == null) {
+    if (host == null || db == null) {
       throw new IllegalArgumentException(kErrorBadDbURI);
     }
     
-    if (path.startsWith("/")) {
-      path = path.substring(1);
+    StringBuffer jdbcURL = new StringBuffer(100);
+    jdbcURL.append("jdbc:postgresql://").append(host);
+    if (port != -1) {
+      jdbcURL.append(':').append(port);      
     }
+    jdbcURL.append(db);
     
-    int index = path.indexOf('/');
-    String db = (index == -1) ? path : path.substring(0, index);
-    
-    if (port == -1) {
-      if (host == null) {
-        return sb.append(db).toString();
-      } else {
-        return sb.append("//").append(host).append('/').append(db).toString();
-      }
-    } else {
-      if (host == null) {
-        host = "localhost";
-      }
+    if (userInfo != null) {     
+      int index = userInfo.indexOf(':');
       
-      return sb.append("//").append(host).append(':').append(port).append('/')
-        .append(db).toString();
+      String user = (index == -1) ? userInfo : userInfo.substring(0, index);
+      
+      jdbcURL.append("?user=").append(user);
+      
+      if (index != -1) {
+        // append the password, if one exists
+        jdbcURL.append("&password=").append((index + 1 >= userInfo.length()) ?
+          "" : userInfo.substring(index + 1));
+      }
     }
+        
+    return jdbcURL.toString();
   }
 
   /**
