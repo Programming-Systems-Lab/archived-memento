@@ -1,7 +1,6 @@
 package aether.server.core;
 
 import aether.AetherTestCase;
-import aether.server.core.MonitorProvider;
 import aether.server.AetherContainer;
 import aether.event.*;
 import aether.net.Connection;

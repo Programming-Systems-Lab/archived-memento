@@ -1,7 +1,7 @@
 package aether.server;
 
 import aether.AetherTestCase;
-import aether.server.ConnectionFactory;
+import aether.server.DefaultConnectionFactory;
 import aether.net.Connection;
 import aether.net.Publisher;
 import aether.net.DefaultConnection;
@@ -21,7 +21,7 @@ import net.concedere.dundee.Container;
 public class ConnectionFactoryTest extends AetherTestCase
 {
     private Container container;
-	private ConnectionFactory connFactory = new ConnectionFactory();
+	private DefaultConnectionFactory connFactory = new DefaultConnectionFactory();
 
 	public void setUp() throws Exception
 	{
@@ -68,8 +68,8 @@ public class ConnectionFactoryTest extends AetherTestCase
 		container.add(bean);
 
 		// create the params
-		ConnectionFactory.Request params = new
-				ConnectionFactory.Request(getElvinHost(), getElvinPort());
+		DefaultConnectionFactory.Request params = new
+				DefaultConnectionFactory.Request(getElvinHost(), getElvinPort());
 
         Connection conn = (Connection)
 				container.getService(bean, bean, Connection.class,

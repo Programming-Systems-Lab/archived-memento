@@ -1,7 +1,6 @@
 package aether.server.core;
 
 import aether.AetherTestCase;
-import aether.server.core.LinkProvider;
 import aether.event.Request;
 import aether.event.Response;
 import aether.event.EventHandler;

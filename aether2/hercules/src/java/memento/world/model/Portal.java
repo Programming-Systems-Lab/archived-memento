@@ -6,7 +6,7 @@ package memento.world.model;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class DefaultPortal extends DefaultLocatableWorldObject implements Portal
+public class Portal extends LocatableWorldObject
 {
 	/**
 	 * Destination of the portal.
@@ -35,9 +35,6 @@ public class DefaultPortal extends DefaultLocatableWorldObject implements Portal
 
 	public void setOpen(boolean open)
 	{
-		boolean oldVal = this.open;
 		this.open = open;
-
-        pcSupport.firePropertyChange(OpenProperty, oldVal, open);
 	}
 }

@@ -6,51 +6,71 @@ package memento.world.model;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public interface LocatableWorldObject extends WorldObject
+public class LocatableWorldObject extends WorldObject
 {
-	/**
-	 * Name of bound property 'location'.
-	 */
-	public static final String LocationProperty = "location";
+    /**
+     * Sector that's the location of the world object.
+     */
+	protected Sector location;
 
-	/**
-	 * Name of the bound 'position' property.
-	 */
-	public static final String PositionProperty = "position";
+    /**
+     * Position of the world object.
+     */
+    protected Position position;
+
+    /**
+     * Model file associated with the LWO.
+     */
+    protected String model;
 
 	/**
 	 * Get the current location of the object.
 	 *
 	 * @return current location of the object
 	 */
-	public Sector getLocation();
+	public Sector getLocation()
+    {
+        return location;
+    }
 
 	/**
 	 * Set the current location of the object.
 	 *
 	 * @param sector current location of the object
 	 */
-	public void setLocation(Sector sector);
+	public void setLocation(Sector sector)
+    {
+        this.location = sector;
+    }
 
 	/**
 	 * Get the position of the object in the world.
 	 *
 	 * @return position of the object in the world
 	 */
-  	public Position getPosition();
+  	public Position getPosition()
+    {
+        return position;
+    }
 
 	/**
 	 * Set the position of the object in the world.
 	 *
 	 * @param pos position of the object in the world
 	 */
-	public void setPosition(Position pos);
+	public void setPosition(Position pos)
+    {
+        this.position = pos;
+    }
 
-    public String getName();
 
-    public void setName(String name);
+    public String getModel()
+    {
+        return model;
+    }
 
-    public String getModel();
-
-    public void setModel(String model);
+    public void setModel(String model)
+    {
+        this.model = model;
+    }
 }

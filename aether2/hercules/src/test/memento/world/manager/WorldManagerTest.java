@@ -8,10 +8,9 @@ import aether.server.AetherContainer;
 import aether.server.domain.Advertisement;
 import aether.server.core.DefaultConnectionProvider;
 import aether.server.core.PublisherProvider;
-import aether.server.core.MonitorProvider;
 import aether.server.core.ThreadPoolProvider;
 import memento.world.model.WorldModel;
-import memento.world.model.DefaultWorldModel;
+import memento.world.model.WorldModel;
 import memento.world.model.WorldAdvertisement;
 
 import java.util.Iterator;
@@ -44,7 +43,7 @@ public class WorldManagerTest extends AetherTestCase
         WorldManager worldMan = new DefaultWorldManager();
 		container.add(worldMan);
 
-        DefaultWorldModel model = new DefaultWorldModel();
+        WorldModel model = new WorldModel();
         Advertisement adv = new Advertisement();
 		adv.set(WorldAdvertisement.RequestTopic, "aether://mcbain/830?request");
 		adv.set(WorldAdvertisement.ModelTopic, "aether://mcbain/830");

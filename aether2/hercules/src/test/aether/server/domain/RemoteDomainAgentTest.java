@@ -7,7 +7,6 @@ import aether.net.Monitor;
 import aether.server.AetherContainer;
 import aether.server.core.DefaultConnectionProvider;
 import aether.server.core.PublisherProvider;
-import aether.server.core.MonitorProvider;
 import aether.server.core.ThreadPoolProvider;
 
 /**

@@ -158,7 +158,7 @@ public class DefaultSwitchBoard extends DefaultComponent
 		synchronized (this) { consumer.addSubscription(sub); }
 
 		// now put this subscription in the map, corresponding to the
-		// responder's guid
+		// responder's uid
 		subMap.put(r.getGuid(), sub);
 
 		// put the responder in the destination map, corresponding to its

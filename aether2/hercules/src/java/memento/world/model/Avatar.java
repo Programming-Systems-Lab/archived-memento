@@ -6,8 +6,7 @@ package memento.world.model;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class DefaultAvatar extends DefaultLocatableWorldObject
-		implements Avatar
+public class Avatar extends LocatableWorldObject
 {
 	private String guid;
 

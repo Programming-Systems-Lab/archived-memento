@@ -12,7 +12,7 @@ import java.util.HashSet;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class DefaultSector extends AbstractWorldObject implements Sector
+public class Sector extends WorldObject
 {
 	/**
 	 * Set of contents in the sector.
@@ -41,7 +41,6 @@ public class DefaultSector extends AbstractWorldObject implements Sector
 		{
 			contents.add(lwo);
 			lwo.setLocation(this);
-			fireEntered(lwo);
 		}
 	}
 
@@ -89,7 +88,6 @@ public class DefaultSector extends AbstractWorldObject implements Sector
 		{
 			contents.remove(lwo);
 			lwo.setLocation(null);
-			fireExited(lwo);
 		}
 	}
 
@@ -105,50 +103,6 @@ public class DefaultSector extends AbstractWorldObject implements Sector
 		{
 			portals.remove(p);
 			p.setLocation(null);
-		}
-	}
-
-	public void removeSectorListener(SectorListener sl)
-	{
-		listenerList.remove(SectorListener.class, sl);
-	}
-
-	/**
-	 * Fire an event indicating an object has entered the sector.
-	 *
-	 * @param lwo object that entered the sector
-	 */
-	protected void fireEntered(LocatableWorldObject lwo)
-	{
-        Object[] listeners = listenerList.getListenerList();
-
-		SectorEvent se = new SectorEvent(this, lwo);
-
-        for (int i = listeners.length - 2; i >= 0; i -= 2)
-		{
-            if (listeners[i] == SectorListener.class)
-			{
-                ((SectorListener) listeners[i + 1]).entered(se);
-			}
-		}
-	}
-
-	/**
-	 * Fire an event indicating an object has left the sector.
-	 *
-	 * @param wo object that left the sector
-	 */
-	public void fireExited(WorldObject wo)
-	{
-        Object[] listeners = listenerList.getListenerList();
-		SectorEvent se = new SectorEvent(this, wo);
-
-		for (int i = listeners.length - 2; i >= 0; i -= 2)
-		{
-			if (listeners[i] == SectorListener.class)
-			{
-				((SectorListener) listeners[i]).exited(se);
-			}
 		}
 	}
 }

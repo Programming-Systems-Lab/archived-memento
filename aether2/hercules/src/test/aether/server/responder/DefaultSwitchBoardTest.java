@@ -1,7 +1,7 @@
 package aether.server.responder;
 
 import aether.AetherTestCase;
-import aether.server.ConnectionFactory;
+import aether.server.DefaultConnectionFactory;
 import aether.event.Request;
 import aether.event.Response;
 import aether.net.Connection;
@@ -30,7 +30,7 @@ public class DefaultSwitchBoardTest extends AetherTestCase
 	{
 		Connection conn = new DefaultConnection(getElvinHost(), getElvinPort());
         DefaultContainer container =  new DefaultContainer();
-        ConnectionFactory cf = new ConnectionFactory();
+        DefaultConnectionFactory cf = new DefaultConnectionFactory();
 		cf.setDefaultConnection(conn);
 		container.add(cf);
 
@@ -57,7 +57,7 @@ public class DefaultSwitchBoardTest extends AetherTestCase
 	public void testSwitchBoard() throws Exception
 	{
 		Connection conn = new DefaultConnection(getElvinHost(), getElvinPort());
-        ConnectionFactory cf = new ConnectionFactory();
+        DefaultConnectionFactory cf = new DefaultConnectionFactory();
 		cf.setDefaultConnection(conn);
 		Container container = new DefaultContainer();
 		container.add(cf);
