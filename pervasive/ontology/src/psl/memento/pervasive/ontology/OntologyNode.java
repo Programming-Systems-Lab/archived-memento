@@ -17,6 +17,9 @@ public class OntologyNode {
 	//Connected Nodes
 	private Hashtable connectedNodes;
 
+	//Final variables
+	private final String FREQUENCY = "frequency";
+
 	/**
 	 * Initializes an Ontology Node for easier traversal
 	 * of the ontology graph.
@@ -94,6 +97,12 @@ public class OntologyNode {
 		return value;
 	}
 
+	public void setFrequency(long freq) {
+		removeProperty(FREQUENCY);
+		addProperty(FREQUENCY, String.valueOf(freq));
+		dirty = true;
+	}
+
 ////////////////////////////////////////////////////
 
 	public long getID() {
@@ -133,6 +142,14 @@ public class OntologyNode {
 
 		if (obj == null) return 0;
 		else return ((Long) obj).longValue();
+	}
+
+	public long getFrequency() {
+		checkDirty();
+		String freq = props.getProperty(FREQUENCY);
+		if (freq == null) return 1;
+	
+		return Long.parseLong(freq);
 	}
 
 	public void setDirty() {

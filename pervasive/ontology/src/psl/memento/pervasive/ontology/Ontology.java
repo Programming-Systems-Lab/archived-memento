@@ -190,9 +190,9 @@ public class Ontology {
 	 * Create an OntologyNode to be elaborated by the
 	 * user.
 	 * @param label the label for the node
-	 * @throws NodeAlreadyExistsException if the node already exists
+	 * @return the new OntologyNode to start manipulating or null if the node already exists.
 	 **/
-	public OntologyNode createNode(String label) throws NodeAlreadyExistsException {
+	public OntologyNode createNode(String label) {
 		long start = System.currentTimeMillis();
 		accessesCreateNode++;
 
@@ -201,7 +201,7 @@ public class Ontology {
 		//Check if node already exists
 		if (getNode(label) != null) {
 			timeCreateNode += System.currentTimeMillis() - start;
-			throw new NodeAlreadyExistsException();
+			return null;
 		}
 
 		//Create new node

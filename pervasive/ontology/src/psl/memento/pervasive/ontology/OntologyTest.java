@@ -97,12 +97,12 @@ public class OntologyTest {
 					Object[] objs = list.toArray();
 					OntologyNode start = (OntologyNode)objs[0];
 
-					System.out.print("Path: " + start.getLabel());
+					System.out.print("Path: " + start.getLabel() +" ("+start.getFrequency()+")");
 					for (int i=1; i < objs.length; i++) {
 						OntologyNode next = (OntologyNode)objs[i];
 						long weight = start.getWeight(next);
 
-						System.out.print(" --"+weight+"--> "+next.getLabel());
+						System.out.print(" --"+weight+"--> "+next.getLabel()+" ("+next.getFrequency()+")");
 						start = next;
 					}
 
@@ -132,12 +132,12 @@ public class OntologyTest {
 
 					    OntologyNode start = (OntologyNode)objs[0];
 					    
-					    System.out.print("Path: " + start.getLabel());
+					    System.out.print("Path: " + start.getLabel()+" ("+start.getFrequency()+")");
 					    for (int i=1; i < objs.length; i++) {
 						OntologyNode next = (OntologyNode)objs[i];
 						long weight = start.getWeight(next);
 						
-						System.out.print(" --"+weight+"--> "+next.getLabel());
+						System.out.print(" --"+weight+"--> "+next.getLabel()+" ("+next.getFrequency()+")");
 						start = next;
 					    }
 					    

@@ -18,7 +18,7 @@ public class KAONTermExtractor {
 	private MultiDictionary dictionary;
 
 	private final String NUM_SYNONYMS = "num_synonyms";
-
+	
 	/**
 	 * Initialize the term extractor
 	 * @param settings the settings for the extractor
@@ -124,16 +124,20 @@ public class KAONTermExtractor {
 					int numSynonyms = 0;
 					Hashtable synonyms = null;
 
-					try {
-						//Use stem as node
-						node = ontology.createNode(stemValue);
+					//Use stem as node
+					node = ontology.createNode(stemValue);
+					
+					//If it already exists, get the old version
+					if (node != null) {	
 						numSynonyms = 0;
 						synonyms = new Hashtable();
-					} catch (NodeAlreadyExistsException e) {
+						node.setFrequency(1);
+					} else {
 						//Node already exists so update the old node
 						node = ontology.getNode(stemValue);
 						synonyms = getSynonyms(node);
 						numSynonyms = Integer.parseInt(node.removeProperty(NUM_SYNONYMS));
+						node.setFrequency((node.getFrequency() + 1));
 					}
 
 					//Add synonyms unless they already exist
