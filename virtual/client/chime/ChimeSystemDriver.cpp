@@ -1061,6 +1061,7 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 		
 		// Key 's'...
 		case ('s'):
+		  printf("s button pressed: ChimeSystemDriver %d\n", driver);
 			if (chView && chCurrentSector && 
 			    Event.Key.Code == 115 && Event.Key.Char == 19)
 			  {
@@ -1069,16 +1070,12 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 			    printf("is chAi2tvInterface->active()? %d\n", chAi2tvInterface->isActive());
 			    if (chAi2tvInterface->isActive() != 0)
 			      {
-
-				// 999
-				// const char* cacheDir = "c:\\psl\\memento\\virtual\\client\\chime\\data\\ai2tv\\cache\\";
-				const char* cacheDir = "c:/psl/memento/virtual/client/chime/data/ai2tv/cache/";
+				const char* cacheDir = "c:/pslroot/psl/memento/virtual/client/chime/data/ai2tv/cache/";
 				chAi2tvInterface->SetCacheDir(cacheDir);
 
 				char sources [10][50];
 				printf("gonna try to go get the available videos now\n");
 				int numVideos = chAi2tvInterface->GetAvailableVideos (sources);
-				printf("numVideos %d\n", numVideos);
 
 				new Ai2tvSourceSelectWindow (application, sources, numVideos);
 			      }
@@ -1180,35 +1177,37 @@ bool ChimeSystemDriver::BuildAi2tvScreen ()
 	return true;
 }
 
+void ChimeSystemDriver::helloWorld (){
+  printf("<ChimeSystemDriver::helloWorld()> Hello World!\n");
+}
 
 /************************************************************
  * Load given image under given frame name
  ************************************************************/
-void ChimeSystemDriver::LoadFrame (const char *strFileName, const char *strMaterialName)
+void ChimeSystemDriver::LoadFrame (const char *name, const char *source)
 {
-  printf("ChimeSystemDriver::LoadFrame %s %s\n", *strFileName, *strMaterialName);
   // add AI2TV folder location to file name
-  /*
-	char full_name[100];
-	strcpy (full_name, "lib/ai2tv/");
-	strcat (full_name, strFileName);
-
-	// create texture
-	iTextureWrapper *texture = csLoader->LoadTexture (strMaterialName, 
-		full_name, CS_TEXTURE_3D, csTxtManager, true);
-	if (!texture)
-		return;
-
-	// prepare texture
-	texture->Register (csTxtManager);
-	texture->SetImageFile (NULL);
-
-	// create material
-	iMaterialWrapper *material = csEngine->CreateMaterial (strMaterialName, texture);
-	if (!material)
-		return;
-	material->Register (csTxtManager);
-  */
+  char full_name[100];
+  strcpy (full_name, "/lib/ai2tv/");
+  strcat (full_name, source);
+  // create texture
+  // iTextureWrapper *texture = csLoader->LoadTexture (source, 
+  // full_name, CS_TEXTURE_3D, csTxtManager, true);
+  iTextureWrapper *texture = csLoader->LoadTexture (name, full_name, CS_TEXTURE_3D, csTxtManager, true);
+						    
+  if (!texture)
+    return;
+  
+  // prepare texture
+  texture->Register (csTxtManager);
+  texture->SetImageFile (NULL);
+  
+  // create material
+  iMaterialWrapper *material = csEngine->CreateMaterial (name, texture);
+  if (!material)
+    return;
+  material->Register (csTxtManager);
+  
 }
 
 
@@ -1217,15 +1216,13 @@ void ChimeSystemDriver::LoadFrame (const char *strFileName, const char *strMater
  ************************************************************/
 void ChimeSystemDriver::DisplayFrame (const char *strFrameName)
 {
-  printf("ChimeSystemDriver::DisplayFrame %s\n", strFrameName);
-  /*
-	// find material
-	iMaterialWrapper *material = csEngine->FindMaterial (strFrameName);
+  printf("<ChimeSystemDriver::DisplayFrame> %s\n", strFrameName);
+  // find material
+  iMaterialWrapper *material = csEngine->FindMaterial (strFrameName);
 
-	// display material on screen
-	if (material && chCurrentSector)
-		chCurrentSector->DisplayImageOnScreen (material);
-  */
+  // display material on screen
+  if (material && chCurrentSector)
+    chCurrentSector->DisplayImageOnScreen (material);
 }
 
 

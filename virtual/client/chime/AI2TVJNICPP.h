@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.h,v $
- *  $Revision: 1.5 $
- *  $Date: 2003-09-09 01:51:38 $
+ *  $Revision: 1.6 $
+ *  $Date: 2003-09-22 23:30:06 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.h,v $
  */
 
@@ -64,8 +64,12 @@ class AI2TVJNICPP
   
   // These functions are the CPP functions available to the Java side.  
   // I display these here for information purposes only.
-  // void Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj)
-  // jboolean Java_psl_ai2tv_client_AI2TVJNIJava_displayImage(JNIEnv *env, jobject obj)
+  /*
+    JNIEXPORT void JNICALL
+    Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring name, jstring source);
+    JNIEXPORT jboolean JNICALL
+    Java_psl_ai2tv_client_AI2TVJNIJava_displayImage(JNIEnv *env, jobject obj, jstring frame);
+  */
 
  private:
   const char* JAVACLASS;
@@ -74,11 +78,14 @@ class AI2TVJNICPP
   JNIEnv *_env;
   jobject _obj;   // this should really be a pointer 
   jclass _class;  // this should really be a pointer 
-  JNIEnv* create_vm(JavaVM* jvm);
-  void instantiateClasses();
+
   const static int NUM_VIDEOS = 10;
   const static int VIDEO_NAME_LENGTH = 50;
   int _isActive;
+
+  JNIEnv* create_vm(JavaVM* jvm);
+  void instantiateClasses();
+  void checkException();
 };
 
 #endif // __AI2TVJNICPP_H__

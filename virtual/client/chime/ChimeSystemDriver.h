@@ -191,6 +191,8 @@ public:
 
   //-- AI2TV control functions --//
   bool BuildAi2tvScreen ();												//build a screen for current user location
+  // 999
+  void helloWorld();
   void LoadFrame (const char *strFileName, const char *strMaterialName);			//load a frame image under given name
   void DisplayFrame (const char *strMaterialName);								//display image on AI2TV screen
 

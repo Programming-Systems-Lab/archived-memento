@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.7 $
- *  $Date: 2003-09-09 01:51:38 $
+ *  $Revision: 1.8 $
+ *  $Date: 2003-09-22 23:30:06 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
@@ -34,16 +34,17 @@ extern ChimeSystemDriver *driver;
 AI2TVJNICPP::AI2TVJNICPP(){
   _isActive = 1;
   doDEBUG=1;
-  // make sure the base psl dir is in your classpath
+  // make sure the base psl dir is in your classpathh
   JAVACLASS = "psl/ai2tv/client/AI2TVJNIJava"; 
  
-  classpath = "-Djava.class.path=c:/pslroot/psl/ai2tv/client/build;c:/pslroot/jars/siena-1.4.3.jar;.";
+  classpath = "-Djava.class.path=c:/pslroot/psl/ai2tv/client/build;c:/pslroot/jars/siena-1.4.3.jar;.;c:/pslroot/psl/memento/virtual/client/chime/";
   
+  // /OUT:"Debug/AI2TVJNICPP.dll"
   // the libpath refers to at least the location of the AI2TVJNICPP.dll.  
-  libpath = "-Djava.library.path=c:/pslroot/psl/ai2tv/client/;c:/pslroot/psl/memento/virtual/cilent/chime;c:/pslroot/psl/memento/virtual/client/libs/;c:/pslroot/psl/memento/virtual/client/chime/Debug";
+  libpath = "-Djava.library.path=c:/pslroot/psl/memento/virtual/client/chime/Debug;c:/pslroot/psl/memento/virtual/client/chime/";
 
   // this is the default base video URL 
-  baseURL = "-Dai2tv.baseURL=http://wall.psl.cs.columbia.edu/ai2tv/";
+  baseURL = "-Dai2tv.baseURL=http://trinity.psl.cs.columbia.edu/ai2tv/";
 
   // this is the default siena server
   // sienaServer = "-Dai2tv.server=ka:franken.psl.cs.columbia.edu:4444";
@@ -164,14 +165,36 @@ void AI2TVJNICPP::instantiateClasses(){
  * Tell the Java client that the play button was pressed
  */
 void AI2TVJNICPP::playPressed(){
+  printf("AI2TVJNICPP::playPressed: \n");
+  printf("_env %d\n", _env);
+  printf("_class %d\n", _class);
+
   /* instantiate object, call play */
   jmethodID mid;
   mid = _env->GetMethodID(_class, "playPressed","()V");
-  if (mid == 0) 
+  printf("MID for playPressed: %d\n", mid);
+
+  if (mid == 0) {
     printf("Error, playPressed method ID not found\n");
-  else {
+    checkException();
+  } else {
     printf("playPressed method ID: %d\n", mid);
     _env->CallVoidMethod(_obj, mid);
+  }
+}
+
+void AI2TVJNICPP::checkException(){
+  printf("AI2TVJNICPP::checkException()\n");
+
+  jthrowable exception;
+  //                ExceptionOccurred, ExceptionDescribe, and ExceptionClear.
+  exception = _env->ExceptionOccurred();
+
+  if (exception){
+    printf("AI2TVJNICPP exception found!\n");
+    _env->ExceptionDescribe();
+    _env->ExceptionClear();
+    printf("AI2TVJNICPP exception cleared!\n");
   }
 }
 
@@ -333,7 +356,6 @@ void AI2TVJNICPP::setLoginInfo(const char* login,
 			 _env->NewStringUTF(uid),
 			 _env->NewStringUTF(gid),
 			 _env->NewStringUTF(password));
-			 
   } else {
     printf("Error, mid for setLoginInfo not found\n");
   }
@@ -350,9 +372,16 @@ void AI2TVJNICPP::setLoginInfo(const char* login,
 void AI2TVJNICPP::loadVideo(char* name, char* date){
   printf("loadVideo: %s for %s\n", name, date);
   jmethodID mid;
+
+  mid = _env->GetMethodID(_class, "playPressed","()V");
+  printf("method id for play pressed %d\n", mid);
+
+
   mid = _env->GetMethodID(_class, "loadVideo","(Ljava/lang/String;Ljava/lang/String;)V");
   if (mid != 0)
     _env->CallVoidMethod(_obj, mid, _env->NewStringUTF(name), _env->NewStringUTF(date));
+  else 
+    printf("Error, Method ID for loadVideo not found, JVM may have an exception.\n");
 }
 
 /**
@@ -420,19 +449,25 @@ void AI2TVJNICPP::shutdown(){
 
 /**
  * Tell the CHIME "Video" viewer to load this frame into memory
+ * @param jstring name: texture name to be given to the reference to the file
+ * @param jstring source: the path/name of the file to load
  */
 JNIEXPORT void JNICALL
-Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring frame) {
-  jboolean* isCopy = new jboolean(false);
-  const char *frameString = env->GetStringUTFChars(frame,isCopy);
-  printf("c++ : loading frame %s\n", frameString);
+Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring name, jstring source) {
+  printf("<AI2TVJNICPP> loadImage\n");
 
-  printf("c++ : loading frame %s\n", frameString);
-  driver->LoadFrame (frameString, frameString);
+  jboolean* isCopy = new jboolean(false);
+  const char *nameString = env->GetStringUTFChars(name,isCopy);
+  const char *sourceString = env->GetStringUTFChars(source,isCopy);
+
+  printf("loadFrame name %s source %s\n", nameString, sourceString);
+  printf("!!! before driver->LoadFrame\n");
+  driver->LoadFrame (nameString, sourceString);
+  printf("!!! after driver->LoadFrame\n");
 
   delete isCopy;
-  env->ReleaseStringUTFChars(frame, frameString);
-  return;
+  env->ReleaseStringUTFChars(name, nameString);
+  env->ReleaseStringUTFChars(source, sourceString);
 }
 
 /**
@@ -441,20 +476,31 @@ Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring f
 JNIEXPORT jboolean JNICALL
 Java_psl_ai2tv_client_AI2TVJNIJava_displayImage(JNIEnv *env, jobject obj, jstring frame) {
   // dan needs to figure out when to release these in memory
+  printf("<AI2TVJNICPP> displayFrame\n");
+
   jboolean* isCopy = new jboolean(false);
   jboolean* displaySuccessful = new jboolean(false);
 
   const char *frameString = env->GetStringUTFChars(frame,isCopy);
-
   printf("c++ : Displayed frame %s\n", frameString);
 
   driver->DisplayFrame (frameString);
-
   delete isCopy;
   delete displaySuccessful;
   env->ReleaseStringUTFChars(frame, frameString);
   return *displaySuccessful;
 }
+
+/**
+ * tester function
+ */
+JNIEXPORT void JNICALL
+Java_psl_ai2tv_client_AI2TVJNIJava_helloWorld(JNIEnv *env, jobject obj) {
+  printf("<AI2TVJNICPP.helloWorld()>\n");
+  printf("The ChimeSystemDriver pointer: %d\n", driver);
+  driver->helloWorld();
+}
+
 
 // ----- END: JNI related functions called by the Java side ----- //
 
