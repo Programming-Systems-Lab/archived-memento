@@ -9,7 +9,7 @@ import java.io.*;
  *	<code>(http://www.tsrevolution.com/docs/c3ds.zip)</code>
  *
  *	@author Vladislav Shchogolev
- *	@version $Revision: 1.2 $
+ *	@version $Revision: 1.3 $
  */
 
 public class ModelResourceFile extends ResourceFile
