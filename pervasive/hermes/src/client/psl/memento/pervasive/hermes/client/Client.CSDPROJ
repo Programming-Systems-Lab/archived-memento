@@ -94,11 +94,6 @@
                 />
                 <Reference
                     Platform = "Windows CE"
-                    Name = "Utilities"
-                    AssemblyName = "Utilities"
-                />
-                <Reference
-                    Platform = "Windows CE"
                     Name = "psl.memento.hermes.xml.Messages"
                     AssemblyName = "psl.memento.hermes.xml.Messages"
                 />

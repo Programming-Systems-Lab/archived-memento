@@ -2,6 +2,11 @@ Rob Bruce
 rmb51
 Memento/Pervasive/Hermes
 
+
+The client can be delpoyed to a pocketPC device or to the emulator. when you hit the start
+button on VS it will prompt you for the device to deploy.  You can also build cabs for smartdevices.
+
+
 Client:
 The action of this application happens in the ClientHandler folder and
 the MainForm.cs file.
