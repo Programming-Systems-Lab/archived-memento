@@ -171,7 +171,17 @@ namespace psl.memento.pervasive.hermes.server.ClientHelp
 							}
 							else if(this._xmlReader.Name == RuntimeConstants.XML_MESSAGE_DECLINE_CHAT)
 							{
+								//decline chat we now need to tell the sorry sucker who wanted to
+								//chat with this buddy and remove the ChatRequest from the pending chat requests
+								//hashtable in the ChatRequestHandler
+								//we let the ChatRequestHandler take care of all of this
+								string chatID;
+								//decode the chatID
+								//this._xmlReader.ReadStartElement();
+								chatID = this._xmlReader.ReadElementString();
 
+
+								ThreadPool.QueueUserWorkItem(new WaitCallback(this._handler._server._chatRequestHandler.chatRequestReject), chatID);
 
 							}
 							else if(this._xmlReader.Name == RuntimeConstants.XML_MESSAGE_EXIT_CHAT)

@@ -38,6 +38,9 @@ namespace psl.memento.pervasive.hermes.client
 		private System.Windows.Forms.Timer timer1;
 		private System.Windows.Forms.ProgressBar progressBar1;
 		public client.ClientHandler.ClientHandler _clientHandler;
+		private System.Windows.Forms.Panel panel3;
+		private System.Windows.Forms.Button button8;
+		private System.Windows.Forms.Label label5;
 		//this is used to temporarliy hold on to a chat request
 		private ChatRequest _cr;
 
@@ -86,6 +89,9 @@ namespace psl.memento.pervasive.hermes.client
 			this.label4 = new System.Windows.Forms.Label();
 			this.button7 = new System.Windows.Forms.Button();
 			this.timer1 = new System.Windows.Forms.Timer();
+			this.panel3 = new System.Windows.Forms.Panel();
+			this.button8 = new System.Windows.Forms.Button();
+			this.label5 = new System.Windows.Forms.Label();
 			// 
 			// listBox1
 			// 
@@ -206,10 +212,31 @@ namespace psl.memento.pervasive.hermes.client
 			this.timer1.Interval = 50;
 			this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
 			// 
+			// panel3
+			// 
+			this.panel3.BackColor = System.Drawing.Color.RosyBrown;
+			this.panel3.Controls.Add(this.button8);
+			this.panel3.Controls.Add(this.label5);
+			this.panel3.Location = new System.Drawing.Point(40, 16);
+			this.panel3.Size = new System.Drawing.Size(144, 192);
+			this.panel3.Visible = false;
+			// 
+			// button8
+			// 
+			this.button8.Location = new System.Drawing.Point(16, 160);
+			this.button8.Size = new System.Drawing.Size(112, 24);
+			this.button8.Text = "Ok. I suck.";
+			this.button8.Click += new System.EventHandler(this.button8_Click_1);
+			// 
+			// label5
+			// 
+			this.label5.Location = new System.Drawing.Point(24, 16);
+			this.label5.Size = new System.Drawing.Size(96, 128);
+			this.label5.Text = "No Label for you!!!";
+			// 
 			// MainForm
 			// 
 			this.ClientSize = new System.Drawing.Size(234, 275);
-			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.button4);
 			this.Controls.Add(this.statusBar1);
 			this.Controls.Add(this.button3);
@@ -219,7 +246,9 @@ namespace psl.memento.pervasive.hermes.client
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.listBox1);
+			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.panel2);
+			this.Controls.Add(this.panel3);
 			this.Text = "Hermes";
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.Closed += new System.EventHandler(this.MainForm_Close);
@@ -285,7 +314,8 @@ namespace psl.memento.pervasive.hermes.client
 		{
 			this.panel1.Visible = false;
 			this.panel1.SendToBack();
-			ThreadPool.QueueUserWorkItem(new WaitCallback(this._clientHandler._crh.chatReject), this._cr._chatID.ToString());
+			string chatID = this._cr._chatID;
+			ThreadPool.QueueUserWorkItem(new WaitCallback(this._clientHandler._crh.chatReject), chatID);
 			
 		}
 
@@ -295,25 +325,26 @@ namespace psl.memento.pervasive.hermes.client
 			{
 				System.Windows.Forms.MessageBox.Show("You must select a buddy to chat with.", "Error");
 			}
-			this.timer1.Enabled = true;
-			this.panel2.BringToFront();
-			this.panel2.Visible = true;
-			//this.panel2.BringToFront();
-			ChatBuddy cb = (ChatBuddy)this.listBox1.SelectedItem;
-			//if this returns true we are connected and the client should be moved to the other box
-			this._clientHandler.requestChat(cb);
+			else
+			{
+				this.timer1.Enabled = true;
+				this.panel2.BringToFront();
+				this.panel2.Visible = true;
+				//this.panel2.BringToFront();
+				ChatBuddy cb = (ChatBuddy)this.listBox1.SelectedItem;
+				//if this returns true we are connected and the client should be moved to the other box
+				this._clientHandler.requestChat(cb);
+			}
 
 		}
 
 		public void chatInviteReject(object reason)
 		{
-	
-			System.Windows.Forms.MessageBox.Show("Cannot connect with chat buddy. Reason:\r\n" + (string)reason, "Error");
-		
-			
-			this.timer1.Enabled = false;
-			this.panel2.Visible = false;
-			this.panel2.SendToBack();
+			Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here we should be changing things now.");
+			this.label5.Text = "Cannot connect with chat buddy. Reason:\r\n" + (string)reason;
+			this.panel3.Visible = true;
+			this.panel3.BringToFront();
+
 		}
 
 		private void button2_Click(object sender, System.EventArgs e)
@@ -347,6 +378,16 @@ namespace psl.memento.pervasive.hermes.client
 			this.panel1.Visible = true;
 			this.panel1.BringToFront();
 			
+		}
+
+
+		private void button8_Click_1(object sender, System.EventArgs e)
+		{
+			this.timer1.Enabled = false;
+			this.panel2.Visible = false;
+			this.panel2.SendToBack();
+			this.panel3.Visible = false;
+			this.panel3.SendToBack();
 		}
 
 	}

@@ -2,6 +2,7 @@ using System;
 using psl.memento.pervasive.hermes.server;
 using psl.memento.pervasive.hermes.server.ClientHelp;
 using psl.memento.pervasive.hermes.xml.objects;
+using psl.memento.pervasive.hermes.util.log;
 using System.Threading;
 
 namespace psl.memento.pervasive.hermes.server.ChatHelper
@@ -47,7 +48,9 @@ namespace psl.memento.pervasive.hermes.server.ChatHelper
 
 		public void chatRequestReject(object chatID)
 		{		
+
 			string chatIDReject = (string)chatID;
+			Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here we are go go go: " + chatIDReject);
 			ChatRequest cr = (ChatRequest)this._pendingChats[chatID];
 			lock(this._pendingChats)
 			{

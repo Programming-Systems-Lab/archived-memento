@@ -213,7 +213,7 @@ namespace psl.memento.pervasive.hermes.xml.messages
 			xtw.WriteString(reason);
 			xtw.WriteEndElement();
 			
-			xtw.WriteEndElement();
+			//xtw.WriteEndElement();
 			
 			//**********
 

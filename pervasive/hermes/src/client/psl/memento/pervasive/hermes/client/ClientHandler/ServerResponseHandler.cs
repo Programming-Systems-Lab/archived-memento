@@ -160,7 +160,7 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 
 								if(this._ch._client._chatPending || this._ch._client._isChatting)
 								{
-									ThreadPool.QueueUserWorkItem(new WaitCallback(this._ch._crh.chatReject), chatRequest);
+									ThreadPool.QueueUserWorkItem(new WaitCallback(this._ch._crh.chatReject), "Currently in Chat.");
 								}
 								else
 								{
@@ -171,9 +171,11 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 							else if(this._xmlReader.Name == RuntimeConstants.XML_MESSAGE_CHAT_INVITE_REJECT)
 							{
 								string reason;
-								this._xmlReader.ReadStartElement();
+								//this._xmlReader.ReadStartElement();
 								this._xmlReader.ReadStartElement();
 								reason = this._xmlReader.ReadElementString();
+
+								this._ch._client._chatPending = false;
 
 								ThreadPool.QueueUserWorkItem(new WaitCallback(this._ch._clientInterface.chatInviteReject), reason);
 

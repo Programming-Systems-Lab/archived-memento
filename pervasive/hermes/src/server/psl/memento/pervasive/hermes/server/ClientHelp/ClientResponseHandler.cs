@@ -66,6 +66,7 @@ namespace psl.memento.pervasive.hermes.server.ClientHelp
 		public void chatInviteRejected(object reason)
 		{
 			string theReason = (string)reason;
+			Logger.getLogger().log(Logger.DEBUG_PRIORITY, "here is the reason:" + theReason);
 			try
 			{
 				lock(this._sb)
