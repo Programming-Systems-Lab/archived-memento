@@ -20,6 +20,7 @@ public class RoomTab extends JComponent implements ActionListener {
   private static final String[] doorSideChoices = {"left side", "right side", "middle"};
   private static final String[] doorWallChoices = {"North", "East", "South", "West"};
   
+  
   public RoomTab() {
     // Set up text fields
     doorLink = new JTextField(STRING_FIELD_LENGTH);
