@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Ant build file for Frax.
+  Author: Mark Ayzenshtat (ma810@psl.cs.columbia.edu)
+-->
+
+<project name="psl-frax" default="compile" basedir=".">
+  <description>Frax smart-like metadata extractor.</description>
+
+  <!-- Set properties that we use throughout the build process. -->  
+  <property name="fraxVersion" value="0.1"/>
+  <property name="javaSrcDir" value="src/java"/>
+  <property name="javaOutDir" value="classes"/>
+  <property name="docDir" value="doc"/>
+  <property name="javaDocDir" value="doc/javadoc"/>
+  <property name="libDir" value="lib"/>
+  <property name="etcDir" value="etc"/>
+  <property name="fraxGUIBatch" value="frax-gui.bat"/>
+  <property name="distDir" value="dist"/>  
+  <property name="distFraxDir" value="${distDir}/${ant.project.name}"/>
+  <property name="distFraxBinDir" value="${distFraxDir}/bin"/>
+  <property name="distFraxLibDir" value="${distFraxDir}/lib"/>
+  <property name="distFraxEtcDir" value="${distFraxDir}/etc"/>
+  <property name="distFraxDocDir" value="${distFraxDir}/doc"/>
+  <property name="distFraxJavadocDir" value="${distFraxDocDir}/javadoc"/>
+  <property name="distFraxJarFile"
+    value="${distFraxLibDir}/${ant.project.name}.jar"/>
+  <property name="distZipFile"
+    value="${distDir}/${ant.project.name}-${fraxVersion}-dist.zip"/>
+  <property name="packageList"
+    value="psl.chime4.server.frax,
+      psl.chime4.server.frax.gui,
+      psl.chime4.server.frax.util,
+      psl.chime4.server.frax.vocabulary"/>
+    
+  <target name="init" description="Initialization stuff that other targets depend on.">
+  </target>
+
+  <target name="compile" depends="init" description="Compiles the source code.">
+    <!-- Create the output directory. -->
+    <mkdir dir="${javaOutDir}"/>
+
+    <!-- Compile the source code. -->
+    <javac srcdir="${javaSrcDir}" destdir="${javaOutDir}">
+      <!-- Set the classpath. -->
+      <classpath>
+        <fileset dir="${libDir}">
+          <include name="*.jar"/>
+          <include name="*.zip"/>
+        </fileset>
+        <pathelement location="${javaOutDir}"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="javadoc" depends="init" description="Generates javadoc documentation.">
+    <!-- Create the output directory. -->
+    <mkdir dir="${javaDocDir}"/>
+
+    <!-- Generate the documentation. -->      
+    <javadoc sourcepath="${javaSrcDir}" destdir="${javaDocDir}" access="public"
+        author="true" packagenames="${packageList}">
+      <!-- Set the classpath. -->
+      <classpath>
+        <fileset dir="${libDir}">
+          <include name="*.jar"/>
+          <include name="*.zip"/>
+        </fileset>
+        <pathelement location="${javaOutDir}"/>
+      </classpath>
+      <!-- Specify links to external documentation. -->
+      <link href="http://java.sun.com/j2se/1.4/docs/api/"/>
+      <link href="http://www.hpl.hp.com/semweb/javadoc/index.html"/>      
+    </javadoc>
+  </target>
+
+  <target name="dist" depends="clean,init,compile,javadoc" description="Generate the distribution.">      
+    <!-- Create the output directory. -->
+    <mkdir dir="${distDir}"/>
+
+    <!-- Create the top-level Frax directory. -->
+    <mkdir dir="${distFraxDir}"/>
+
+    <!-- Create the Frax subdirectories. -->
+    <mkdir dir="${distFraxLibDir}"/>
+    <mkdir dir="${distFraxDocDir}"/>
+    <mkdir dir="${distFraxJavadocDir}"/>
+    <mkdir dir="${distFraxBinDir}"/>
+    
+    <!-- Copy the jars we depend on to the dist lib directory. -->
+    <copy todir="${distFraxLibDir}">
+      <fileset dir="${libDir}"/>
+    </copy>
+    
+    <!-- Copy the documentation to the dist doc directory. -->
+    <copy todir="${distFraxDocDir}">
+      <fileset dir="${docDir}" excludes=".nbattrs"/>
+    </copy>
+    
+    <!-- Copy configuration files to the dist etc directory. -->
+    <copy todir="${distFraxEtcDir}">
+      <fileset dir="${etcDir}"/>
+    </copy>
+    
+    <!-- Copy frax-gui.bat to dist bin directory. -->
+    <copy todir="${distFraxBinDir}" file="${fraxGUIBatch}"/>
+    
+    <!-- Copy all images. -->
+    <copy todir="${distFraxDir}">
+      <fileset dir="">
+        <include name="*.gif"/>
+      </fileset>
+    </copy>
+
+    <!-- Build a jar out of the compiled Frax classes. -->
+    <jar jarfile="${distFraxJarFile}" basedir="${javaOutDir}"/>
+  
+    <!-- Build the distribution zip file. -->
+    <zip zipfile="${distZipFile}">
+      <zipfileset dir="${distFraxDir}" prefix="${ant.project.name}"/>
+    </zip>
+  </target>
+
+  <target name="clean" description="Cleans up.">
+    <delete dir="${javaOutDir}"/>
+    <delete dir="${javaDocDir}"/>
+    <delete dir="${distDir}"/>
+  </target>
+</project>

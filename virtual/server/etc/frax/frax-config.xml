@@ -6,30 +6,57 @@
 -->
 
 <frax-config>
+  <!--
+    The DBMS in which the metadata cache will be maintained.
+    
+    The value of the "vendor" attribute must correspond to the name of one
+    of the registered DBMS vendors listed in the "dbms-vendors" block in
+    this configuration file.
+    
+    The value of the "jena-db-type" attribute must correspond to one of the
+    database types that Jena supports (currently: "Interbase", "Postgresql",
+    "Mysql", or "Oracle").
+  -->
+  <metadata-cache
+    vendor="mysql"
+    jena-db-type="Mysql"
+    location="db://localhost/memento"
+    smart-cache="false"/>
+
   <!-- The hostname and port number of the oracle server. -->
   <oracle host="localhost" port="1099"/>
   
   <!-- Metadata extractors. -->
-  <extractors>    
+  <extractors>
     <extractor
       class="psl.memento.server.frax.FileExtractor"
       schemes="file"
       dependencies=""
+      prefer-cache="false"
     />
     <extractor
       class="psl.memento.server.frax.HTTPExtractor"
       schemes="http, https"
       dependencies="libs/commons-httpclient.jar"
+      prefer-cache="true"
     />
     <extractor
       class="psl.memento.server.frax.FTPExtractor"
       schemes="ftp"
       dependencies="libs/jftp-bea.jar"
+      prefer-cache="true"
     />
     <extractor
       class="psl.memento.server.frax.DatabaseExtractor"
       schemes="db, jdbc"
       dependencies="libs/pgjdbc2.jar|libs/mysql-connector-java-2.0.14-bin.jar"
+      prefer-cache="false"
+    />
+    <extractor
+      class="psl.memento.server.frax.CVSExtractor"
+      schemes="cvs"
+      dependencies="libs/jcvsii.jar|libs/mindbright.jar"
+      prefer-cache="true"
     />
   </extractors>
   
@@ -40,7 +67,7 @@
       types="image/jpeg, image/gif, image/bmp, image/x-pcx, image/png,
         image/cmu-raster, image/x-cmu-raster, application/x-cmu-raster,
         image/x-portable-bitmap, application/x-shockwave-flash"
-      dependencies=""
+      dependencies=""      
     />
     <plug
       class="psl.memento.server.frax.OLEPlug"
@@ -51,7 +78,12 @@
     <plug
       class="psl.memento.server.frax.HTMLPlug"
       types="text/html"
-      dependencies=""
+      dependencies="libs/htmlparser.jar"      
+    />
+    <plug
+      class="psl.memento.server.frax.JavaSourcePlug"
+      types="text/x-java-source"
+      dependencies="libs/jalopy-1.0b10.jar|libs/jakarta-oro-2.0.6.jar|libs/jdom.jar"      
     />
   </plugs>
   
@@ -70,8 +102,7 @@
     <map-entry ext="pbm" mimetype="image/x-portable-bitmap"/>
     <map-entry ext="swf" mimetype="application/x-shockwave-flash"/>
     <map-entry ext="html" mimetype="text/html"/>
-    <map-entry ext="htm" mimetype="text/html"/>
-    <map-entry ext="html" mimetype="text/htmls"/>
+    <map-entry ext="htm" mimetype="text/html"/>    
     <map-entry ext="htx" mimetype="text/html"/>
     <map-entry ext="shtml" mimetype="text/html"/>
     <map-entry ext="acgi" mimetype="text/html"/>
@@ -86,11 +117,19 @@
     <map-entry ext="xlw" mimetype="application/excel"/>
     <map-entry ext="zip" mimetype="application/zip"/>
     <map-entry ext="tar" mimetype="application/x-tar"/>
+    <map-entry ext="java" mimetype="text/x-java-source"/>
   </extension-map>
   
+  <!--
+    Registered DBMS vendors.
+    
+    The value of "name" attributes must be the name of the protocol used in a
+    JDBC URL (e.g. "postgresql" in jdbc:postgresql:company).
+  -->
   <dbms-vendors>
-    <vendor>
-      
-    </vendor>
+    <vendor name="mysql"
+      class="psl.memento.server.dataserver.sql.MySQLVendorCoupler"/>
+    <vendor name="postgresql"
+      class="psl.memento.server.dataserver.sql.PostgreSQLVendorCoupler"/>
   </dbms-vendors>
 </frax-config>
