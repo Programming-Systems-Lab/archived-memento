@@ -1,7 +1,5 @@
 package psl.memento.server.frax;
 
-package psl.chime4.server.frax;
-
 // jdk imports
 import java.io.InputStream;
 import java.net.URI;
@@ -30,8 +28,7 @@ class ImagePlug extends Plug {
     // we may need to process the entire input stream in order to determine
     // the number of images -- remove this line if things are too slow
     ii.setDetermineImageNumber(true);    
-    
-    // FIXME: Call to check() fails if image is a GIF and input stream is from HTTP
+        
     if(!ii.check()) {
       throw new FraxException(kErrorBadImageData);
     }
