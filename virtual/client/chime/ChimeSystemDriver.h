@@ -22,6 +22,7 @@
 #include "ChimeNeighbors.h"
 #include "ChimeSectorEntities.h"
 #include "ChimeWindowToolkit.h"
+#include "ChimeAi2tvInterface.h"
 
 #define DEBUG	0
 #define NODEBUG	1
@@ -74,23 +75,25 @@ private:
   ChimeEngineView			*chView, *chMapView;						//main and map views of the world
   ChimeNeighbors			*chNeighborQueue;							//queue of Chime sectors loaded
   ChimeSectorEntity			*chSelectedEntity;							//pointer to the entity selected with a single mouse click
+  ChimeAi2tvInterface		*chAi2tvInterface;							//interface to AI2TV client
 
   //other windows
-  csNotebook*			notebook;
   ChimeHistoryWindow*	chHistoryWindow;								//history list window
   ChimeChatWindow*		chChatWindow;									//chat window
   ChimeAi2tvWindow*		chAi2tvWindow;									//AI2TV player window
 
   //helper variables
+  float user_speed;														//defines a multiplicator for default speed
   int	chDebugMode;													//defines level of debugging output
   csVector2 csLastMousePosition;										//holds the last screen coordinates where the mouse was
   csMenu *csEntityMenu;													//pointer to a csEntityMenu, used to draw all variable menus
+  ModularWindow *chModularWindow;										//pointer to currently open modular window
   csVector *chVisibleObjects;											//list of objects visible in the current view
   csRect *chMainViewWindowRect, *chMapViewWindowRect;					//pointers to rectangles of windows holding engine views
-  int chSystemFont, chMenuFont, chLabelFont, chLabelFontNum;			//indeces that keep track of fonts for the system
-  bool clearBackground;													//flag that tells the system whether to clear 2D background
+  bool doRedraw;														//flag used to tell the system to redraw
   bool isRunning;														//flag used to start or stop 3D animation
-  bool isScreenUpdated;													//flags whether screen was updated after a change was made
+  bool usingOpenGL;														//flag that tells whether engine is using OpenGL
+  bool isSystemReady, isEnvironmentReady;								//flags used to prepare system
   char str2DMessage[100];												//text of a 2D message
 
   //private member functions
@@ -111,6 +114,7 @@ private:
   bool HandleMouseMove (iEvent &Event);									//move an active object following mouse movement
   bool HandleEventFromOtherWindows (iEvent &Event);						//see if any of other windows can handle this event
   bool HandleKeyEvent (iEvent &Event);									//handle a key-pressed event
+  bool HandleMenuEvent (iEvent &Event);									//handle event from open menu
   bool CloseMenu ();													//destroy a 2D menu if one exists
   ChimeSectorEntity* SelectEntity (float x, float y);					//select an entity pointed to by the mouse click
   void SelectVisibleObjects (csVector* iEntityList,						//select only those entities that are visible in the current view
@@ -119,6 +123,7 @@ private:
 
 
   //CHIME functions
+  bool SetupWindows();													//setup CHIME windows
   bool ReadInitialSector();												//create the initial room to drop the user into
   bool InitializeUser();												//initialize the CHIME user
 
@@ -134,7 +139,11 @@ public:
   csRef<iLoader> csLoader;												//loader plug-in
   csRef<iPluginManager> csPluginManager;								//plug-in manager
   csRef<iCollideSystem> csCollisionSystem;								//collision system
+
+  //public assistant variables
   bool isOnGround;														//false if user is above the ground
+  int chSystemFont, chMenuFont, chLabelFont, chLabelFontNum, 
+	  chButtonFont;														//indeces that keep track of fonts for the system
 
   //public member functions
   
@@ -142,6 +151,13 @@ public:
   bool Initialize ();													//initialize system driver
   bool InitializeEnvironment ();										//initialize environment
   void Start ();														//start the csEngine
+  bool LoginUser ();													//login the user
+  void ExitSystem ();													//exit the application
+  void CreateUser (const char *strUserName, 
+	  const char *strUserPassword, const char *strUserSource, 
+	  const char *strUserID, const char *strGroupID);					//create user with given parameters
+  void PrepareSystem ();												//prepare system for loading
+  void PrepareEnvironment ();											//prepare default environment
 
   //-- setter functions --//
   void SetDebugMode (int mode);											//set debugging mode
@@ -151,17 +167,32 @@ public:
   iObjectRegistry* GetObjectRegistry();									//returns object registry
   ChimeCollider* GetCollider();											//returns collision system
   ChimeSector* GetCurrentSector();										//returns current CHIME sector
+  ChimeApp* GetApplication ();												//returns pointer to main application
+  ChimeAi2tvInterface* GetAi2tvInterface ();							//returns interface to AI2TV
   csVector2 GetLastMousePosition();										//returns the 2D coordinates of mouse's last position on screen
+  ChimeSector* FindSectorByRoom (iSector* room);						//returns ChimeSector with given room
+  ChimeSector* FindSectorByTitle (char *strSectorName, 
+	  char *strSectorSource);											//returns ChimeSector with given title
 
   //-- GUI control functions --//
   csMenu* CreateMenu (int x, int y);									//create new menu at given location
-  void Redraw ();														//redraw the windows and background
+  iFont* GetFont (int iFontType);										//return font with given type
+  void Redraw ();														//force engine to redraw
   void Stop3D ();														//stop 3D animation
   void Start3D ();														//start 3D animation
   void Display2DMessage (char* strMessage);								//displays a 2D message on the screen
   void Delete2DMessage ();												//deletes current 2D meesage from the screen
-  void WaitForScreenUpdate ();											//forces the system to wait for screen update
-  bool HasScreenUpdated ();												//tells whether the screen was updated
+  int schemaID;
+  int GetSchemaID () { return schemaID; }
+
+  //-- Window control functions --//
+  void OpenModularWindow (ModularWindow* window);
+  void CloseModularWindow (ModularWindow* window);
+
+  //-- AI2TV control functions --//
+  bool BuildAi2tvScreen ();												//build a screen for current user location
+  void LoadFrame (char *strFileName, char *strMaterialName);			//load a frame image under given name
+  void DisplayFrame (char *strMaterialName);								//display image on AI2TV screen
 
   //-- system control functions --//
   void Report(char *source, char *message);								//print error report to standard output
@@ -169,10 +200,13 @@ public:
   //-- world control functions --//
   ChimeSector* LoadNewSector (char *strSectorName, 
        char *strSectorSource, csVector3 &origin, 
-	   csVector3 &iSectorRotation);										//load given sector, placing it at the given origin and rotating it
+	   csVector3 &iSectorRotation, bool updateEngine = true);			//load given sector, placing it at the given origin and rotating it
   void TransportToSector (char *strSectorName, char *strSectorSource);	//transport the user to default location in given sector
   void UpdateCurrentSector (iSector* room);								//update current sector
   void SetCurrentSector (ChimeSector* sector);							//set current sector
+  void UpdateEngine (iRegion *region = NULL);							//engine update using threads
+  void ShineLights (iSector *room);										//shine all lights in the room on all meshes
+  void ShineLights (iSector* room, iMeshWrapper* mesh);					//shine all lights in the room on given mesh
 };
 
 #endif // __ChimeSystemDriver_H__

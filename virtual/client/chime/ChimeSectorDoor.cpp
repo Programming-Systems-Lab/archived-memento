@@ -11,6 +11,7 @@
 #include "cssysdef.h"
 #include <math.h>
 #include "ivideo/txtmgr.h"
+#include "iengine/material.h"
 #include "ChimeSectorEntities.h"
 #include "ChimeSystemDriver.h"
 
@@ -22,14 +23,14 @@ extern ChimeSystemDriver *driver;
  * Constructor: creates a new container for given door polygon
  * Its linked room is set to NULL
  *****************************************************************/
-ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon, 
-								  iPolygon3D **door_label, int num_letters,
-								  char *iTargetName, char *iTargetSource, 
-								  char *iDoorTexture) 
+ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iMeshWrapper *mesh, 
+								  iPolygon3D **door_label, 
+								  int num_letters, char *iTargetName, 
+								  char *iTargetSource, char *iDoorTexture) 
 	: ChimeSectorEntity (iDoorName, ENTITY_TYPE_DOOR)
 {
 	// assign variables
-	csDoorPolygon = polygon;
+	csDoorMesh = mesh;
 	csDoorLabelPolygons = door_label;
 	numLabels = num_letters;
 	csTargetRoom = NULL;
@@ -38,6 +39,9 @@ ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon,
 	// call the function instead of just assigning,
 	// to set textures of label polygons
 	SetDoorTarget (iTargetName, iTargetSource);
+
+	// Close door initially
+	CloseDoor ();
 }
 
 
@@ -45,9 +49,9 @@ ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon,
  * IsEntitySelected: returns true if the passed polygon is the
  * same as the one used to represent this door
  *****************************************************************/
-bool ChimeSectorDoor::IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon)
+bool ChimeSectorDoor::IsEntitySelected (iMeshWrapper *mesh)
 {
-	if (polygon == csDoorPolygon)
+	if (mesh == csDoorMesh)
 		return true;
 	return false;
 }
@@ -71,7 +75,7 @@ bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetSource)
 		char *txtName = "letter_a";
 		for (int i = 0; i < numLabels; i++)
 		{
-			texture = driver->csEngine->GetMaterialList ()->FindByName ("letter_blank");
+			texture = driver->csEngine->GetMaterialList ()->FindByName ("blank");
 			if (i < numLetters)
 			{
 				letter = strTargetName[i];
@@ -93,11 +97,25 @@ bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetSource)
 
 
 /*******************************************************************
+ * SetTargetRoom: directly sets the target room
+ *******************************************************************/
+bool ChimeSectorDoor::SetTargetRoom (iSector *room)
+{
+	csTargetRoom = room;
+	return true;
+}
+
+
+/*******************************************************************
  * SetDoorTexture: sets the name of the texture used for this door
  *******************************************************************/
 bool ChimeSectorDoor::SetDoorTexture (char *iTexture)
 {
-	strDoorTexture = iTexture;
+	strcpy (strDoorTexture, iTexture);
+	csRef<iMaterialWrapper> texture = driver->csEngine->
+		GetMaterialList ()->FindByName (strDoorTexture);
+	iPolygon3D* door = FindDoorPolygon ();
+	door->SetMaterial (texture);
 	return true;
 }
 
@@ -112,6 +130,7 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target)
 {
 	
 	// if connecting...
+	iPolygon3D* csDoorPolygon = FindDoorPolygon ();
 	if (doConnect && csDoorPolygon)
 	{
 
@@ -132,6 +151,7 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target)
 		wall_plane.Normalize ();
 		csVector3 wall_normal (wall_plane.Normal ());
 		wall_normal *= -1;
+		printf("Wall normal: %f, %f, %f\n", wall_normal.x, wall_normal.y, wall_normal.z);
 
 		// find the angles of rotation between door normal and (0, 0, 1) vector
 		// these will be the angles by which new sector will be rotated
@@ -144,14 +164,17 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target)
             rot_angle.y = norm.z / norm.Norm ();
 		else
 			rot_angle.y = 0;
+		printf("Rot angle: %f\n", rot_angle.y);
 
 		// find actual angle
-		rot_angle.y = acos (rot_angle.y);
-		rot_angle.y = -rot_angle.y;
+		rot_angle.y = -acos (rot_angle.y);
+		printf("Rot angle: %f\n", rot_angle.y);
+		if (wall_normal.x < 0) rot_angle.y *= -1;
 
 		// load the sector into the system
-		ChimeSector *targetSector = driver->LoadNewSector (strTargetName, strTargetSource,
-			csVector3 (csDoorPolygon->GetVertex (0)), rot_angle);
+		csVector3 origin (csDoorPolygon->GetVertex (0));
+		ChimeSector *targetSector = driver->LoadNewSector (strTargetName, 
+			strTargetSource, origin, rot_angle);
 
 		// if the sector is loaded or found successfully,
 		// set the linked room to be its default room
@@ -182,15 +205,16 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target)
 bool ChimeSectorDoor::OpenDoor ()
 {
 	// if linked room is not NULL...
+	iPolygon3D* csDoorPolygon = FindDoorPolygon ();
 	if (csTargetRoom && csDoorPolygon)
 	{
         // create the portal
 		csDoorPolygon->CreatePortal (csTargetRoom);
 		// make this door invisible
-		csDoorPolygon->SetAlpha (100);
-		//SetDoorVisible (false);
+		SetDoorVisible (csDoorPolygon, false);
+		// remove collider
+		driver->GetCollider ()->RemoveMeshCollider (csDoorMesh);
 
-		//csDoorPolygon->GetTexture ()->GetMaterialHandle ()->Prepare ();
 		return true;
 	}
 
@@ -204,10 +228,15 @@ bool ChimeSectorDoor::OpenDoor ()
  *****************************************************************/
 bool ChimeSectorDoor::CloseDoor ()
 {
+	// create a collider
+	driver->GetCollider ()->CreateMeshCollider (csDoorMesh);
+
+	// make door visible
+	iPolygon3D* csDoorPolygon = FindDoorPolygon ();
 	if (csDoorPolygon)
 	{
-        csDoorPolygon->CreatePortal (NULL);
-        SetDoorVisible (true);
+        csDoorPolygon->CreateNullPortal ();
+        SetDoorVisible (csDoorPolygon, false);
 		return true;
 	}
 
@@ -220,14 +249,14 @@ bool ChimeSectorDoor::CloseDoor ()
  * If flag is set, makes the door visible 100%,
  * otherwise makes the door transparent (0% visibility)
  *****************************************************************/
-bool ChimeSectorDoor::SetDoorVisible (bool flag)
+bool ChimeSectorDoor::SetDoorVisible (iPolygon3D* door, bool flag)
 {
-	if (csDoorPolygon)
+	if (door)
 	{
         if (flag)
-            csDoorPolygon->SetAlpha (255);
+            door->SetAlpha (100);
         else
-            csDoorPolygon->SetAlpha (0);
+            door->SetAlpha (0);
 		return true;
 	}
 
@@ -242,18 +271,24 @@ bool ChimeSectorDoor::SetDoorVisible (bool flag)
  *****************************************************************/
 void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event) 
 {
-	driver->Display2DMessage ("Opening door...");
-	driver->WaitForScreenUpdate ();
-
-	//while (!driver->HasScreenUpdated ()) {}
-
 	if (ConnectDoorToTarget (true))
 	{
 		OpenDoor ();
 	}
-	driver->Delete2DMessage ();
 }
 
+
+/*****************************************************************
+ * FindDoorPolygon: 
+ * Find the polygon used for this door.
+ *****************************************************************/
+iPolygon3D* ChimeSectorDoor::FindDoorPolygon ()
+{
+	csRef<iThingState> state = SCF_QUERY_INTERFACE (csDoorMesh->GetMeshObject (), iThingState);
+	if (state->GetPolygonCount () > 0)
+		return state->GetPolygon (0);
+	return NULL;
+}
 
 
 /*****************************************************************
@@ -262,10 +297,37 @@ void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event)
  *****************************************************************/
 void ChimeSectorDoor::HandleRightMouseClick (iEvent &event) 
 {
-	csMenu* menu = driver->CreateMenu (event.Mouse.x, event.Mouse.y);
+    csMenu* menu = driver->CreateMenu (event.Mouse.x, event.Mouse.y);
 	char mText [100];
-	strcpy (mText, "DOOR: ");
+	strcpy (mText, "Door: ");
 	strcat (mText, strEntityName);
 	(void)new csMenuItem (menu, mText, -1);
+	strcpy (mText, "Linked To: ");
+	strcat (mText, strTargetName);
+	(void)new csMenuItem (menu, mText, -1);
+	(void)new csMenuItem (menu, "", -1, CSMIS_SEPARATOR);
+	(void)new csMenuItem (menu, "SET DOOR NAME", DOOR_MENU_SET_NAME);
+	(void)new csMenuItem (menu, "SET TARGET", DOOR_MENU_SET_TARGET);
+	(void)new csMenuItem (menu, "SET DOOR TEXTURE", DOOR_MENU_SET_TEXTURE);
 	menu->SetPos (event.Mouse.x - 3, event.Mouse.y + 3);
+}
+
+
+/*****************************************************************
+ * HandleMenuEvent: handle a menu event.
+ *****************************************************************/
+bool ChimeSectorDoor::HandleMenuEvent (int iMenuCode)
+{
+	printf("Looking for code: %d\n", DOOR_MENU_SET_NAME);
+	switch (iMenuCode)
+	{
+	case DOOR_MENU_SET_NAME : 
+		printf("Pop-up window\n");
+		ModularWindow *w = new ModularWindow (driver->GetApplication (), "Door Window");
+        w->SetSize (100, 40);
+        w->Center ();
+		break;
+	}
+
+	return true;
 }

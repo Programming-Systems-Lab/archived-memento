@@ -37,15 +37,40 @@ static int palette [] =
  * it is properly closed. All 3D animation is suspended
  * while a modular window is open.
  **************************************************************/
+#define MODULAR_WINDOW_ACCEPT MODULAR_WINDOW_BASE+1
+#define MODULAR_WINDOW_CANCEL MODULAR_WINDOW_BASE+2
 class ModularWindow : public csWindow
 {
+	protected:
+		//close the window
+		virtual void Close();
+
+		//'Accept' button clicked
+		virtual void Accept () { Close (); }
+
+		//'Cancel' button clicked
+		virtual void Cancel () { Close (); }
+
 	public:
+
 		//stop the animation when creating a window
 		ModularWindow(csComponent *iParent, const char *iTitle, 
-			int iWindowStyle=CSWS_DEFAULTVALUE, csWindowFrameStyle iFrameStyle=cswfs3D);
+			int iWindowStyle=CSWS_TITLEBAR, csWindowFrameStyle iFrameStyle=cswfs3D);
 
-		//start the animation when closing the window
-		virtual void Close();
+		//handle an event
+		virtual bool HandleEvent (iEvent &Event);
+};
+
+class ChimeButton : public csButton 
+{
+private:
+	int currentSchemaID;
+public:
+	ChimeButton (csComponent *iParent, int iCommandCode, 
+		int iButtonStyle=CSBS_DEFAULTVALUE, 
+		csButtonFrameStyle iFrameStyle=csbfsOblique);
+
+	void Draw ();
 };
 
 
@@ -143,6 +168,9 @@ public:
 
   ChimeChatWindow (csComponent *iParent);
   bool AddItem (char *iUserName, char *iUserSource);					// add one item with given parameters
+  bool RemoveItem (char *iUserName, char *iUserSource);					// remove given user
+  bool RemoveItem (csComponent *comp);									// remove given component
+  bool RemoveAllItems ();												// remove all items
   ChatBoxItem* FindItem (char *iUserName, char *iUserSource);			// find item based on given parameters
   virtual bool HandleEvent (iEvent &Event);								// add specific item handling
   static bool UserExists (csComponent *item, void *iFullUserName);		// tell if this is the same user
@@ -150,10 +178,14 @@ public:
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////// AI2TV Player Window ////////////////////////////////////////////
+/////////////////////////////// AI2TV Windows ////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
+#define AI2TV_PLAY AI2TV_WINDOW_BASE + 1
+#define AI2TV_PAUSE AI2TV_WINDOW_BASE + 2
+#define AI2TV_STOP AI2TV_WINDOW_BASE + 3
+#define AI2TV_EXIT AI2TV_WINDOW_BASE + 4
 /**************************************************************
- * Chat window is a list of visited ChimeSectors
+ * AI2TV player window controls AI2TV playback
  **************************************************************/
 class ChimeAi2tvWindow : public csWindow
 {
@@ -161,8 +193,57 @@ class ChimeAi2tvWindow : public csWindow
 private:
 
 public:
-
   ChimeAi2tvWindow (csComponent *iParent);
+  bool HandleEvent (iEvent &Event);
 };
+
+/**************************************************************
+ * Login Window
+ **************************************************************/
+class LoginWindow : public ModularWindow
+{
+private:
+	void Accept ();
+	void Cancel ();
+
+	csInputLine *ilUserName, *ilUserPassword, *ilUserSource, *ilUserID, *ilGroupID;
+
+public:
+    LoginWindow (csComponent *iParent);
+};
+
+/**************************************************************
+ * AI2TV Source Select Window
+ **************************************************************/
+class Ai2tvSourceSelectWindow : public ModularWindow
+{
+private:
+	void Accept ();
+	void Cancel ();
+
+	csListBox *csSourceListBox;
+	csListBoxItem *csSelectedSource;
+
+public:
+    Ai2tvSourceSelectWindow (csComponent *iParent, char sources[10][50], int numSources);
+	bool HandleEvent (iEvent &Event);
+};
+
+/**************************************************************
+ * AI2TV Set Time Window
+ **************************************************************/
+class Ai2tvSetTimeWindow : public ModularWindow
+{
+private:
+	void Accept ();
+	void Cancel ();
+
+	char strVideoSource[50];
+	csInputLine *ilYear, *ilMonth, *ilDay, *ilHour, *ilMinute, *ilSecond;
+
+public:
+    Ai2tvSetTimeWindow (csComponent *iParent, char* source);
+};
+
 
 #endif

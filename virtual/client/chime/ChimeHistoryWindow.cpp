@@ -68,7 +68,6 @@ void HistoryBoxItem::GetSectorSource (char *iSectorSource)
  *************************************************************/
 bool HistoryBoxItem::HandleEvent (iEvent &Event)
 {
-	/**
 	switch (Event.Type)
 	{
 	// on double mouse click, activate this item
@@ -76,7 +75,6 @@ bool HistoryBoxItem::HandleEvent (iEvent &Event)
 		ActivateItem ();
 		break;
 	}
-	*/
 
 	// let list handle the event
 	return csListBoxItem::HandleEvent (Event);
@@ -101,27 +99,27 @@ ChimeHistoryWindow::~ChimeHistoryWindow() {}
  * Create window components
  *************************************************************/
 ChimeHistoryWindow::ChimeHistoryWindow(csComponent *iParent)
-  : csWindow(iParent, " History ", CSWS_TITLEBAR, cswfsThin)
+  : csWindow (iParent, " History ", CSWS_TITLEBAR, cswfsThin)
   {
 
-  SetRect (1, 2, app->bound.Width() / 4 - 1, app->bound.Height() / 3);
-
-  int px = 15, py = 20;
-  int labelw = 150;
+  SetRect (iParent->bound.xmin + 1, iParent->bound.ymin + 1, iParent->bound.Width() / 4 - 1, iParent->bound.Height() / 3);
 
   //////////create the dialog///////////////
-  csDialog *d = new csDialog(this);
+  csDialog *d = new csDialog(this, csdfsAround);
   this->SetDragStyle (this->GetDragStyle () & ~CS_DRAG_SIZEABLE);
   
   //////////create the list box/////////////
-  list_box = new csListBox (d, CSLBS_HSCROLL | CSLBS_VSCROLL, cslfsThinRect);
-  list_box->SetRect (bound.Width() / 10, 1,  bound.Width() / 10 * 9, bound.Height() / 2 - 1);
+  list_box = new csListBox (d, CSLBS_HSCROLL | CSLBS_VSCROLL, cslfsThickRect);
+  list_box->SetRect (bound.Width() / 10, 3,  bound.Width() / 10 * 9, bound.Height () - 80);
+  list_box->SetColor (CSPAL_DIALOG_BACKGROUND, cs_Color_White);
 
   //setup the "Go There"
-  csButton *GoBut = new csButton(d, HISTORY_GO_THERE_PRESSED);
-  GoBut->SetText("GO THERE");
-  GoBut->SetSize(bound.Width ()/2, bound.Height() / 3);
-  GoBut->SetPos(bound.Width ()/4, bound.Height() / 2 + 1);
+  ChimeButton *GoBut = new ChimeButton(d, HISTORY_GO_THERE_PRESSED, CSBS_DEFAULTVALUE, csbfsThickRect);
+  GoBut->SetText("Go There");
+  GoBut->SetSize(100, 40);
+  GoBut->SetPos (bound.Width () / 4, bound.Height () - 70);
+  GoBut->Center (true, false);
+  GoBut->SetFont (driver->GetFont (driver->chButtonFont));
   
   selected_item = NULL;
 }
@@ -129,8 +127,8 @@ ChimeHistoryWindow::ChimeHistoryWindow(csComponent *iParent)
 /*************************************************************
  * Add an item to history box, unless it already exists
  *************************************************************/
-bool ChimeHistoryWindow::AddItem (char *iSectorName, char *iSectorSource) {
-
+bool ChimeHistoryWindow::AddItem (char *iSectorName, char *iSectorSource)
+{
 	// if the item is found, don't add
 	if (FindItem (iSectorName, iSectorSource))
 		return false;
@@ -174,10 +172,10 @@ bool ChimeHistoryWindow::HandleEvent (iEvent &Event)
   // do not allow window movement
   if (Event.Type == csevMouseMove)
       return true;
-  
+	
   // let the window handle the event
   if (csWindow::HandleEvent (Event))
-    return true;
+	  return true;
 
   if (Event.Type == csevCommand)
   {

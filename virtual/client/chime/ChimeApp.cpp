@@ -18,7 +18,7 @@
 
 // The global pointer to ChimeSystemDriver
 ChimeSystemDriver	*driver;
-ChimeApp			*app;
+ChimeApp			*application;
 
 /****************************************************************************************
  * Constructor does nothing but construct the CS application
@@ -33,7 +33,8 @@ ChimeApp::ChimeApp (iObjectRegistry *object_reg, csSkin &skin) : csApp(object_re
  ***************************/
 ChimeApp::~ChimeApp ()
 {
-
+	delete driver;
+	ShutDown ();
 }
 
 /****************************************************************************************
@@ -42,7 +43,7 @@ ChimeApp::~ChimeApp ()
 bool ChimeApp::StartApplication ()
 {
 	// Initialize environment
-	if (!driver->InitializeEnvironment ())
+	if (!driver->LoginUser ())
 	{
 		driver->Report ("Chime.Application.ChimeApp", "Failed to initialize environment!");
 		return false;
@@ -90,20 +91,20 @@ int main (int argc, char* argv[])
   iObjectRegistry* object_reg = csInitializer::CreateEnvironment (argc, argv);
 
   // Create ChimeApp and ChimeSystemDriver instances
-  app  = new ChimeApp (object_reg, DefaultSkin);
+  application  = new ChimeApp (object_reg, DefaultSkin);
   driver = new ChimeSystemDriver (object_reg);
   driver->SetDebugMode (DEBUG);
 
   // Initialize application
-  app->Initialize (object_reg);
+  application->Initialize (object_reg);
 
   // Start application
-  if (!app->StartApplication())
+  if (!application->StartApplication())
       return -1;
 
   // Shut down
   delete driver;
-  app->ShutDown();
+  application->ShutDown();
 
   return 0;
 }

@@ -32,11 +32,29 @@
 extern ChimeSystemDriver *driver;
 
 /*****************************************************************
- * Constructor: does nothing, since using smart pointers
+ * Constructor: set user parameters to NULL
  *****************************************************************/
 ChimeUser::ChimeUser ()
 {
+	ChimeUser (NULL, NULL, NULL, NULL, NULL);
+}
 
+/*****************************************************************
+ * Constructor: does nothing, since using smart pointers
+ *****************************************************************/
+ChimeUser::ChimeUser (const char *iUserName, const char *iUserPassword,
+					  const char *iUserSource, const char *iUserID, 
+					  const char *iGroupID)
+{
+	// Initialize parameters
+	strUserName = strUserPassword = strUserSource = strUserID = strGroupID = NULL;
+
+	// Setup user parameters
+	SetUserName (iUserName);
+	SetUserPassword (iUserPassword);
+	SetUserSource (iUserSource);
+	SetUserID (iUserID);
+	SetGroupID (iGroupID);
 }
 
 /*****************************************************************
@@ -45,6 +63,15 @@ ChimeUser::ChimeUser ()
 ChimeUser::~ChimeUser ()
 {
 
+}
+
+/*****************************************************************
+ * IsUserValid: makes sure all parameters were filled in
+ *****************************************************************/
+bool ChimeUser::IsUserValid ()
+{
+	return (strUserName && strUserPassword &&
+        strUserSource && strUserID && strGroupID);
 }
 
 /*****************************************************************
@@ -119,7 +146,7 @@ bool ChimeUser::MoveUser (csVector3 const direction, float fps, bool checkVertic
 		chUserMesh->GetMovable ()->GetTransform ().SetOrigin (pos);
 		chUserMesh->GetMovable ()->UpdateMove ();
 	}
-	
+
 	return true;
 }
 
@@ -151,6 +178,89 @@ bool ChimeUser::RotateUser (csVector3 const direction, float angle)
 		chUserMesh->GetMovable ()->UpdateMove ();
 	
 	return true;
+}
+
+/////////////////// Accessor functions: simply copy strings /////////////////////////
+// Getter functions
+const char* ChimeUser::GetUserName ()
+{ 
+	return strUserName;
+}
+const char* ChimeUser::GetUserPassword ()
+{ 
+	return strUserPassword;
+}
+const char* ChimeUser::GetUserSource ()
+{
+	return strUserSource;
+}
+const char* ChimeUser::GetUserID ()
+{
+	return strUserID;
+}
+const char* ChimeUser::GetGroupID ()
+{
+	return strGroupID;
+}
+
+// Setter functions
+void ChimeUser::SetUserName (const char *iUserName)
+{ 
+	if (iUserName)
+	{
+		if (!strUserName) strUserName = (char*) malloc (50 * sizeof (char));
+		strcpy (strUserName, iUserName);
+	}
+	else strUserName = NULL;
+}
+void ChimeUser::SetUserPassword (const char *iUserPassword)
+{ 
+	if (iUserPassword)
+	{
+		if (!strUserPassword) strUserPassword = (char*) malloc (50 * sizeof (char));
+		strcpy (strUserPassword, iUserPassword);
+	}
+	else strUserPassword = NULL;
+}
+void ChimeUser::SetUserSource (const char *iUserSource)
+{ 
+	if (iUserSource)
+	{
+		if (!strUserSource) strUserSource = (char*) malloc (100 * sizeof (char));
+		strcpy (strUserSource, iUserSource);
+	}
+	else strUserSource = NULL;
+}
+void ChimeUser::SetUserID (const char *iUserID)
+{ 
+	if (iUserID)
+	{
+		if (!strUserID) strUserID = (char*) malloc (20 * sizeof (char));
+		strcpy (strUserID, iUserID);
+	}
+	else strUserID = NULL;
+}
+void ChimeUser::SetGroupID (const char *iGroupID)
+{ 
+	if (iGroupID)
+	{
+		if (!strGroupID) strGroupID = (char*) malloc (20 * sizeof (char));
+		strcpy (strGroupID, iGroupID);
+	}
+	else strGroupID = NULL;
+}
+
+/*****************************************************************
+ * Prints user's 3D coordinates and sector location
+ * to console. Used for debugging purposes.
+ *****************************************************************/
+void ChimeUser::PrintUserParameters ()
+{
+	if (strUserName) printf("User name: %s\n", strUserName);
+	if (strUserPassword) printf("User password: %s\n", strUserPassword);
+	if (strUserSource) printf("User source: %s\n", strUserSource);
+	if (strUserID) printf("User ID: %s\n", strUserID);
+	if (strGroupID) printf("Group ID: %s\n", strGroupID);
 }
 
 /*****************************************************************

@@ -49,7 +49,8 @@ public:
   ~ChimeCollider ();															//destructor
 
   void CreateUserCollider ();													//create colliders for the camera at user_height
-  bool CreateObjectCollider(iMeshWrapper *mesh);								//add a collider wrapper to any given object
+  bool CreateMeshCollider(iMeshWrapper *mesh);									//add a collider wrapper to any given mesh
+  bool RemoveMeshCollider (iMeshWrapper *object);								//remove collider wrapper
   void SetRoomFloor (float y);													//set the y coordinate of the room floor
   csVector3 Collide (iCamera *camera, csVector3 pos, 
 						csVector3& vel, bool checkVertical, float fps);			//move colliders, while doing collision checking, return new position

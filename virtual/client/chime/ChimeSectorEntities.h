@@ -101,6 +101,23 @@ public:
 	}
 
 	/*******************************************************
+	 * Handle menu event
+	 *******************************************************/
+	virtual bool HandleMenuEvent (int iMenuCode)
+	{
+		return false;
+	}
+
+	/*******************************************************
+	 * Update entity
+	 *******************************************************/
+	virtual void UpdateEntity (const csStrVector &param_name, 
+		const csVector &param_value)
+	{
+		return;
+	}
+
+	/*******************************************************
 	 * Returns true if the entity has the property
 	 * of having a label
 	 *******************************************************/
@@ -110,7 +127,7 @@ public:
 	 * Returns true if either the selected mesh
 	 * or polygon belong to this entity
 	 *******************************************************/
-	virtual bool IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon)
+	virtual bool IsEntitySelected (iMeshWrapper *mesh)
 	{
 		return false;
 	}
@@ -121,11 +138,15 @@ public:
 /******************************************************************************
  * Active door container
  ******************************************************************************/
+#define DOOR_MENU_SET_NAME CHIME_DOOR_MENU+1
+#define DOOR_MENU_SET_TARGET CHIME_DOOR_MENU+2
+#define DOOR_MENU_SET_TEXTURE CHIME_DOOR_MENU+3
 class ChimeSectorDoor : public ChimeSectorEntity
 {
 protected:
 
 	// door attributes
+	iMeshWrapper *csDoorMesh;
 	iPolygon3D *csDoorPolygon;
 	iPolygon3D **csDoorLabelPolygons;
 	iSector *csTargetRoom;
@@ -135,19 +156,24 @@ protected:
 
 public:
 
-	ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon, 
+	ChimeSectorDoor (char *iDoorName, iMeshWrapper *mesh, 
 		iPolygon3D **door_label, int num_letters, 
 		char *iTargetName, char *iTargetSource, char *iDoorTexture);			// create a door entity for given door polygon
 	bool SetDoorTarget (char *iTargetName, char *iTargetSource);				// set the target sector of this door
+	bool SetTargetRoom (iSector* room);											// directly set the target room
 	bool SetDoorTexture (char *iTexture);										// set the texture used for this door
-	bool SetDoorVisible (bool flag);											// set the door to be visible if flag is true, transparent otherwise
+	bool SetDoorVisible (iPolygon3D* door, bool flag);							// set the door to be visible if flag is true, transparent otherwise
 	bool ConnectDoorToTarget (bool doConnect, iSector *target=NULL);			// connect or disconnect this door to its target, depending on flag
 	bool OpenDoor ();															// open this door
 	bool CloseDoor ();															// close this door
+	iMeshWrapper* GetDoorMesh () { return csDoorMesh; }							// return door mesh
+	iPolygon3D* FindDoorPolygon ();												// return the polygon used for this door
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);
-	bool IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon);
+	bool HandleMenuEvent (int iMenuCode);
+	bool IsEntitySelected (iMeshWrapper *mesh);
+	//void UpdateEntity (csStrVector param_name, csVector param_value);
 };
 
 
@@ -160,7 +186,6 @@ protected:
 
 	// object attributes
 	iMeshWrapper *csObjectMesh;
-	csVector3 *csObjectLocation;
 	csVector3 *csObjectLabelCenter;
 	iSector *csObjectRoom;
 	char *strObjectSource;
@@ -170,9 +195,9 @@ protected:
 public:
 
 	ChimeSectorObject (char *iObjectName, char *iObjectSource = NULL,
-		iMeshWrapper *iMesh = NULL, csVector3 *iObjectLocation = NULL, 
-		iSector *iObjectRoom = NULL, char *sObjectModel = NULL, 
-		char *iObjectMaterial = NULL, int iEntityType = ENTITY_TYPE_OBJECT);	// create an object for given mesh
+		iMeshWrapper *iMesh = NULL, iSector *iObjectRoom = NULL, 
+		char *sObjectModel = NULL, char *iObjectMaterial = NULL, 
+		int iEntityType = ENTITY_TYPE_OBJECT);									// create an object for given mesh
 	bool SetObjectSource (char *iObjectSource);									// set the source Source of this object
 	bool SetObjectModel (char *iObjectModel);									// set the model used for this object
 	bool SetObjectLocation (csVector2 newMousePosition, iCamera *camera);		// move the object to new location indicated by mouse position using collision detection
@@ -187,7 +212,8 @@ public:
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);
-	bool IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon);
+	bool IsEntitySelected (iMeshWrapper *mesh);
+	//void UpdateEntity (csStrVector param_name, csVector param_value);
 };
 
 
@@ -200,11 +226,12 @@ class ChimeSectorUser : public ChimeSectorObject
 public:
 
 	ChimeSectorUser (char *iObjectName, char *iObjectSource, 
-		iMeshWrapper *iMesh, csVector3 *iObjectLocation, iSector *iObjectRoom, 
+		iMeshWrapper *iMesh, iSector *iObjectRoom, 
 		char *iObjectModel, char *iObjectMaterial=NULL);
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);
+	//void UpdateEntity (csStrVector param_name, csVector param_value);
 };
 
 
@@ -217,12 +244,13 @@ class ChimeSectorActiveObject : public ChimeSectorObject
 public:
 
 	ChimeSectorActiveObject (char *iObjectName, char *iObjectSource, 
-		iMeshWrapper *iMesh, csVector3 *iObjectLocation, iSector *iObjectRoom, 
+		iMeshWrapper *iMesh, iSector *iObjectRoom, 
 		char *iObjectModel, char *iObjectMaterial=NULL);
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);
 	void HandleMouseMove (csVector2 old_pos, csVector2 new_pos, iCamera *camera);
+	//void UpdateEntity (csStrVector param_name, csVector param_value);
 };
 
 #endif // __ChimeSectorEntities_H__

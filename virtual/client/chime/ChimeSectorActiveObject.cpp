@@ -22,10 +22,9 @@ extern ChimeSystemDriver *driver;
  * Constructor: creates a new container for given object mesh
  *****************************************************************/
 ChimeSectorActiveObject::ChimeSectorActiveObject (char *iObjectName, char *iObjectSource, 
-												  iMeshWrapper *iMesh, csVector3 *iObjectLocation, 
-												  iSector *iObjectRoom, char *iObjectModel, 
-												  char *iObjectMaterial)
-	: ChimeSectorObject (iObjectName, iObjectSource, iMesh, iObjectLocation, iObjectRoom, 
+												  iMeshWrapper *iMesh, iSector *iObjectRoom, 
+												  char *iObjectModel, char *iObjectMaterial)
+	: ChimeSectorObject (iObjectName, iObjectSource, iMesh, iObjectRoom, 
 	iObjectModel, iObjectMaterial, ENTITY_TYPE_ACTIVE_OBJECT)
 {
 	return;
@@ -51,8 +50,6 @@ void ChimeSectorActiveObject::HandleMouseMove (csVector2 old_pos, csVector2 new_
 	newMeshPos = driver->GetCollider ()->CollideObject (csObjectMesh, csObjectRoom, oldMeshPos, newMeshPos);
 	csObjectMesh->GetMovable()->SetPosition(newMeshPos);
 	csObjectMesh->GetMovable()->UpdateMove();
-
-	csObjectLocation = &newMeshPos;
 
 	// recalculate object's label center
 	csBox3 mesh_box;

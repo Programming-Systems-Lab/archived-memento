@@ -31,6 +31,10 @@
 #include "iengine/material.h"
 #include "imesh/thing/polygon.h"
 #include "imesh/thing/thing.h"
+#include "imesh/thing/portal.h"
+#include "imesh/thing/lightmap.h"
+#include "igeom/polymesh.h"
+#include "csgeom/pmtools.h"
 #include "imesh/sprite3d.h"
 #include "imesh/object.h"
 #include "imesh/ball.h"
@@ -47,7 +51,6 @@
 #include "ivaria/dynamics.h"
 #include "csutil/cmdhelp.h"
 #include "igeom/polymesh.h"
-#include "csengine/region.h"
 
 #include "ChimeSystemDriver.h"
 #include "ChimeSector.h"
@@ -66,6 +69,7 @@ ChimeSector::ChimeSector(char *strISectorName, char *strISectorSource)
 	chRooms = new csVector ();
 	chActiveEntities = new csVector ();
 	csDefaultLocation = csVector3 (0);
+	chActiveScreen = NULL;
 }
 
 /*****************************************************
@@ -83,9 +87,10 @@ ChimeSector::~ChimeSector()
 bool ChimeSector::AddLight (csVector3 const &location, csColor color,
 							float const scale, iSector* room)
 {
+	//csRef<iDynLight> dLight = driver->csEngine->CreateDynLight (location, scale, color);
 	csRef<iStatLight> csLight = driver->csEngine->CreateLight (NULL, location, scale,
-  								  color, false);
-	room->GetLights ()->Add(csLight->QueryLight());
+  								  color, true);
+	room->GetLights ()->Add (csLight->QueryLight ());
 
 	return true;
 }
@@ -98,7 +103,11 @@ bool ChimeSector::AddLight (csVector3 const &location, csColor color,
 iMeshWrapper* ChimeSector::AddMeshObject (char *strObjectName, char *strFactoryName,
 							 iSector* room, csVector3 const &location)
 {
-    //Find the mesh factory
+    // make sure object with same name does not exist
+	if (room->GetMeshes ()->FindByName (strObjectName))
+		return NULL;
+	
+	//Find the mesh factory
 	iMeshFactoryWrapper* factory = driver->csEngine->GetMeshFactories ()->FindByName (strFactoryName);
 	if (!factory)
 	{
@@ -110,35 +119,198 @@ iMeshWrapper* ChimeSector::AddMeshObject (char *strObjectName, char *strFactoryN
 	// Create the mesh.
 	csRef<iMeshWrapper> mesh (driver->csEngine->CreateMeshWrapper (factory, strObjectName, room));
 	mesh->DeferUpdateLighting (CS_NLIGHT_STATIC|CS_NLIGHT_DYNAMIC, 10);
-	mesh->GetMovable()->SetPosition (room, location);
+	mesh->GetMovable ()->SetPosition (room, location);
+	mesh->GetMovable ()->UpdateMove ();
 
 	// Create a collider for the mesh
-	driver->GetCollider ()->CreateObjectCollider (mesh);
+	driver->GetCollider ()->CreateMeshCollider (mesh);
 
 	return mesh;
 }
 
+
+/*************************************************************************
+ * Build a door entity at given origin
+ *************************************************************************/
+bool ChimeSector::AddDoorEntity (csVector3 *vOrigin, char* strRoomName, 
+								 char *strDoorName, char *strTargetName, 
+								 char *strTargetSource, char *strDoorTexture, 
+								 csVector3* vTxtSize)
+{
+    // find room where the door is added
+    iSector* room = FindRoom (strRoomName);
+    if (!room) return false;
+
+    // prepare all needed variables
+    iPolygon3D* door = NULL;
+    iPolygon3D** labels = NULL;
+    int num_letters = 0;
+    csVector3 v (0, 0, 0);
+
+    // find door origin
+	if (vOrigin == NULL) return false;
+
+    // name the door
+    static int doorNum = 0;
+    doorNum++;
+    char door_name[10];
+    sprintf(door_name, "door%d", doorNum);
+
+    // create door mesh
+    csRef<iMeshWrapper> mesh = driver->csEngine->CreateThingMesh (room, door_name);
+    mesh->SetZBufMode (CS_ZBUF_USE);
+
+    // build the door
+    door = BuildDoor (room, mesh, *vOrigin, strDoorTexture, vTxtSize);
+    if (!door) return false;
+
+    // build door labels
+    labels = AddPolygonLabel (room, door, num_letters);
+    if (!labels) return false;
+
+	// create new active door
+    chActiveEntities->Push (new ChimeSectorDoor (strDoorName, mesh,
+        labels, num_letters, strTargetName, strTargetSource, strDoorTexture)
+		);
+
+    // shine lights on the door
+    driver->ShineLights (room, mesh);
+
+	// shine lights on the walls, but first close
+	// all portals so as not to affect other rooms,
+	// and then reopen them
+	// @@@ HACK
+    mesh = room->GetMeshes ()->FindByName ("walls");
+	csRef<iThingState> wall_state = SCF_QUERY_INTERFACE (mesh->GetMeshObject (), iThingState);
+	int num_portals = wall_state->GetPortalCount ();
+	iSector **portals = (iSector**) malloc (num_portals * sizeof (iSector));
+	
+	// set all portals to NULL, but remember their destination
+	for (int i = 0; i < num_portals; i++)
+	{
+		portals[i] = wall_state->GetPortal (i)->GetSector ();
+		wall_state->GetPortal (i)->SetSector (NULL);
+	}
+
+	// shine lights
+    driver->ShineLights (room, mesh);
+
+	// reset portals to their destinations
+	for (int i = 0; i < num_portals; i++)
+	{
+		wall_state->GetPortal (i)->SetSector (portals[i]);
+	}
+
+	// shine lights on label mesh
+    mesh = room->GetMeshes ()->FindByName ("labels");
+    driver->ShineLights (room, mesh);
+
+	return true;
+}
+
+
+/*************************************************************************
+ * Build an entrance door entity from given polygon definition
+ *************************************************************************/
+bool ChimeSector::AddDoorEntity (csPoly3D &door, char *strDoorTexture, csVector3 *vTxtSize, 
+					iSector* thisRoom, iSector* roomConnection)
+{
+    if (!thisRoom)
+		return false;
+	
+	// make door mesh
+    csRef<iMeshWrapper> mesh = driver->csEngine->CreateThingMesh (thisRoom, "entrance");
+    mesh->SetZBufMode (CS_ZBUF_USE);
+	int num_letters = 0;
+
+    // create door polygon
+    iPolygon3D* door_poly = BuildDoor (thisRoom, mesh, door, strDoorTexture, vTxtSize);
+
+    // create door label polygons
+    iPolygon3D** door_label = AddPolygonLabel (thisRoom, door_poly, num_letters);
+    ChimeSectorDoor *d = NULL;
+
+    // if there is an entrance room,
+    // find corresponding ChimeSector and build the door
+    if (roomConnection && driver->FindSectorByRoom (roomConnection))
+	{
+        char s_name[50], s_source[100];
+        driver->FindSectorByRoom (roomConnection)->GetSectorTitle (s_name, s_source);
+        d = new ChimeSectorDoor ("entrance", mesh, door_label, num_letters, 
+			s_name, s_source, strDoorTexture);
+        d->SetTargetRoom (roomConnection);
+        d->OpenDoor ();
+	}
+
+    // if there is no entrance room, build a door that
+    // leads to nowhere
+    else
+	{
+        d = new ChimeSectorDoor ("entrance", mesh, door_label, 
+			num_letters, "none", "none", strDoorTexture);
+	}
+
+    // add door to the list of active entities
+    chActiveEntities->Push (d);
+	return true;
+}
+
+
+/******************************************************************************
+ * Same as BuildWall, except this functions first finds appropriate
+ * material and texture size.
+ ******************************************************************************/
+iPolygon3D* ChimeSector::BuildWall (iThingState *walls, csPoly3D const &vertices,
+						 char *strTextureName, csVector3 *textureSize,
+						 char* strPolygonName)
+{
+	// get the texture
+	csRef<iMaterialWrapper> material = NULL;
+	if (strTextureName)
+		material = driver->csEngine->GetMaterialList ()->FindByName (strTextureName);
+	else
+		material = driver->csEngine->GetMaterialList ()->FindByName ("blank");
+	if (!material)
+		return NULL;
+
+	// get texture size
+	if (textureSize)
+		return BuildWall (walls, vertices, material, textureSize, strPolygonName);
+	else
+		return BuildWall (walls, vertices, material, new csVector3 (1, 1, 1), strPolygonName);
+
+	return NULL;
+}
+
+
 /******************************************************************************
  * Build a wall for given array of vertices, given in the csPoly3D object
  * Urepeat and vrepeat refer to u and v scale (repetition) of the texture
+ * Urepeat = textureSize.x & vrepeat = textureSize.z
  ******************************************************************************/
-iPolygon3D* ChimeSector::AddWall (iThingState *walls, csPoly3D const &vertices,
-						 iMaterialWrapper *texture, csVector3 const &txtSize)
+iPolygon3D* ChimeSector::BuildWall (iThingState *walls, csPoly3D const &vertices,
+						 iMaterialWrapper *material, csVector3 *textureSize,
+						 char* strPolygonName)
 {
+	// make sure all parameters are not NULL
+	if (!walls || !material || !textureSize)
+		return NULL;
+
 	// create a polygon
-	iPolygon3D* p = walls->CreatePolygon ();
-	
-	// set the texture
-	if (texture)
-        p->SetMaterial (texture);
+	iPolygon3D* p = walls->CreatePolygon (strPolygonName);
 
 	// create polygon vertices
 	for (int i=0; i<vertices.GetVertexCount(); i++)
 		p->CreateVertex(*(vertices.GetVertex(i)));
 
+	// set the material
+	p->SetMaterial (material);
+
 	// map the texture
 	if (p->GetVertexCount () > 3)
-		p->SetTextureSpace (p->GetVertex (1), p->GetVertex (2), txtSize.x, p->GetVertex (0), txtSize.y);
+		p->SetTextureSpace (p->GetVertex (1), p->GetVertex (2), textureSize->x, p->GetVertex (0), textureSize->y);
+	else
+		return NULL;
 
 	return p;
 }
@@ -147,15 +319,20 @@ iPolygon3D* ChimeSector::AddWall (iThingState *walls, csPoly3D const &vertices,
  * Build a door for given array of vertices, connecting to given room
  * and set to transparency alpha (0 for transparent, 255 for non-transparent)
  ******************************************************************************/
-iPolygon3D* ChimeSector::AddInnerDoor (iThingState *walls, csPoly3D const &vertices,
-						 iMaterialWrapper *texture, csVector3 const &txtSize,
+iPolygon3D* ChimeSector::BuildEntrance (iThingState *walls, csPoly3D const &vertices,
+						 char *strTextureName, csVector3 *txtSize,
 						 iSector *room, int alpha)
 {
-	// build the polygon for the door (just use AddWall, its the same thing)
-	iPolygon3D *p = AddWall (walls, vertices, texture, txtSize);
+	// build the polygon for the door (just use BuildWall, its the same thing)
+	iPolygon3D *p = BuildWall (walls, vertices, strTextureName, txtSize);
+	if (!p)
+		return NULL;
 
 	// set this polygon as a portal to the given room
-	p->CreatePortal (room);
+	if (room)
+        p->CreatePortal (room);
+	else
+		p->CreateNullPortal ();
 
 	// set transparency for this polygon
 	p->SetAlpha (alpha);
@@ -164,40 +341,236 @@ iPolygon3D* ChimeSector::AddInnerDoor (iThingState *walls, csPoly3D const &verti
 }
 
 
-/******************************************************************************
- * Build a door for given array of vertices
- ******************************************************************************/
-iPolygon3D* ChimeSector::AddOuterDoor (iThingState *walls, csPoly3D const &vertices,
-						 iMaterialWrapper *texture, csVector3 const &txtSize,
-						 char *strDoorName, char *strDoorTargetName, 
-						 char *strDoorTargetSource, char *strDoorTexture)
+/******************************************************
+ * Simple function that validates a polygon
+ * as a wall that can be used for building
+ * a door. Criteria are:
+ * 1) 4 corners
+ * 2) Large enough height and width
+ * 3) The wall is vertical
+ ******************************************************/
+bool IsWallValidForDoor (const csVector3 *origin, iPolygon3D* wall)
 {
-	// build the polygon for the door (just use AddWall, its the same thing)
-	iPolygon3D *p = AddWall (walls, vertices, texture, txtSize);
+	// calculate number of corners
+	int corners = wall->GetVertexCount ();
 
-	// build the polygon labels for the door
-	iPolygon3D** label = NULL;
-	int num_letters = 0;
-	label = AddDoorLabel (walls, p, num_letters);
+	// calculate wall height
+	float height = wall->GetVertex (1).y - wall->GetVertex (0).y;
 
-	// add new door entity to the list
-	chActiveEntities->Push ( new ChimeSectorDoor (strDoorName, 
-		p, label, num_letters, strDoorTargetName, strDoorTargetSource, strDoorTexture));
+	// calculate wall width
+	float width = sqrt (pow (wall->GetVertex (0).x - wall->GetVertex (3).x, 2) +
+		pow (wall->GetVertex (0).z - wall->GetVertex (3).z, 2));
 
-	return p;
+	// see if the wall is vertical
+	float max_diff = 1;
+	bool isVertical = (
+		ABS (wall->GetVertex (0).x - wall->GetVertex (1).x) < max_diff
+		&&
+		ABS (wall->GetVertex (0).z - wall->GetVertex (1).z) < max_diff
+		&&
+		ABS (wall->GetVertex (2).x - wall->GetVertex (3).x) < max_diff
+		&&
+		ABS (wall->GetVertex (2).x - wall->GetVertex (3).x) < max_diff
+		);
+
+	// make sure all criteria are satisfied
+	if (corners == 4 && height >= DOOR_HEIGHT
+		&& width >= DOOR_WIDTH && isVertical)
+		return true;
+
+	return false;
 }
 
 
 /***********************************************************
+ * Build door takes the location of an object,
+ * finds the closest wall to that location,
+ * cuts a whole in that wall the size of a door
+ * and builds the door.
+ ***********************************************************/
+iPolygon3D* ChimeSector::BuildDoor (iSector* room, iMeshWrapper* door_mesh, 
+									csVector3 const &origin, char *strDoorTexture, 
+									csVector3 *textSize)
+{
+	// find wall mesh wrapper
+	csRef<iMeshWrapper> wall_mesh = room->GetMeshes ()->FindByName ("walls");
+	if (!wall_mesh) return NULL;
+
+	// find thing state
+	csRef<iThingState> wall_state (SCF_QUERY_INTERFACE (wall_mesh->GetMeshObject (),
+		iThingState));
+	if (!wall_state) return NULL;
+
+	// find closest polygon & point of intersection
+	csVector3 door_origin (0, 0, 0);
+	iPolygon3D* wall = FindClosestPolygon (wall_state, origin, &door_origin, IsWallValidForDoor);
+	if (!wall) return NULL;
+
+	// find the right lower corner of the door
+	csVector3 door_bottom (wall->GetVertexW (3) - door_origin);
+	door_bottom.y = 0;
+	door_bottom *= DOOR_WIDTH / door_bottom.Norm ();
+	csVector3 door_right (door_origin + door_bottom);
+
+	// set door polygon
+	csPoly3D door_poly (4);
+	door_poly.AddVertex (door_origin);
+	door_poly.AddVertex (door_origin + csVector3 (0, DOOR_HEIGHT, 0));
+	door_poly.AddVertex (door_right + csVector3 (0, DOOR_HEIGHT, 0));
+	door_poly.AddVertex (door_right);
+
+	// build the door
+	return BuildDoor (room, door_poly, wall, door_mesh, strDoorTexture, textSize);
+}
+
+
+/************************************************************************************
+ * Build the actual door. First, cut a hole in the wall, then build
+ * the polygon for the door
+ ************************************************************************************/
+iPolygon3D* ChimeSector::BuildDoor (iSector* room, const csPoly3D &door, 
+									iPolygon3D* wall, iMeshWrapper* door_mesh, 
+									char *strDoorTexture, csVector3 *textSize)
+{
+	// cut the hole in the wall
+	csRef<iMeshWrapper> wall_mesh = room->GetMeshes ()->FindByName ("walls");
+
+	// remove walls collider
+	driver->GetCollider ()->RemoveMeshCollider (wall_mesh);
+
+	// get iThingState for wall mesh
+	csRef<iThingState> state = SCF_QUERY_INTERFACE (wall_mesh->GetMeshObject (), iThingState);
+
+	// make a hole in the wall where the door will be
+	MakeHoleInWall (door, state, wall);
+
+	// add walls collider
+	driver->GetCollider ()->CreateMeshCollider (wall_mesh);
+
+	// update lights in the room to force a relight
+	iLight *light = NULL;
+	for (int i = 0; i < room->GetLights ()->GetCount (); i++)
+	{
+		light = room->GetLights ()->Get (i);
+		light->SetColor (light->GetColor ());
+	}
+
+	// find door mesh
+	if (!door_mesh) return NULL;
+	state = SCF_QUERY_INTERFACE (door_mesh->GetMeshObject (), iThingState);
+	if (!state) return NULL;
+
+	// build door
+	return BuildWall (state, door, strDoorTexture, textSize);
+}
+
+
+/***********************************************************
+ * Build door for given door polygon and door texture
+ ***********************************************************/
+iPolygon3D* ChimeSector::BuildDoor (iSector* room, iMeshWrapper* door_mesh, 
+									csPoly3D const &door, char *strDoorTexture, 
+									csVector3 *textSize)
+{
+	// find wall mesh wrapper
+	csRef<iMeshWrapper> wall_mesh = room->GetMeshes ()->FindByName ("walls");
+	if (!wall_mesh) return NULL;
+
+	// find thing state
+	csRef<iThingState> wall_state (SCF_QUERY_INTERFACE (wall_mesh->GetMeshObject (),
+		iThingState));
+	if (!wall_state) return NULL;
+
+	// find the wall where the door is
+	iPolygon3D* wall = NULL;
+	for (int i = 0; i < wall_state->GetPolygonCount (); i++)
+	{
+		if (wall_state->GetPolygon (i)->PointOnPolygon (*(door.GetVertex (1))))
+			wall = wall_state->GetPolygon (i);
+	}
+	if (!wall) return NULL;
+
+	// build the door
+	return BuildDoor (room, door, wall, door_mesh, strDoorTexture, textSize);
+}
+
+
+/*********************************************************************************
+ * Make a hole in the given wall where the hole's bottom left corner,
+ * bottom right corner and height are given. The original wall is removed
+ *********************************************************************************/
+void ChimeSector::MakeHoleInWall (csPoly3D const &hole, iThingState *walls, 
+								  iPolygon3D *wall)
+{
+	// get original variables
+	csPoly3D vertices (4);
+	csVector3 temp (0, 0, 0);
+	csVector3 txtSize (1, 1, 1);
+	csRef<iMaterialWrapper> material = wall->GetMaterial ();
+	iPolygon3D* np = NULL;
+
+	// make original wall the left side of the hole
+	vertices.AddVertex (wall->GetVertexW (0));
+	vertices.AddVertex (wall->GetVertexW (1));
+	temp.Set (*(hole.GetVertex (0))); temp.y = wall->GetVertexW (2).y;
+	vertices.AddVertex (temp);
+	temp.y = wall->GetVertexW (3).y;
+	vertices.AddVertex (temp);
+	np = BuildWall (walls, vertices, material, &txtSize);
+	wall->CopyTextureType (np);
+
+	// make right side of the hole
+	vertices.MakeEmpty ();
+	temp.Set (*(hole.GetVertex (3))); temp.y = wall->GetVertexW (3).y;
+	vertices.AddVertex (temp);
+	temp.y = wall->GetVertexW (2).y;
+	vertices.AddVertex (temp);
+	vertices.AddVertex (wall->GetVertexW (2));
+	vertices.AddVertex (wall->GetVertexW (3));
+	np = BuildWall (walls, vertices, material, &txtSize);
+	wall->CopyTextureType (np);
+
+	// make bottom side of the hole
+	vertices.MakeEmpty ();
+	temp.Set (*(hole.GetVertex (0))); temp.y = wall->GetVertexW (0).y;
+	vertices.AddVertex (temp);
+	temp.y = (*(hole.GetVertex (0))).y;
+	vertices.AddVertex (temp);
+	temp.Set (*(hole.GetVertex (3)));
+	vertices.AddVertex (temp);
+	temp.y = wall->GetVertexW (3).y;
+	vertices.AddVertex (temp);
+	np = BuildWall (walls, vertices, material, &txtSize);
+	wall->CopyTextureType (np);
+
+	// make top side of the hole
+	vertices.MakeEmpty ();
+	temp.Set (*(hole.GetVertex (1)));
+	vertices.AddVertex (temp);
+	temp.y = wall->GetVertexW (1).y;
+	vertices.AddVertex (temp);
+	temp.Set (*(hole.GetVertex (3))); temp.y = wall->GetVertexW (2).y;
+	vertices.AddVertex (temp);
+	temp.Set (*(hole.GetVertex (2)));
+	vertices.AddVertex (temp);
+	np = BuildWall (walls, vertices, material, &txtSize);
+	wall->CopyTextureType (np);
+
+	// remove original wall
+	walls->RemovePolygon (walls->FindPolygonIndex (wall));
+}
+
+
+/***************************************************************************************
  * SetupSector is the real constructor.
  * It initializes the whole sector based on a description
  * in the XML file. SetupSector builds the rooms, objects,
  * and doors from that description. It also sets up
  * the dynamic aspects of the sector.
- ***********************************************************/
+ ***************************************************************************************/
 ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotation,
 									  char* strSectorXMLFile, char *strISectorName, 
-									  char *strISectorSource, ChimeSector *iPreviousSector)
+									  char *strISectorSource, iSector *iEntranceRoom)
 {
 
 	// Create new ChimeSector
@@ -213,10 +586,6 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 		return NULL;
 	}
 
-	// set sector attributes of the sector structure
-	strcpy (sectorStruct->strSectorName, strISectorName);
-	strcpy (sectorStruct->strSectorSource, strISectorSource);
-
 	// process structure coordinates to update them, reflecting
 	// given origin and rotation angle
     ProcessSectorDefinition (sectorStruct, origin, rotation);
@@ -227,34 +596,11 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 	ChimeSector::GetRegionName (strISectorName, strISectorSource, regionName);
 	
 	// build the actual sector
-	sector->BuildSector (sectorStruct, regionName);
+	sector->BuildSector (sectorStruct, regionName, iEntranceRoom);
 
 	// set current room and default location
-	sector->chCurrentRoom = sector->GetDefaultRoom ();
+	//sector->chCurrentRoom = sector->GetDefaultRoom ();
 	sector->csDefaultLocation = sectorStruct->defaultLocation;
-
-	// connect the entrance door to previous sector if it is not null
-	if (iPreviousSector)
-	{
-        // 1. find the entrance (default) door
-		ChimeSectorDoor *door = sector->FindEntranceDoor ();
-		iSector* entrance = driver->GetCurrentSector ()->GetCurrentRoom ();
-
-		// 2. if door is found, connect it to current room
-		// in the previous sector
-		if (door && entrance)
-		{
-			sector->chEntranceRoom = entrance;
-			char sName[50], sSource[100];
-			iPreviousSector->GetSectorTitle (sName, sSource);
-			door->SetDoorTarget (sName, sSource);
-			door->ConnectDoorToTarget (true, entrance);
-			door->OpenDoor ();
-		}
-	}
-
-	//Update engine
-	driver->csEngine->Prepare ();
 
 	if (!sector->GetDefaultRoom ())
 		return NULL;
@@ -266,7 +612,8 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
  * BuildSector builds the actual sector from the structure
  * provided by the XML parser in variable sector
  ***********************************************************/
-bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct, char *strRegionName)
+bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct, char *strRegionName, 
+							   iSector* iEntranceRoom)
 {
 	// return value
 	bool rv = true;
@@ -282,29 +629,32 @@ bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct, char *strRegionNa
 		if (!BuildRoom (sectorStruct->rooms[i]))
 			rv = false;
 
+	chCurrentRoom = GetDefaultRoom ();
+	csDefaultLocation = sectorStruct->defaultLocation;
+
 	// build doors (we can build doors only now,
 	// after all the rooms were created so that we can
 	// point these doors to existing rooms)
 	chDoorStructPtr door;
 	csRef<iMaterialWrapper> doorMaterial;
 	iSector *roomConnection, *thisRoom;
-	csRef<iMeshWrapper> wall_mesh;
-	csRef<iThingState> walls_state;
-	for (j = 0; j < sectorStruct->numRooms; j++) {
-
+	csRef<iMeshWrapper> door_mesh;
+	csRef<iThingState> doors_state;
+	for (j = 0; j < sectorStruct->numRooms; j++)
+	{
 		// find the pointer to this room where the door is
 		thisRoom = driver->csEngine->FindSector (sectorStruct->rooms[j]->strRoomName, region);
 		if (!thisRoom)
 			continue;
 
-		// get the wall mesh for this room
-		wall_mesh = driver->csEngine->CreateSectorWallsMesh (thisRoom, "doors");
-		if (!wall_mesh)
+		// get the door mesh for this room
+		door_mesh = thisRoom->GetMeshes ()->FindByName ("walls");
+		if (!door_mesh)
 			continue;
 
-		// get the wall state (necessary for building)
-		walls_state = SCF_QUERY_INTERFACE (wall_mesh->GetMeshObject (), iThingState);
-		if (!walls_state)
+		// get the door state (necessary for building)
+		doors_state = SCF_QUERY_INTERFACE (door_mesh->GetMeshObject (), iThingState);
+		if (!doors_state)
 			continue;
 
 		// build doors
@@ -313,23 +663,28 @@ bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct, char *strRegionNa
 			// get the door structure definition
 			door = sectorStruct->rooms[j]->doors[i];
 
-			// get the material
-			doorMaterial = driver->csEngine->GetMaterialList ()->FindByName (door->strDoorTexture);
-			if (!doorMaterial)
-                continue;
+			// see if this is the entrance door
+			if (strcmp (door->strRoomName, "entrance") &&
+				strcmp (door->strRoomName, "default"))
+			{
+                // find the connecting room
+				roomConnection = driver->csEngine->FindSector (door->strRoomName, region);
+				// build the door
 
-			// find the sector this door connects to by name
-			roomConnection = driver->csEngine->FindSector (door->strRoomName, region);
-			if (!roomConnection)
-				continue;
-
-			// build the door
-			if (!AddInnerDoor (walls_state, door->door, doorMaterial, door->txtSize, roomConnection, door->alpha))
-				rv = false;
+                if (!BuildEntrance (doors_state, door->door, door->strDoorTexture, 
+                    door->txtSize, roomConnection, door->alpha))
+                    rv = false;
+			}
+			// if it is the entrance door, build an active door
+			else
+			{
+				rv = AddDoorEntity (door->door, door->strDoorTexture, door->txtSize,
+					thisRoom, iEntranceRoom);
+			}
 		}
 
-		// shine lights
-		thisRoom->ShineLights ();
+		// shine lights in the room
+		driver->ShineLights (thisRoom);
 	}
 
 	return rv;
@@ -351,13 +706,18 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 	csRef<iThingState> walls_state (SCF_QUERY_INTERFACE (walls->GetMeshObject (),
 		iThingState));
 
-	// also, add a mesh for AI2TV screens, and leave it empty for now
+	// add a mesh for AI2TV screens, and leave it empty for now
 	// it will be used later for building AI2TV screens
-	csRef<iMeshWrapper> screen_wall (driver->csEngine->CreateSectorWallsMesh (room, "screens"));
+	csRef<iMeshWrapper> other_mesh = driver->csEngine->CreateSectorWallsMesh (room, "screens");
+	other_mesh->SetZBufMode (CS_ZBUF_USE);
+
+	// add a mesh for door labels, and leave it empty for now
+	// it will be used later for building door labels
+	other_mesh = driver->csEngine->CreateSectorWallsMesh (room, "labels");
+	other_mesh->SetZBufMode (CS_ZBUF_USE);
 
 	// declare some variables
 	int i = 0;
-	csRef<iMaterialWrapper> material;
 	chWallStructPtr wall;
 
 	// build walls
@@ -365,19 +725,13 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 
 		// get the wall structure definition
 		wall = roomStruct->walls[i];
-
-		// get the material
-		material = driver->csEngine->GetMaterialList ()->FindByName (wall->strWallTexture);
-		if (!material)
-			continue;
-
 		// build the wall
-		AddWall (walls_state, wall->wall, material, wall->txtSize);
+		BuildWall (walls_state, wall->wall, wall->strWallTexture, &(wall->txtSize));
 
 	}
 
 	// also, finally add collision detection to each room's walls
-	driver->GetCollider()->CreateObjectCollider (walls);
+	driver->GetCollider()->CreateMeshCollider (walls);
 
 	// add lights
 	chLightStructPtr light;
@@ -387,56 +741,7 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 		light = roomStruct->lights[i];
 
 		// add the light
-		AddLight (light->location, light->color, light->scale, room);
-	}
-
-	// add objects
-	chObjectStructPtr object;
-	for (i = 0; i < roomStruct->numObjects; i++) {
-
-		// get the object
-		object = roomStruct->objects[i];
-
-		// add the light
-		iMeshWrapper *objectMesh = AddMeshObject (object->strObjectName, object->strObjectModel, room, object->location);
-
-		// add this object to the list of active objects
-		if (objectMesh)
-		{
-			switch (object->intObjectType)
-			{
-			case ENTITY_TYPE_OBJECT : chActiveEntities->Push (new ChimeSectorObject (object->strObjectName, 
-										  object->strObjectName, objectMesh, &(object->location), 
-										  room, object->strObjectModel, NULL));
-										break;
-			case ENTITY_TYPE_ACTIVE_OBJECT : chActiveEntities->Push (new ChimeSectorActiveObject (object->strObjectName, 
-												 object->strObjectName, objectMesh, &(object->location), 
-												 room, object->strObjectModel, NULL));
-											break;
-			case ENTITY_TYPE_USER : chActiveEntities->Push (new ChimeSectorUser (object->strObjectName, 
-										object->strObjectName, objectMesh, &(object->location), 
-										room, object->strObjectModel, NULL));
-										break;
-			}
-		}
-	}
-
-	// add outer doors
-	chOuterDoorStructPtr outer_door;
-	for (i = 0; i < roomStruct->numOuterDoors; i++) {
-
-		// get the door structure
-		outer_door = roomStruct->outer_doors[i];
-
-		// get the material
-		material = driver->csEngine->GetMaterialList ()->FindByName (outer_door->door->strDoorTexture);
-		if (!material)
-			continue;
-
-		// build the polygon for outer door
-		AddOuterDoor (walls_state, outer_door->door->door, material, 
-			outer_door->door->txtSize, outer_door->strDoorName, outer_door->strTargetSectorName,
-			outer_door->strTargetSectorSource, outer_door->door->strDoorTexture);
+		AddLight (light->location, light->color, light->intensity, room);
 	}
 
 	return room;
@@ -450,7 +755,7 @@ void ChimeSector::BuildScreen (csOrthoTransform const &transform)
 {
 
 	// find wall mesh wrapper
-	csRef<iMeshWrapper> screen_mesh = driver->csEngine->FindMeshObject ("screens");
+	csRef<iMeshWrapper> screen_mesh = chCurrentRoom->GetMeshes ()->FindByName ("screens");
 	if (!screen_mesh)
 		return;
 
@@ -460,24 +765,25 @@ void ChimeSector::BuildScreen (csOrthoTransform const &transform)
 	if (!screen_state)
 		return;
 
-	// find ai2tv ready screen texture
-	csRef<iMaterialWrapper> ready_screen = driver->csEngine->GetMaterialList ()->FindByName ("ai2tv_ready");
-	if (!ready_screen)
-		return;
+	// delete all polygons (any previous screens)
+	screen_state->RemovePolygons ();
 
 	// move transform 1 step forward
-	csVector3 up_pos (transform.This2OtherRelative (CS_VEC_FORWARD) + transform.GetOrigin ());
-	printf("Up pos: %f, %f, %f\n", up_pos.x, up_pos.y, up_pos.z);
+	csVector3 up_pos (transform.This2OtherRelative (5 * CS_VEC_FORWARD) + transform.GetOrigin ());
 
 	// move transform 2 steps left
-	csVector3 left_pos (transform.This2OtherRelative (csVector3 (-1, 0, 0)) + up_pos);
-	printf("Left pos: %f, %f, %f\n", left_pos.x, left_pos.y, left_pos.z);
+	csVector3 left_pos (transform.This2OtherRelative (csVector3 (-1.5, 0, 0)) + up_pos);
 
 	// move transform 2 steps right
-	csVector3 right_pos (transform.This2OtherRelative (csVector3 (1, 0, 0)) + up_pos);
-	printf("Right pos: %f, %f, %f\n", right_pos.x, right_pos.y, right_pos.z);
+	csVector3 right_pos (transform.This2OtherRelative (csVector3 (1.5, 0, 0)) + up_pos);
 
-	// create csPoly3D as a list of vertices for the screen
+	// move 0.1 step forward (for background screens)
+	csVector3 up_step (transform.This2OtherRelative (csVector3 (0, 0, 0.1)));
+
+	// texture size
+	csVector3 txtSize (3, 2, 1);
+
+	// create csPoly3D as a list of vertices for the front screen
 	csPoly3D screen (4);
 	screen.AddVertex (left_pos);
 	screen.AddVertex (left_pos + csVector3 (0, 2, 0));
@@ -485,58 +791,49 @@ void ChimeSector::BuildScreen (csOrthoTransform const &transform)
 	screen.AddVertex (right_pos);
 
 	// create the screen
-	AddWall (screen_state, screen, ready_screen, csVector3 (1, 1, 1));
+	BuildWall (screen_state, screen, "blank", &txtSize, "screen_front");
 
 	// now create the back screen
-	left_pos += transform.This2OtherRelative (csVector3 (0, 0, 0.1));
-	right_pos += transform.This2OtherRelative (csVector3 (0, 0, 0.1));
+	left_pos += up_step;
+	right_pos += up_step;
 	screen.MakeEmpty ();
 	screen.AddVertex (right_pos);
 	screen.AddVertex (right_pos + csVector3 (0, 2, 0));
 	screen.AddVertex (left_pos + csVector3 (0, 2, 0));
 	screen.AddVertex (left_pos);
-	AddWall (screen_state, screen, ready_screen, csVector3 (1, 1, 1));
+	BuildWall (screen_state, screen, "ai2tv_ready", &txtSize, "screen_back");
 
-	/**
-	// find vertex with minimum distance from the user location
-	csVector3 minv (0);
-	int min_distance = 20000, temp = 0;
-	csVector3 *vertex = poly_mesh->GetVertices ();
-	for (int i = 0; i < poly_mesh->GetVertexCount (); i++)
-	{
-		temp = csVector3::Norm (vertex[i] - location);
-		if (temp < min_distance)
-		{
-			min_distance = temp;
-			minv.Set (vertex[i]);
-		}
-	}
+	// shine lights
+	driver->ShineLights (chCurrentRoom, screen_mesh);
+}
 
-	// find vertex with second minimum distance from user
-	// location that has the same 'y' coordinate as the
-	// first minimum vertex (connects to first minimum
-	// vertex horizontally, not vertically)
-	csVector3 minv2 (minv);
-	min_distance = 20000;
-	for (int i = 0; i < poly_mesh->GetVertexCount (); i++)
-	{
-		// if vertex is higher or lower than minimum vertex
-		// or it is the same vertex, ignore it
-		if (vertex[i].y  - minv.y > 0.5 ||
-			(vertex[i].x == minv.x && vertex[i].y == minv.y && vertex[i].z == minv.z))
-			continue;
 
-		temp = csVector3::Norm (vertex[i] - location);
-		if (temp < min_distance)
-		{
-			min_distance = temp;
-			minv2.Set (vertex[i]);
-		}
-	}
+/**********************************************************************
+ * Display image as texture on the screen
+ **********************************************************************/
+bool ChimeSector::DisplayImageOnScreen (iMaterialWrapper* image)
+{
+	// find wall mesh wrapper
+	csRef<iMeshWrapper> screen_mesh = driver->csEngine->FindMeshObject ("screens");
+	if (!screen_mesh)
+		return false;
 
-	printf("Min1: %f, %f, %f\n", minv.x, minv.y, minv.z);
-	printf("Min2: %f, %f, %f\n", minv2.x, minv2.y, minv2.z);
-	*/
+	// find thing state
+	csRef<iThingState> screen_state (SCF_QUERY_INTERFACE (screen_mesh->GetMeshObject (),
+		iThingState));
+	if (!screen_state)
+		return false;
+
+	// make sure screens exist
+	if (screen_state->GetPolygonCount () < 2)
+		return false;
+
+    // assign frames as material to front screen
+	csRef<iMaterialWrapper> temp = driver->csEngine->FindMaterial ("door_text");
+	screen_state->GetPolygon (0)->SetMaterial (image);
+	screen_state->GetPolygon (1)->SetMaterial (image);
+
+	return true;
 }
 
 
@@ -549,16 +846,8 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
 	// HitBeam only returns the mesh that was hit by the beam.
 	iMeshWrapper *mesh = NULL;
 
-	// While that is fine for object entities that are represented by
-	// meshes, all door entities are a part of the same 'doors' mesh,
-	// and so they must be distinguished by their polygons.
-	// HitBeam fills hit polygons passed to it as the third parameter
-	iPolygon3D **polygons = (iPolygon3D**) malloc ( sizeof(iPolygon3D));
-	polygons[0] = (iPolygon3D*) malloc ( sizeof(iPolygon3D));
-	polygons[0] = NULL;
-
 	// Intersect the beam to find the mesh
-	mesh = chCurrentRoom->HitBeam (start, end, isect, polygons);
+	mesh = chCurrentRoom->HitBeam (start, end, isect, NULL);
 	
 	// If no mesh was found, return nothing
 	if (!mesh)
@@ -567,10 +856,11 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
 	// Prepare pointers for possible active entities
 	ChimeSectorEntity *entity = NULL;
 
+	// Compare all entities
 	for (int i = 0; i < chActiveEntities->Length (); i++)
 	{
 		entity = (ChimeSectorEntity*) chActiveEntities->Get (i);
-		if (entity->IsEntitySelected (mesh, polygons[0]))
+		if (entity->IsEntitySelected (mesh))
 			return entity;
 	}
 
@@ -584,8 +874,15 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
  * polygon pointers. Polygons initially have some default texture (all black)
  * which will be replaced with the door target later.
  ***************************************************************************************/
-iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_polygon, int &num_letters)
+iPolygon3D** ChimeSector::AddPolygonLabel (iSector* room, iPolygon3D *door_polygon, 
+										   int &num_letters)
 {
+
+	csRef<iMeshWrapper> wall_mesh = room->GetMeshes ()->FindByName ("labels");
+	if (!wall_mesh) return false;
+    csRef<iThingState> walls (SCF_QUERY_INTERFACE (wall_mesh->GetMeshObject (), iThingState));
+    if (!walls) return false;
+
 	// the width and height of a single polygon used for a single letter
 	// are pre-calculated and are set here, but can be changed if texture
 	// size changes
@@ -596,7 +893,7 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 	num_letters = 0;
 	
 	// make sure no input is null
-	if (door_polygon && walls)
+	if (door_polygon)
 	{
 		// we cannot define a top for polgons
 		// with no vertices
@@ -656,6 +953,13 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 				zmin = zmax;
 				zmax = temp;
 				zincr = -zincr;
+				xmin -= 0.02;
+				xmax -= 0.02;
+			}
+			if (wall_normal.x > 0)
+			{
+				xmin += 0.02;
+				xmax += 0.02;
 			}
 			if (wall_normal.z > 0)
 			{
@@ -663,6 +967,13 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 				xmin = xmax;
 				xmax = temp;
 				xincr = -xincr;
+				zmin += 0.02;
+				zmax += 0.02;
+			}
+			if (wall_normal.z < 0)
+			{
+				zmin -= 0.02;
+				zmax -= 0.02;
 			}
 
 		}
@@ -670,8 +981,8 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 		// create a holder for one polygon
 		csPoly3D letter (4);
 
-		// get default empty (black) texture to assign to the polygons
-		csRef<iMaterialWrapper> material = driver->csEngine->GetMaterialList ()->FindByName ("letter_a");
+		// texture size
+		csVector3 txtSize (0.3, 0.3, 1);
 
 		// create each polygon
 		for (int i = 0; i < numLabelPolys; i++)
@@ -680,9 +991,13 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 			letter.AddVertex (xmin + xincr*i, ymax + LETTER_HEIGHT, zmin + zincr*i);
 			letter.AddVertex (xmin + xincr*(i+1), ymax + LETTER_HEIGHT, zmin + zincr*(i+1));
 			letter.AddVertex (xmin + xincr*(i+1), ymax, zmin + zincr*(i+1));
-			label[i] = AddWall (walls, letter, material, csVector3 (0.3, 0.3, 1));
+			label[i] = BuildWall (walls, letter, "blank", &txtSize);
 			letter.MakeEmpty ();
 		}
+
+		// set up a light by the label
+		//AddLight (csVector3 (xmin, ymax, zmin), csColor (1, 1, 1), 5.0, room);
+		//AddLight (csVector3 (xmax, ymax, zmax), csColor (1, 1, 1), 5.0, room);
 
 		// return
 		num_letters = numLabelPolys;
@@ -847,49 +1162,202 @@ bool ChimeSector::IsRoomInThisSector (iSector* room)
 }
 
 
-/******************************************************
- * Update an object inside this sector. The object is
- * found based on the first two parameters. The other
- * parameters that are not NULL are used to update
- * different properties of the found object.
- ******************************************************/
-void ChimeSector::UpdateObject (char *strObjectName, int iObjectType, 
-								char *strObjectSource, char *strObjectModel, 
-								char *strObjectMaterial, csVector3* vecObjectLocation, 
-								char *strObjectRoom)
+/***************************************************************
+ * Find a polygon closest to given origin
+ * using raycasting. Validate each found polygon
+ * against passed function. Save point of intersection
+ * to intersect pointer.
+ ***************************************************************/
+iPolygon3D* ChimeSector::FindClosestPolygon (iThingState *poly_state,
+								csVector3 const &origin, csVector3 *intersect,
+								bool (*func) (const csVector3*, iPolygon3D*))
 {
+	iPolygon3D* poly_hit = NULL;
+	
+	// vector that is added to the origin as the
+	// end of the ray
+	csVector3 origin_add (0, 0, 0);
 
-	ChimeSectorObject *object = (ChimeSectorObject*) FindEntity (strObjectName, iObjectType);
+	// isect is the point of intersection
+	// of the ray with the polygon
+	csVector3 isect (0, 0, 0);
 
-	// If object is not found, skip
-	if (!object)
-		return;
-
-	// Update object source if not NULL
-	if (strObjectSource)
-		object->SetObjectSource (strObjectSource);
-
-	// Update object model if not NULL
-	if (strObjectModel)
-		object->SetObjectModel (strObjectModel);
-
-	// Update object material if not NULL
-	if (strObjectMaterial)
-		object->SetObjectMaterial (strObjectMaterial);
-
-	// Update object location if not NULL
-	if (vecObjectLocation)
-		object->SetObjectLocation (*vecObjectLocation);
-
-	// Update object room if not NULL
-	// (but first find that room based on its name)
-	if (strObjectRoom)
+	float x, z, length;
+	// loop that defines the length of the ray
+	for (length = 0.5; length <= 10; length += 0.5)
 	{
-		iSector* room = FindRoom (strObjectRoom);
-		if (!room)
-			return;
-		object->SetObjectRoom (room);
+		//------------- handle special cases -----------------------//
+		//------------- (for comments on actions, see below) --------//
+
+		// step back
+		origin_add.Set (0, 0, -length);
+		poly_hit = poly_state->IntersectSegment (origin, 
+            origin + origin_add, isect);
+		if (poly_hit)
+		{
+			if ((func && func (&origin, poly_hit)) || func == NULL)
+			{
+                intersect->Set (isect);
+                return poly_hit;
+			}
+		}
+
+		// step forward
+		origin_add.Set (0, 0, length);
+		poly_hit = poly_state->IntersectSegment (origin, 
+            origin + origin_add, isect);
+		if (poly_hit)
+		{
+			if ((func && func (&origin, poly_hit)) || func == NULL)
+			{
+                intersect->Set (isect);
+                return poly_hit;
+			}
+		}
+
+		// step left
+		origin_add.Set (-length, 0, 0);
+		poly_hit = poly_state->IntersectSegment (origin, 
+            origin + origin_add, isect);
+		if (poly_hit)
+		{
+			if ((func && func (&origin, poly_hit)) || func == NULL)
+			{
+                intersect->Set (isect);
+                return poly_hit;
+			}
+		}
+
+		// step right
+		origin_add.Set (length, 0, 0);
+		poly_hit = poly_state->IntersectSegment (origin, 
+            origin + origin_add, isect);
+		if (poly_hit)
+		{
+			if ((func && func (&origin, poly_hit)) || func == NULL)
+			{
+                intersect->Set (isect);
+                return poly_hit;
+			}
+		}
+
+		
+		// range x from -length to length
+		for (z = -length; z <= length; z += 0.5)
+		{
+			// range z from -length to length
+			for (x = -length; x <= length; x += 0.5)
+			{
+				// get the add vector
+				origin_add.Set (x, 0, z);
+
+				// find intersecting polygon
+				poly_hit = poly_state->IntersectSegment (origin, 
+					origin + origin_add, isect);
+
+				// if a wall is found that has four corners
+				if (poly_hit)
+				{
+					// if the wall is not valid, continue
+					if (func && !func (&origin, poly_hit))
+                        continue;
+
+					// otherwise, return found wall
+					intersect->Set (isect);
+					return poly_hit;
+				}
+			}
+		}
 	}
+
+	return NULL;
+}
+
+/********************************************************
+ * Add a new entity to this sector
+ ********************************************************/
+bool ChimeSector::AddEntity (char *strEntityName, int iEntityType,
+							 csStrVector const &param_name, csVector const &param_value)
+{
+	// make sure there is the same number of parameters
+	if (param_name.Length () != param_value.Length ())
+	{
+		driver->Report ("crystalspace.application.chime", 
+			"Could not add entity! Improper number of parameters.");
+		return false;
+	}
+
+	// add entity
+	switch (iEntityType)
+	{
+	case ENTITY_TYPE_DOOR : 
+
+		// make sure there are enough parameters
+		if (param_name.Length () == 6)
+		{
+            // make sure all parameters are there
+            if (param_name.FindKey ("origin") < 0 ||
+                param_name.FindKey ("room") < 0 ||
+                param_name.FindKey ("target_name") < 0 ||
+                param_name.FindKey ("target_source") < 0 ||
+                param_name.FindKey ("door_texture") < 0 ||
+                param_name.FindKey ("texture_size") < 0
+				)
+                return false;
+
+            // add the door entity
+			return AddDoorEntity (
+                (csVector3*) param_value.Get (param_name.FindKey ("origin")),
+                (char*) param_value.Get (param_name.FindKey ("room")),
+				strEntityName, 
+                (char*) param_value.Get (param_name.FindKey ("target_name")),
+                (char*) param_value.Get (param_name.FindKey ("target_source")),
+                (char*) param_value.Get (param_name.FindKey ("door_texture")),
+                (csVector3*) param_value.Get (param_name.FindKey ("texture_size"))
+				);
+		}
+		break;
+
+	case ENTITY_TYPE_OBJECT :
+	case ENTITY_TYPE_ACTIVE_OBJECT : 
+	case ENTITY_TYPE_USER :
+
+		// make sure there are enough parameters
+		if (param_name.Length () == 5)
+		{
+		// make sure all parameters are there
+		if (param_name.FindKey ("origin") < 0 ||
+			param_name.FindKey ("room") < 0 ||
+			param_name.FindKey ("object_source") < 0 ||
+			param_name.FindKey ("object_model") < 0 ||
+			param_name.FindKey ("object_material") < 0
+			)
+            return false;
+
+		// find room where the door is added
+		iSector* room = FindRoom ((char*) param_value.Get (param_name.FindKey ("room")));
+		if (!room) return false;
+
+		// find object origin
+		csVector3 *origin = (csVector3*)param_value.Get (param_name.FindKey ("origin"));
+		if (!origin) return false;
+
+		// add mesh for object
+		iMeshWrapper *mesh = AddMeshObject (strEntityName, 
+			(char*) param_value.Get (param_name.FindKey ("object_model")),
+			room, *origin);
+		if (!mesh) return false;
+
+		// create new object
+		chActiveEntities->Push (new ChimeSectorObject (strEntityName, 
+			(char*) param_value.Get (param_name.FindKey ("object_source")),
+			mesh, room, (char*) param_value.Get (param_name.FindKey ("object_model")),
+			(char*) param_value.Get (param_name.FindKey ("object_material")), iEntityType)
+			);
+		}
+		break;
+	}
+	return true;
 }
 
 
@@ -903,28 +1371,42 @@ csVector3 ChimeSector::GetDefaultLocation()
 }
 
 
+/******************************************************
+ * Return region where this sector resides
+ ******************************************************/
+iRegion* ChimeSector::GetRegion ()
+{
+    // find region name
+	char region_name[150];
+	GetRegionName (region_name);
+
+	// find region
+	return driver->csEngine->GetRegions ()->FindByName (region_name);
+}
+
+
 void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 const &origin, csVector3 const &rot)
 {
 	//create the rotation matrix
 	csYRotMatrix3 rot_matrix (rot.y);
 
-	//find default outer door for this sector
-	chOuterDoorStructPtr defaultDoor = NULL;
+	//find entrance door to this sector
+	chDoorStructPtr defaultDoor = NULL;
 	for (int i = 0; i < sector->numRooms; i++)
 	{
-		for (int j = 0; j < sector->rooms[i]->numOuterDoors; j++)
+		for (int j = 0; j < sector->rooms[i]->numDoors; j++)
 		{
-			if (!strcmp (sector->rooms[i]->outer_doors[j]->strDoorName, "default"))
-				defaultDoor = sector->rooms[i]->outer_doors[j];
+			if (!strcmp (sector->rooms[i]->doors[j]->strRoomName, "entrance"))
+				defaultDoor = sector->rooms[i]->doors[j];
 		}
 	}
 
+	if (!defaultDoor)
+		return;
+
 	//adjust origin, based on the overlap of two doors
-	csVector3 rot3 = rot_matrix * (*(defaultDoor->door->door.GetVertex (defaultDoor->door->door.GetVertexCount () - 1)));
+	csVector3 rot3 = rot_matrix * (*(defaultDoor->door.GetVertex (defaultDoor->door.GetVertexCount () - 1)));
 	csVector3 start (origin - rot3);
-	if (start.x > 0) start.x += 0.1; else start.x += -0.1;
-	if (start.y > 0) start.y += 0.1; else start.y += -0.1;
-	if (start.z > 0) start.z += 0.1; else start.z += -0.1;
 
 	//------- rotate all vectors using given rotation matrix -------//
 	sector->defaultLocation = rot_matrix * sector->defaultLocation;
@@ -939,7 +1421,6 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 			{
 				*sector->rooms[i]->walls[j]->wall.GetVertex (k) = rot_matrix * (*sector->rooms[i]->walls[j]->wall.GetVertex (k));
                 *sector->rooms[i]->walls[j]->wall.GetVertex (k) += start;
-				printf("Room %d. Wall %d. Vertex %d: %f, %f, %f\n", i, j, k, sector->rooms[i]->walls[j]->wall.GetVertex (k)->x, sector->rooms[i]->walls[j]->wall.GetVertex (k)->y, sector->rooms[i]->walls[j]->wall.GetVertex (k)->z);
 			}
 		}
 
@@ -952,26 +1433,12 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 			}
 		}
 
-		for (int j = 0; j < sector->rooms[i]->numOuterDoors; j++)
-		{
-			for (int k = 0; k < sector->rooms[i]->outer_doors[j]->door->door.GetVertexCount (); k++)
-			{
-				*sector->rooms[i]->outer_doors[j]->door->door.GetVertex (k) = rot_matrix * (*sector->rooms[i]->outer_doors[j]->door->door.GetVertex (k));
-				*sector->rooms[i]->outer_doors[j]->door->door.GetVertex (k) += start;
-			}
-		}
-
 		for (int j = 0; j < sector->rooms[i]->numLights; j++)
 		{
 			sector->rooms[i]->lights[j]->location = rot_matrix * sector->rooms[i]->lights[j]->location;
 			sector->rooms[i]->lights[j]->location += start;
 		}
 
-		for (int j = 0; j < sector->rooms[i]->numObjects; j++)
-		{
-			sector->rooms[i]->objects[j]->location = rot_matrix * sector->rooms[i]->objects[j]->location;
-			sector->rooms[i]->objects[j]->location += start;
-		}
 	}
 
 }
@@ -989,30 +1456,27 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 	
 	// allocate space for a new sector
 	chSectorStructPtr sector = (chSectorStructPtr) malloc (sizeof (chSectorStruct));
+	sector->iSectorID = 0;
 	sector->defaultLocation = csVector3 (0, 5, 1);
-	strcpy (sector->strSectorName, "default");
 
 	// allocate space for three new rooms
-	sector->rooms = (chRoomStructPtr*) malloc (3 * sizeof(chRoomStruct));
+	sector->rooms = (chRoomStructPtr*) malloc (2 * sizeof(chRoomStruct));
 	sector->rooms[0] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
 	strcpy (sector->rooms[0]->strRoomName, "main");
-	sector->rooms[0]->numDoors = 1;
+	sector->rooms[0]->numDoors = 2;
 	sector->rooms[0]->numWalls = 14;
 	sector->rooms[0]->numLights = 18;
-	sector->rooms[0]->numObjects = 1;
-	sector->rooms[0]->numOuterDoors = 2;
 	sector->rooms[1] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
-	strcpy (sector->rooms[1]->strRoomName, "connector");
+	strcpy (sector->rooms[1]->strRoomName, "corridor");
 	sector->rooms[1]->numDoors = 1;
 	sector->rooms[1]->numWalls = 5;
 	sector->rooms[1]->numLights = 12;
-	sector->rooms[2] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
-	strcpy (sector->rooms[2]->strRoomName, "hallway");
-	sector->rooms[2]->numDoors = 1;
-	sector->rooms[2]->numWalls = 6;
-	sector->rooms[2]->numLights = 20;
 	sector->numRooms = 2;
 
+	//---------------------------------------------------------------------------------//
+	//----------------------- main room -----------------------------------------------//
+	//---------------------------------------------------------------------------------//
+	
 	// allocate walls for the main room
 	sector->rooms[0]->walls = (chWallStructPtr*) malloc (sector->rooms[0]->numWalls * sizeof (chWallStruct));
 	for (int i = 0; i < sector->rooms[0]->numWalls; i++) {
@@ -1027,6 +1491,7 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 	double width = 10;
 	int door_width = 3;
 	double door_delta = 0.0;
+	int out_door_width = 1;
 
 	// ceiling
 	sector->rooms[0]->walls[0]->wall = *(new csPoly3D (4));
@@ -1100,14 +1565,15 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 	sector->rooms[0]->walls[13]->wall.AddVertex (door_width, floor, length); sector->rooms[0]->walls[13]->wall.AddVertex (door_width, ceiling, length);
 	sector->rooms[0]->walls[13]->wall.AddVertex (width, ceiling, length); sector->rooms[0]->walls[13]->wall.AddVertex (width, floor, length);
 
-	// allocate 24 lights for the main room
+	// allocate 18 lights for the main room
 	sector->rooms[0]->lights = (chLightStructPtr*) malloc (18 * sizeof (chLightStruct));
 	for (int i = 0; i < 18; i++) {
 		sector->rooms[0]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
 		sector->rooms[0]->lights[i]->color = csColor (1, 1, 1);
-		sector->rooms[0]->lights[i]->scale = 9.0;
+		sector->rooms[0]->lights[i]->intensity = 9.0;
 	}
 
+	// place the lights
 	double delta = 1.0;
 	for (int i = 0; i < 2; i++) {
 		sector->rooms[0]->lights[0+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, -length+delta);
@@ -1121,59 +1587,38 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 		sector->rooms[0]->lights[8+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, length-delta);
 	}
 
-	// allocate 1 door for main room
-	sector->rooms[0]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
+	// allocate 2 doors in main room
+	// one that leads to corridor
+	// another that is the entrance door
+	sector->rooms[0]->doors = (chDoorStructPtr*) malloc (2 * sizeof (chDoorStruct));
 	sector->rooms[0]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	strcpy (sector->rooms[0]->doors[0]->strDoorTexture, "floor_text");
-	strcpy (sector->rooms[0]->doors[0]->strRoomName, "connector");
+	sector->rooms[0]->doors[1] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+
+	// door to corridor
+	sector->rooms[0]->doors[0]->strDoorTexture = NULL;
+	strcpy (sector->rooms[0]->doors[0]->strRoomName, "corridor");
 	sector->rooms[0]->doors[0]->alpha = 0;
-	sector->rooms[0]->doors[0]->txtSize = csVector3 (1, 1, 1);
+	sector->rooms[0]->doors[0]->txtSize = NULL;
 	sector->rooms[0]->doors[0]->door = *(new csPoly3D (4));
 	sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor+4, length-2*door_delta);
 	sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor+4, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta);
 
-	// allocate one outer door in this room
-	sector->rooms[0]->outer_doors = (chOuterDoorStructPtr*) malloc (sector->rooms[0]->numOuterDoors * sizeof (chOuterDoorStruct));
-	sector->rooms[0]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorName, "sector2");
-	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorSource, "www.default.com/s2");
-	sector->rooms[0]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[0]->outer_doors[0]->door->alpha = 0;
-	strcpy (sector->rooms[0]->outer_doors[0]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[0]->outer_doors[0]->door->strRoomName, "main");
-	sector->rooms[0]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[0]->outer_doors[0]->door->door = *(new csPoly3D (4));
-	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 + 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 + 1);
-	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 - 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 - 1);
-	strcpy (sector->rooms[0]->outer_doors[0]->strDoorName, "door1");
+	// entrance door
+	sector->rooms[0]->doors[1]->strDoorTexture = NULL;
+	strcpy (sector->rooms[0]->doors[1]->strRoomName, "entrance");
+	sector->rooms[0]->doors[1]->strDoorTexture = (char*) malloc (20 * sizeof (char));
+	strcpy (sector->rooms[0]->doors[1]->strDoorTexture, "door_text");
+	sector->rooms[0]->doors[1]->alpha = 0;
+	sector->rooms[0]->doors[1]->txtSize = new csVector3 (2, 3, 1);
+	sector->rooms[0]->doors[1]->door = *(new csPoly3D (4));
+	sector->rooms[0]->doors[1]->door.AddVertex (out_door_width, floor, -length+2*door_delta); sector->rooms[0]->doors[1]->door.AddVertex (out_door_width, floor+3, -length+2*door_delta);
+	sector->rooms[0]->doors[1]->door.AddVertex (-out_door_width, floor+3, -length+2*door_delta); sector->rooms[0]->doors[1]->door.AddVertex (-out_door_width, floor, -length+2*door_delta);
 
-	sector->rooms[0]->outer_doors[1] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorName, "sector5");
-	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorSource, "www.default.com/s5");
-	sector->rooms[0]->outer_doors[1]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[0]->outer_doors[1]->door->alpha = 0;
-	strcpy (sector->rooms[0]->outer_doors[1]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[0]->outer_doors[1]->door->strRoomName, "main");
-	sector->rooms[0]->outer_doors[1]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[0]->outer_doors[1]->door->door = *(new csPoly3D (4));
-	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor+3, -length+0.01);
-	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor+3, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor, -length+0.01);
-	strcpy(sector->rooms[0]->outer_doors[1]->door->strRoomName, "default");
-	strcpy (sector->rooms[0]->outer_doors[1]->strDoorName, "default");
+	//---------------------------------------------------------------------------------//
+	//----------------------- corridor room -------------------------------------------//
+	//---------------------------------------------------------------------------------//
 
-
-	// allocate one object for main room
-	sector->rooms[0]->numObjects = 1;
-	sector->rooms[0]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
-	sector->rooms[0]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
-	strcpy (sector->rooms[0]->objects[0]->strObjectModel, "user");
-	strcpy (sector->rooms[0]->objects[0]->strObjectName, "tool");
-	sector->rooms[0]->objects[0]->intObjectType = ENTITY_TYPE_USER;
-	sector->rooms[0]->objects[0]->location = csVector3 (-1, 2, -1);
-	sector->rooms[0]->objects[0]->rotation = csVector3 (0, 0, 0);
-	sector->rooms[0]->objects[0]->scale = csVector3 (1, 1, 1);
-
-	// create second (connector) room
+	// create corridor room
 	// allocate 6 walls for the connector
 	sector->rooms[1]->walls = (chWallStructPtr*) malloc (6 * sizeof (chWallStruct));
 	for (int i = 0; i < 6; i++) {
@@ -1184,8 +1629,8 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 
 	// ceiling
 	sector->rooms[1]->walls[0]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, length);
-	sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, 2*length);
+	sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, floor+4, 2*length); sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, floor+4, length);
+	sector->rooms[1]->walls[0]->wall.AddVertex (door_width, floor+4, length); sector->rooms[1]->walls[0]->wall.AddVertex (door_width, floor+4, 2*length);
 	strcpy (sector->rooms[1]->walls[0]->strWallTexture, "ceil_text");
 
 	// floor
@@ -1196,32 +1641,33 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 
 	// left
 	sector->rooms[1]->walls[2]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, length);
-	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, 2*length);
+	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor+4, length);
+	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor+4, 2*length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, 2*length);
 
 	// front
 	sector->rooms[1]->walls[3]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, floor, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, ceiling-5, 2*length);
-	sector->rooms[1]->walls[3]->wall.AddVertex (door_width, ceiling-5, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (door_width, floor, 2*length);
+	sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, floor, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, floor+4, 2*length);
+	sector->rooms[1]->walls[3]->wall.AddVertex (door_width, floor+4, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (door_width, floor, 2*length);
 
 	// right
 	sector->rooms[1]->walls[4]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, 2*length);
-	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, length);
+	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor+4, 2*length);
+	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor+4, length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, length);
 
 	// back
 	sector->rooms[1]->walls[5]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[5]->wall.AddVertex (door_width, floor, length); sector->rooms[1]->walls[5]->wall.AddVertex (door_width, ceiling-5, length);
-	sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, ceiling-5, length); sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, floor, length);
+	sector->rooms[1]->walls[5]->wall.AddVertex (door_width, floor, length); sector->rooms[1]->walls[5]->wall.AddVertex (door_width, floor+4, length);
+	sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, floor+4, length); sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, floor, length);
 
 	// allocate 8 lights for the connector room
 	sector->rooms[1]->lights = (chLightStructPtr*) malloc (12 * sizeof (chLightStruct));
 	for (int i = 0; i < 12; i++) {
 		sector->rooms[1]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
 		sector->rooms[1]->lights[i]->color = csColor (1, 1, 1);
-		sector->rooms[1]->lights[i]->scale = 4.0;
+		sector->rooms[1]->lights[i]->intensity = 4.0;
 	}
 
+	// place lights
 	for (int i = 0; i < 2; i++) {
 		sector->rooms[1]->lights[0+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, length+delta);
 		sector->rooms[1]->lights[1+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, 2*length-delta);
@@ -1231,44 +1677,51 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 		sector->rooms[1]->lights[3+i*4]->location = csVector3 (door_width-delta, i*2 + 3, length+length/2);
 	}
 
-	// allocate 1 door for connector room
+	// allocate 1 door in corridor room
+	// that leads back to main room
 	sector->rooms[1]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
 	sector->rooms[1]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	strcpy (sector->rooms[1]->doors[0]->strDoorTexture, "door_text");
+	sector->rooms[1]->doors[0]->strDoorTexture = NULL;
 	strcpy (sector->rooms[1]->doors[0]->strRoomName, "main");
 	sector->rooms[1]->doors[0]->alpha = 0;
-	sector->rooms[1]->doors[0]->txtSize = csVector3 (1, 1, 1);
+	sector->rooms[1]->doors[0]->txtSize = NULL;
 	sector->rooms[1]->doors[0]->door = *(new csPoly3D (4));
 	sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor+10, length-2*door_delta);
 	sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor+10, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta);
 
-	// allocate one object for connector room
-	sector->rooms[1]->numObjects = 1;
-	sector->rooms[1]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
-	sector->rooms[1]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
-	strcpy (sector->rooms[1]->objects[0]->strObjectModel, "user");
-	strcpy (sector->rooms[1]->objects[0]->strObjectName, "object");
-	sector->rooms[1]->objects[0]->intObjectType = ENTITY_TYPE_OBJECT;
-	sector->rooms[1]->objects[0]->location = csVector3 (door_width-3, floor+2, length*3/2);
-	sector->rooms[1]->objects[0]->rotation = csVector3 (0, 0, 0);
-	sector->rooms[1]->objects[0]->scale = csVector3 (1, 1, 1);
-
-	// set the number of outer doors
-	sector->rooms[1]->numOuterDoors = 1;
-	// allocate one outer door in this room
-	sector->rooms[1]->outer_doors = (chOuterDoorStructPtr*) malloc (sizeof (chOuterDoorStruct));
-	sector->rooms[1]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorName, "sector1");
-	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorSource, "www.default.com/s1");
-	sector->rooms[1]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[1]->outer_doors[0]->door->alpha = 0;
-	strcpy (sector->rooms[1]->outer_doors[0]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[1]->outer_doors[0]->door->strRoomName, "main");
-	sector->rooms[1]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[1]->outer_doors[0]->door->door = *(new csPoly3D (4));
-	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor+3, length*2-0.01);
-	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor+3, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor, length*2-0.01);
-	strcpy (sector->rooms[1]->outer_doors[0]->strDoorName, "door2");
-
 	return sector;
+}
+
+
+void ChimeSector::RecreatePolygonsFromMesh (iMeshWrapper* mesh)
+{
+	csRef<iThingState> state = SCF_QUERY_INTERFACE (mesh->GetMeshObject (), iThingState);
+	if (!state) return;
+	iSector* room = mesh->GetMovable ()->GetSectors ()->Get (0);
+	csRef<iMeshWrapper> new_mesh (driver->csEngine->CreateSectorWallsMesh (room, "temp_mesh"));
+	csRef<iThingState> new_state = SCF_QUERY_INTERFACE (new_mesh->GetMeshObject (), iThingState);
+	if (!new_state) return;
+	csRef<iMaterialWrapper> material = NULL;
+	csVector3 txtSize (1, 1, 1);
+
+	int i = 0, j = 0;
+	csPoly3D poly (10);
+	iPolygon3D* p = NULL, *new_p = NULL;
+	for (i = 0; i < state->GetPolygonCount (); i++)
+	{
+		p = state->GetPolygon (i);
+		poly.MakeEmpty ();
+		for (j = 0; j < p->GetVertexCount (); j++)
+			poly.AddVertex (p->GetVertex (j));
+		material = p->GetMaterial ();
+		new_p = BuildWall (new_state, poly, material, &txtSize);
+		if (p->GetPortal ()) new_p->CreatePortal (p->GetPortal ()->GetSector ());
+		p->CopyTextureType (new_p);
+	}
+
+	char mName[50]; strcpy (mName, mesh->QueryObject ()->GetName ());
+	driver->csEngine->RemoveObject (mesh);
+	new_mesh->QueryObject ()->SetName (mName);
+	new_mesh->SetZBufMode (CS_ZBUF_USE);
+	driver->GetCollider ()->CreateMeshCollider (new_mesh);
 }

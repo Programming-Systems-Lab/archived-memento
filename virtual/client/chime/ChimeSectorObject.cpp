@@ -9,6 +9,7 @@
 
 #include "cssysdef.h"
 #include "csgeom/transfrm.h"
+#include "iengine/material.h"
 #include "ChimeSectorEntities.h"
 #include "ChimeSystemDriver.h"
 
@@ -20,26 +21,26 @@ extern ChimeSystemDriver *driver;
  * Constructor: creates a new container for given object mesh
  *****************************************************************/
 ChimeSectorObject::ChimeSectorObject (char *iObjectName, char *iObjectSource,
-									  iMeshWrapper *iMesh, csVector3 *iObjectLocation, 
-									  iSector *iObjectRoom, char *sObjectModel, 
-									  char *iObjectMaterial, int iEntityType)
+									  iMeshWrapper *iMesh, iSector *iObjectRoom, 
+									  char *sObjectModel, char *iObjectMaterial, 
+									  int iEntityType)
 	: ChimeSectorEntity (iObjectName, iEntityType)
 {
 	csObjectMesh = iMesh;
-	csObjectLocation = iObjectLocation;
 	csObjectRoom = iObjectRoom;
 	strObjectModel = sObjectModel;
 	strObjectSource = iObjectSource;
 	strObjectMaterial = iObjectMaterial;
 
 	// calculate the center of the object's label
-	if (iObjectLocation && iMesh)
+	if (iMesh)
 	{
 		csBox3 mesh_box;
 		iMesh->GetWorldBoundingBox (mesh_box);
 		csVector3 center (mesh_box.GetCenter ());
 		center.y = mesh_box.MaxY ();
 		csObjectLabelCenter = new csVector3 (center);
+		//if (iObjectMaterial) SetObjectMaterial (iObjectMaterial);
 	}
 	else
 		csObjectLabelCenter = NULL;
@@ -50,7 +51,7 @@ ChimeSectorObject::ChimeSectorObject (char *iObjectName, char *iObjectSource,
  * IsEntitySelected: returns true if the passed mesh is the
  * same as the one used to represent this object
  *****************************************************************/
-bool ChimeSectorObject::IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon)
+bool ChimeSectorObject::IsEntitySelected (iMeshWrapper *mesh)
 {
 	if (mesh == csObjectMesh)
 		return true;

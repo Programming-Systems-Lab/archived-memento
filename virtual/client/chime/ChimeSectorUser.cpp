@@ -18,10 +18,9 @@ extern ChimeSystemDriver *driver;
  * Constructor: creates a new container for given object mesh
  *****************************************************************/
 ChimeSectorUser::ChimeSectorUser (char *iObjectName, char *iObjectSource,
-								  iMeshWrapper *iMesh, csVector3 *iObjectLocation, 
-								  iSector *iObjectRoom, char *iObjectModel, 
-								  char *iObjectMaterial)
-	: ChimeSectorObject (iObjectName, iObjectSource, iMesh, iObjectLocation, iObjectRoom, 
+								  iMeshWrapper *iMesh, iSector *iObjectRoom, 
+								  char *iObjectModel, char *iObjectMaterial)
+	: ChimeSectorObject (iObjectName, iObjectSource, iMesh, iObjectRoom, 
 	iObjectModel, iObjectMaterial, ENTITY_TYPE_USER)
 {
 	return;

@@ -15,6 +15,7 @@
 #include "imesh/thing/polygon.h"
 #include "imesh/object.h"
 #include "imesh/thing/polygon.h"
+#include "imesh/thing/portal.h"
 #include "imesh/thing/thing.h"
 #include "csgeom/transfrm.h"
 #include "iengine/movable.h"
@@ -50,10 +51,11 @@ ChimeCollider::ChimeCollider()
 
 
 /*****************************************************************
- * Create a collider box for any given object
+ * Create a collider box for any given mesh
  *****************************************************************/
-bool ChimeCollider::CreateObjectCollider(iMeshWrapper *mesh)
+bool ChimeCollider::CreateMeshCollider(iMeshWrapper *mesh)
 {
+	if (!mesh) return NULL;
 	csRef<iPolygonMesh> polygon = SCF_QUERY_INTERFACE (mesh->GetMeshObject (), iPolygonMesh);
 	csColliderWrapper *cw = new csColliderWrapper (mesh->QueryObject (), 
 		driver->csCollisionSystem, polygon);
@@ -61,6 +63,18 @@ bool ChimeCollider::CreateObjectCollider(iMeshWrapper *mesh)
 	cw->DecRef ();
 	if (!cw)
 		return false;
+	return true;
+}
+
+
+/*****************************************************************
+ * Remove a collider box from any given mesh
+ *****************************************************************/
+bool ChimeCollider::RemoveMeshCollider(iMeshWrapper *mesh)
+{
+	if (!mesh) return NULL;
+	csColliderWrapper *wrapper = csColliderWrapper::GetColliderWrapper (mesh->QueryObject ());
+	if (wrapper) delete wrapper;
 	return true;
 }
 
@@ -269,7 +283,6 @@ int ChimeCollider::CollisionDetect(csColliderWrapper *collider, iSector* room,
 				hit++;
 		}
 	}
-
 	// Return the number of collisions detected
 	return hit;
 }
@@ -331,8 +344,10 @@ csVector3 ChimeCollider::Collide(iCamera *camera, csVector3 pos, csVector3& vel,
 	// If so, place camera into the new sector and get new meshes
 	// from the new room
 	bool mirror = false;
-	iSector *new_room = camera->GetSector()->FollowSegment (camera_transform, new_cam_position, mirror, true);
-	if (new_room != camera->GetSector()) {
+	csVector3 velt20 (vel_translate * 20);
+	iSector *new_room = room->FollowSegment (camera_transform, new_cam_position, mirror, false);
+	if (new_room != camera->GetSector ())
+	{
 		camera->SetSector (new_room);
 		room_meshes = new_room->GetMeshes ();
 		room = new_room;

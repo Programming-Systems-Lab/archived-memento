@@ -115,18 +115,21 @@ ChimeChatWindow::ChimeChatWindow(csComponent *iParent)
   int labelw = 150;
 
   //////////create the dialog///////////////
-  csDialog *d = new csDialog(this);
+  csDialog *d = new csDialog(this, csdfsAround);
   this->SetDragStyle (this->GetDragStyle () & ~CS_DRAG_SIZEABLE);
   
   //////////create the list box/////////////
-  list_box = new csListBox (d, CSLBS_HSCROLL | CSLBS_VSCROLL, cslfsThinRect);
-  list_box->SetRect (bound.Width() / 10, 1,  bound.Width() / 10 * 9, bound.Height() / 2 - 1);
+  list_box = new csListBox (d, CSLBS_HSCROLL | CSLBS_VSCROLL, cslfsThickRect);
+  list_box->SetRect (bound.Width() / 10, 3,  bound.Width() / 10 * 9, bound.Height () - 80);
+  list_box->SetColor (CSPAL_DIALOG_BACKGROUND, cs_Color_White);
 
   //setup the "Chat"
-  csButton *ChatBut = new csButton(d, CHAT_CHAT_PRESSED);
-  ChatBut->SetText("CHAT");
-  ChatBut->SetSize(bound.Width ()/2, bound.Height() / 3);
-  ChatBut->SetPos(bound.Width ()/4, bound.Height() / 2 + 1);
+  ChimeButton *ChatBut = new ChimeButton(d, CHAT_CHAT_PRESSED, CSBS_DEFAULTVALUE, csbfsThickRect);
+  ChatBut->SetText("Chat");
+  ChatBut->SetSize(100, 40);
+  ChatBut->SetPos (bound.Width () / 4, bound.Height () - 70);
+  ChatBut->Center (true, false);
+  ChatBut->SetFont (driver->GetFont (driver->chButtonFont));
   
   selected_item = NULL;
 }
@@ -134,14 +137,46 @@ ChimeChatWindow::ChimeChatWindow(csComponent *iParent)
 /*************************************************************
  * Add an item to chat box, unless it already exists
  *************************************************************/
-bool ChimeChatWindow::AddItem (char *iUserName, char *iUserSource) {
-
+bool ChimeChatWindow::AddItem (char *iUserName, char *iUserSource)
+{
 	// if theitem is found, don't add
 	if (FindItem (iUserName, iUserSource))
 		return false;
 
 	// add new item
 	selected_item = new ChatBoxItem (list_box, iUserName, iUserSource);
+	return true;
+}
+
+/*************************************************************
+ * Remove user with given parameters
+ *************************************************************/
+bool ChimeChatWindow::RemoveItem (char *iUserName, char *iUserSource)
+{
+	return RemoveItem (FindItem (iUserName, iUserSource));
+}
+
+/*************************************************************
+ * Remove given item
+ *************************************************************/
+bool ChimeChatWindow::RemoveItem (csComponent *comp)
+{
+	list_box->Delete (comp);
+	return true;
+}
+
+/*************************************************************
+ * Remove all items
+ *************************************************************/
+bool ChimeChatWindow::RemoveAllItems ()
+{
+	csComponent *comp = NULL;
+	do
+	{
+		comp = list_box->ForEachItem (UserExists, NULL, false);
+		if (comp) list_box->Delete (comp);
+	}
+	while (comp != NULL);
 	return true;
 }
 
@@ -166,6 +201,7 @@ ChatBoxItem* ChimeChatWindow::FindItem (char *iUserName, char *iUserSource)
  *********************************************************************************/
 bool ChimeChatWindow::UserExists (csComponent *item, void *iFullUserName)
 {
+	if (!iFullUserName) return true;
 	return ((ChatBoxItem*) item)->IsThisUser ((char*) iFullUserName);
 }
 

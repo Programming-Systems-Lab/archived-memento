@@ -33,6 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="jvm.lib"
 				AdditionalDependencies="libcssys_d.lib libcsutil_d.lib libcsgeom_d.lib libcsgfx_d.lib libcstool_d.lib libcsws_d.lib"
 				ShowProgress="2"
 				OutputFile="$(OutDir)/chime.exe"
@@ -147,6 +148,12 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
+				RelativePath="AI2TVJNICPP.cpp">
+			</File>
+			<File
+				RelativePath="ChimeAi2tvInterface.cpp">
+			</File>
+			<File
 				RelativePath="ChimeAi2tvWindow.cpp">
 			</File>
 			<File
@@ -191,10 +198,19 @@
 			<File
 				RelativePath="ChimeUser.cpp">
 			</File>
+			<File
+				RelativePath="ChimeWindowComponents.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc">
+			<File
+				RelativePath="AI2TVJNICPP.h">
+			</File>
+			<File
+				RelativePath="ChimeAi2tvInterface.h">
+			</File>
 			<File
 				RelativePath="ChimeApp.h">
 			</File>
