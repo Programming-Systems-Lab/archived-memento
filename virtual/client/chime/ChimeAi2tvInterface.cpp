@@ -19,7 +19,6 @@ extern ChimeSystemDriver *driver;
  **********************************************************/
 ChimeAi2tvInterface::ChimeAi2tvInterface ()
 {
-	//client = NULL;
 	client = new AI2TVJNICPP ();
 	if (client == NULL){
 		printf("Error, AI2TV Client could not be created\n");
@@ -34,19 +33,30 @@ ChimeAi2tvInterface::ChimeAi2tvInterface ()
 ChimeAi2tvInterface* ChimeAi2tvInterface::GetInstance (const char *strUserName)
 {
 	ChimeAi2tvInterface* cai = new ChimeAi2tvInterface ();
-	cai->SetLoginInfo (strUserName);
-	if (cai->client) cai->client->setCacheDir ("c:\\psl\\memento\\virtual\\client\\chime\\data\\ai2tv\\cache\\");
+ 	cai->SetLoginInfo (strUserName);
 	return cai;
+}
+
+/**********************************************************
+ * set the base directory that will contain the image frames
+ **********************************************************/
+void ChimeAi2tvInterface::SetCacheDir (const char *cacheDir)
+{
+  if (client) client->setCacheDir (cacheDir);
 }
 
 /**********************************************************
  * Get the list of available videos from the client
  **********************************************************/
-void ChimeAi2tvInterface::GetAvailableVideos (char videos[10][50])
+int ChimeAi2tvInterface::GetAvailableVideos (char videos[10][50])
 {
-	for (int i = 0; i < 5; i++)
-        sprintf (videos[i], "Source %d", i+1);
-	if (client) client->getAvailableVideos (videos);
+  // temp array fill
+  // for (int i = 0; i < 5; i++)
+  // sprintf (videos[i], "Source %d", i+1);
+  if (client) 
+    return client->getAvailableVideos (videos);
+  else 
+    return 0;
 }
 
 /**********************************************************
@@ -54,7 +64,7 @@ void ChimeAi2tvInterface::GetAvailableVideos (char videos[10][50])
  **********************************************************/
 void ChimeAi2tvInterface::SetLoginInfo (const char *strUserName)
 {
-	printf("Login info: %s\n", strUserName);
+	printf("ChimeAi2tvInterface: Login info: %s\n", strUserName);
 	
 	const char* passwd = "iLuvMinnie";
 	const char* server = "disneyworld";
@@ -119,6 +129,5 @@ void ChimeAi2tvInterface::StopPressed ()
  ***********************************************************/
 int ChimeAi2tvInterface::isActive ()
 {
-	//return client->isActive ();
-	return 0;
+  return client->isActive();
 }

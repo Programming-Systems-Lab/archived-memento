@@ -1062,17 +1062,26 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 		// Key 's'...
 		case ('s'):
 			if (chView && chCurrentSector && 
-				Event.Key.Code == 115 && Event.Key.Char == 19)
-			{
-				// Setup Ai2TV interface for this user
-				chAi2tvInterface = ChimeAi2tvInterface::GetInstance (chUser->GetUserName ());
-				if (chAi2tvInterface->isActive() != 0)
-				{
-                    char sources [10][50];
-					chAi2tvInterface->GetAvailableVideos (sources);
-                    new Ai2tvSourceSelectWindow (application, sources, 5);
-				}
-			}
+			    Event.Key.Code == 115 && Event.Key.Char == 19)
+			  {
+			    // Setup Ai2TV interface for this user
+			    chAi2tvInterface = ChimeAi2tvInterface::GetInstance (chUser->GetUserName ());
+			    printf("is chAi2tvInterface->active()? %d\n", chAi2tvInterface->isActive());
+			    if (chAi2tvInterface->isActive() != 0)
+			      {
+
+				// 999
+				// const char* cacheDir = "c:\\psl\\memento\\virtual\\client\\chime\\data\\ai2tv\\cache\\";
+				const char* cacheDir = "c:/psl/memento/virtual/client/chime/data/ai2tv/cache/";
+				chAi2tvInterface->SetCacheDir(cacheDir);
+
+				char sources [10][50];
+				printf("gonna try to go get the available videos now\n");
+				chAi2tvInterface->GetAvailableVideos (sources);
+
+				new Ai2tvSourceSelectWindow (application, sources, 5);
+			      }
+			  }
 			break;
 
 		// Key 'f'...

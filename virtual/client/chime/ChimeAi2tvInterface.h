@@ -24,6 +24,7 @@ public:
 
 	void GetAvailableVideos (char videos[10][50]);
 	void SetLoginInfo (const char *strUserName);
+	void SetCacheDir (const char *cacheDir);
 	void SelectVideo (char* strVideoSource, char* strVideoDate);
 
 	void LoadFrame (char *strFileName, char *strFrameName);
@@ -32,9 +33,9 @@ public:
 	void ShutDown ();
 
 	void PlayPressed();
-    void StopPressed();
-    void PausePressed();
-    void GotoPressed(int time);
+	void StopPressed();
+	void PausePressed();
+	void GotoPressed(int time);
 	int isActive();
 };
 
