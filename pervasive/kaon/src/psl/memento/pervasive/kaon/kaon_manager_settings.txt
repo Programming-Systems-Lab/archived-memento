@@ -1,6 +1,6 @@
 LANGUAGE=en
 PASSWORD=bubble
-SERVER_URI=direct://psl@stadt:1433/MSSQL/ontology
+SERVER_URI=direct://psl@beach.psl.cs.columbia.edu:1433/MSSQL/ontology
 PRUNE_THRESHOLD=2
 MAX_NUM_WORDS=3
 APPLY_TEXT_PATTERNS=true

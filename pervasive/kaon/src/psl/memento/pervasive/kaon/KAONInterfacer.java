@@ -39,6 +39,10 @@ public class KAONInterfacer {
 	AssociationRules associationRelations;
 	Properties settings;
 
+	//For optimization purposes, these will be set up in the beginning
+	Map mapOfStems;
+	Map mapOfSynonyms;
+
 	//Settings variables
 	private String serverUri;
 	private String password;
@@ -196,6 +200,8 @@ public class KAONInterfacer {
 		dictionary = new MultiDictionary();
 		oimodel = null;
 		associationRelations = null;
+		mapOfStems = new HashMap();
+		mapOfSynonyms = new HashMap();
 	}
 
 	public KAONInterfacer(KAONConnection cnt) {
@@ -213,7 +219,8 @@ public class KAONInterfacer {
 	}
 
 	public void connect() {
-		System.out.print("Connecting to SQL database...");
+		System.out.println("Connecting to SQL database...");
+		System.out.println("\tServer URI: " + serverUri);
 		Map parameters = new HashMap();
 		parameters.put(DirectKAONConnection.SERVER_URI, serverUri);
 		parameters.put(DirectKAONConnection.PASSWORD, password);
@@ -223,8 +230,28 @@ public class KAONInterfacer {
 			connection = directconnect.getConnection();
 			oimodel = connection.openOIModelLogical(ontologyName);
 		} catch(Exception e) {
-			System.out.println(e);
+			System.out.println("\t" + e.getMessage());
+			System.exit(1);
 		}
+
+		//For optimization purposes, the mapOfStems and mapOfSynonyms will
+		//be preloaded
+		String languageURI=KAONVocabularyAdaptor.INSTANCE.getLanguageURI(language);
+
+		try {
+			System.out.print("\tLoading Map of Stems...");
+			loadStems(mapOfStems,languageURI,oimodel);
+			System.out.println("done.");
+
+			System.out.print("\tLoading Map of Synonyms...");
+			loadSynonyms(mapOfSynonyms,languageURI,oimodel);
+			System.out.println("done.");
+		}
+		catch (Exception e) {
+			System.out.println(e);
+			System.exit(1);
+		}
+
 		System.out.println("Done.");
 	}
 
@@ -298,16 +325,12 @@ public class KAONInterfacer {
 	}
 
 	public void addToOIModel() {
-		Map mapOfStems=new HashMap();
-		Map mapOfSynonyms=new HashMap();
 		List list=new LinkedList();
 		try {
 			System.out.println("Adding to OIModel...");
 
 			try {
 				String languageURI=KAONVocabularyAdaptor.INSTANCE.getLanguageURI(language);
-				loadStems(mapOfStems,languageURI,oimodel);
-				loadSynonyms(mapOfSynonyms,languageURI,oimodel);
 				DictionaryEntry[] entries = termExtractor.getDictionaryEntries(dictionary);
 				System.out.println("\tNumber of entries to add: " + entries.length);
 
@@ -349,7 +372,7 @@ public class KAONInterfacer {
 	protected void loadStems(Map mapOfStems,String languageURI,OIModel oimodel) throws KAONException {
 		Concept stemConcept=oimodel.getConcept(KAONVocabularyAdaptor.INSTANCE.getStem());
 		Set stems=stemConcept.getInstances();
-		oimodel.loadObjects(stems,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
+		//oimodel.loadObjects(stems,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
 		Iterator iterator=stems.iterator();
 		while (iterator.hasNext()) {
 			LexicalEntry stem=(LexicalEntry)iterator.next();
@@ -362,7 +385,7 @@ public class KAONInterfacer {
 	protected void loadSynonyms(Map mapOfSynonyms,String languageURI,OIModel oimodel) throws KAONException {
 		Concept synonymConcept=oimodel.getConcept(KAONVocabularyAdaptor.INSTANCE.getSynonym());
 		Set syonyms=synonymConcept.getInstances();
-		oimodel.loadObjects(syonyms,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
+		//oimodel.loadObjects(syonyms,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
 		Iterator iterator=syonyms.iterator();
 		while (iterator.hasNext()) {
 			LexicalEntry synonym=(LexicalEntry)iterator.next();
@@ -466,63 +489,40 @@ public class KAONInterfacer {
     }
 
     public void addToOIModelAsHierarchy() {
+		int countSucceeded = 0;
+		int countFailed = 0;
+
 		System.out.println("Adding to OI Model as Hierarchy...");
 
 		AssociationRule[] rules = associationRelations.getAssociationRules();
 		System.out.println("\tNumber of Association Rules: " + rules.length);
-		DependentEvolutionStrategyImpl dependentEvolutionStrategy=new DependentEvolutionStrategyImpl(connection);
-		dependentEvolutionStrategy.setEvolutionStrategy(oimodel, new EvolutionParameters());
-		System.out.println("\tCreated Evolution Strategy.");
 
+		List failedRelations=new ArrayList();
 		try {
-			//Set all OI Models to default Evolution Parameters - HACK!!!!
-			List sortedOIModels=OIModels.topologicallySortOIModels(connection.getAllOIModels());
-			Iterator iterator=sortedOIModels.iterator();
-			while (iterator.hasNext()) {
-				OIModel oimodelTemp=(OIModel)iterator.next();
-				dependentEvolutionStrategy.setEvolutionStrategy(oimodelTemp, new EvolutionParameters());
-			}
-			System.out.println("\tSet OIModel Evolution Strategy.");
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-
-		try {
-			List failedRelations=new ArrayList();
-			try {
-				oimodel.suspendEvents();
-				String languageURI=KAONVocabularyAdaptor.INSTANCE.getLanguageURI(language);
-				System.out.println("\tApplying Changes to OIModel...");
-				for (int i=0;i<rules.length;i++) {
-					System.out.println("\tCurrent Association Rule: " + (i+1));
-					List list;
-					try {
-						//System.out.println("\tDEBUG: Entering try statement within for.");
-						Concept conclusion = (Concept)rules[i].getConclusion();
-						Concept premise = (Concept)rules[i].getPremise();
-						//System.out.println("\tDEBUG: Computing Requested Changes.");
-						list=dependentEvolutionStrategy.computeRequestedChanges(Collections.singletonList(new AddSubConcept(oimodel,null,conclusion,premise)));
-					}
-					catch (KAONException evolutionError) {
-						//System.out.println("\tDEBUG: Exception for failed relation thrown.");
-						failedRelations.add(rules[i]);
-						//System.out.println("\tDEBUG: Continuing.");
-						continue;
-					}
-					//System.out.println("\tDEBUG: Applying Changes");
-					oimodel.applyChanges(list);
-
+			oimodel.suspendEvents();
+			String languageURI=KAONVocabularyAdaptor.INSTANCE.getLanguageURI(language);
+			System.out.println("\tApplying Changes to OIModel...");
+			for (int i=0;i<rules.length;i++) {
+				try {
+					Concept conclusion = (Concept)rules[i].getConclusion();
+					Concept premise = (Concept)rules[i].getPremise();
+					oimodel.applyChanges(Collections.singletonList(new AddSubConcept(oimodel,null,conclusion,premise)));
+					countSucceeded++;
+				}
+				catch(Exception e) {
+					countFailed++;
 				}
 			}
-			finally {
-				//System.out.println("\tDEBUG: Entering finally statement.");
-				oimodel.resumeEvents();
-			}
 		}
-		catch (KAONException error) {
+		catch (Exception error) {
 			System.out.println(error);
         }
+		finally {
+			oimodel.resumeEvents();
+		}
 
+		System.out.println("\tRelations successfully added: " + countSucceeded);
+		System.out.println("\tRelations additions failed: " + countFailed);
         System.out.println("Done.");
 	}
 
@@ -532,22 +532,43 @@ public class KAONInterfacer {
 
 	public static void main(String[] args) {
 		if (args.length != 1) {
-			System.out.println("Not enough arguments");
+			System.out.println("Usage: java KAONInterfacer [name of directory or file]");
 			return;
 		}
 
 		KAONInterfacer kaon = new KAONInterfacer();
 		kaon.connect();
-		kaon.addDocument(args[0]);
-		kaon.setupTermExtraction();
 
-		try {
-			kaon.performExtraction();
-			kaon.addToOIModel();
-			kaon.startRelationsExtraction();
-			kaon.addToOIModelAsHierarchy();
-		} catch (Exception e) {
-			System.out.println(e);
+		//Check to see if the file is a directory
+		File input = new File(args[0]);
+		if (input.isDirectory()) {
+			String[] files = input.list();
+			for (int i=0; i < files.length; i++) {
+				kaon.addDocument(args[0] + File.separator + files[i]);
+				kaon.setupTermExtraction();
+
+				try {
+					kaon.performExtraction();
+					kaon.addToOIModel();
+					kaon.startRelationsExtraction();
+					kaon.addToOIModelAsHierarchy();
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+			}//for
+		}
+		else {
+			kaon.addDocument(args[0]);
+			kaon.setupTermExtraction();
+
+			try {
+				kaon.performExtraction();
+				kaon.addToOIModel();
+				kaon.startRelationsExtraction();
+				kaon.addToOIModelAsHierarchy();
+			} catch (Exception e) {
+				System.out.println(e);
+			}
 		}
 
 		kaon.close();
