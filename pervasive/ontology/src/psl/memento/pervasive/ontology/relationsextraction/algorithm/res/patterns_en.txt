@@ -1,0 +1,4 @@
+is-like: pc: ([a-zA-Z]+)\s+like\s+([a-zA-Z]+)
+such-as: pc: ([a-zA-Z]+)\s+such\s+as\s+([a-zA-Z]+)
+is-a: pc: ([a-zA-Z]+)\s+is\s+a\s+([a-zA-Z]+)
+as-well-as: pc: ([a-zA-Z]+)\s+as\s+well\s+as\s+([a-zA-Z]+)

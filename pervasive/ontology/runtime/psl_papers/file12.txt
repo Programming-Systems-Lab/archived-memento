@@ -1,0 +1,522 @@
+1 
+Process Modeling with Cooperative Agents 
+George T. Heineman 1 
+Columbia University 
+Department of Computer Science 
+500 West 120th Street 
+New York, NY 10027 
+heineman@cs.columbia.edu 
+Abstract 
+Concurrency Control is the ability to allow concurrent access of multiple independent 
+agents while still maintaining the overall consistency of the database. We discuss the 
+notion of Cooperation Control, which gives a dbms, the ability to allow cooperation 
+of multiple cooperating agents, without corrupting the consistency of the database. 
+Speci#cally, there is the need for allowing cooperating agents to cooperate while 
+preventing independent agents from interfering with each other. In this paper, we 
+use the Marvel system to construct and investigate cooperative scenarios. 
+1 Introduction 
+Concurrency Control in database management systems allows multiple independent 
+agents to concurrently access the database while maintaining its consistency. Cooper­ 
+ation Control extends this concept by considering situations with cooperating agents. 
+To realize cooperation, we need to have semantic information about how the agents 
+will act. Our research on Process Centered Environments #pces# has shown that these 
+systems have a rich body of semantic information available. In suchenvironments, a 
+process is formally speci#ed in a Process Modeling Language #pml#. As part of this 
+speci#cation, the cooperation between agents needs to be provided. 
+There are several reasons whymultiple agents might need to cooperate: 
+1. Uniqueness of agents # There might be certain tasks which can only be carried 
+out by a particular agent; consider a task which can only be performed bya 
+database administrator. 
+2. Encapsulation of tasks # The process might be designed such that there are 
+clusters of tasks which are separated from other tasks. This hierarchical orga­ 
+nization of tasks becomes necessary as the size and number of tasks grows. 
+1 Heineman is supported in part by IBM Canada 
+
+2 
+F 
+H 
+A 
+C 
+B 
+D 
+G 
+Table 
+E 
+Figure 1: Blocks World 
+3. Group tasks # There are tasks which need multiple agents to work in concert 
+with each other; consider a conference phone call between three parties. 
+The Marvel project is an example of a pce applied to software development. In this 
+pce, the process of software development is formally encoded in terms of rules, and 
+the concurrency control of the database is tailored to provide speci#c behavior. In 
+this paper we explore how to use Marvel to produce a cooperativeenvironment. We 
+start with a simple example of cooperating agents in a #Blocks World'' environment, 
+and then apply our results to a fragment of the ispw­7 #3# sample problem. We 
+conclude with a discussion of the limitations and bene#ts of this approach. 
+2 Example problem 
+Consider the #Blocks World'' example, as shown in #gure 1. Blocks can either sit on 
+the table, or on top of another block #the table is large enough to accommodate all 
+blocks#. A block X is clear if no block is sitting on top of X. Only clear blocks may 
+be moved, and a block cannot havetwo blocks sitting directly on it. Tomove A on 
+top of E, for example, C must #rst be moved to the table; then both A and E are 
+clear, and the move can take place. 
+The prolog program in #gure 3 is a goal­directed process which solves the problem 
+of putting block X on top of Y by #rst making sure that both X and Y are clear, thus 
+allowing the move to take place. Note that the Table may not be moved, but blocks 
+maybemoved onto it. This particular process achieves the put on#X,Y# goal by 
+#rst achieving two sub­goals clear space#X# and clear space#Y#. Figure 2 shows 
+the solution for the request put on#d,a#. Note how put on and clear space are 
+recursively de#ned to invoke each other. 
+Wenowintroduce multiple agents to this example problem. Assume, in the blocks 
+
+3 
+clear_space(A) 
+put_on(C, table) 
+put_on(D, A) 
+put_on(G, table) 
+clear_space(table) 
+clear_space(G) 
+clear_space(D) 
+clear_space(table) 
+clear_space(C) 
+Figure 2: Goal Tree for put on#d,a# 
+on—top—of#c,a#. ## Which blocks are on other blocks 
+on—top—of#d,b#. 
+on—top—of#g,d#. 
+on—top—of#h,f#. 
+on—top—of#BLOCK,table# :­ not #on—top—of#BLOCK, X##. ## When a block is on the table 
+clear—space#table#. ## Always enough room on the table 
+clear—space#UNDER# :­ not #on—top—of#TOP, UNDER##. 
+clear—space#UNDER# :­ on—top—of#TOP, UNDER#, put—on#TOP, table#. 
+put—on#SRC,DST# :­ clear—space#SRC#, clear—space#DST#, 
+write#'move '#, write#SRC#, write#' to '#, write#DST#, nl. 
+Figure 3: prolog solution for blocks 
+world, that there are two agents, Placer and Clearer. These agents cooperate in the 
+following way: 
+1. When Placer moves block X to sit on object Y, Clearer is invoked to clear both 
+X and Y. Note that Y may be a block or the Table. 
+2. When Clearer clears block X, Placer is invoked to move block Y, sitting on X, 
+onto the Table. 
+The responsibilities of each agent are disjoint, and each has private tasks. Placer, for 
+example, has no mechanism for knowing if block X is clear; it must blindly invoke 
+Clearer. In similar fashion, Clearer knows how to clear a block only by requesting 
+Placer to move other blocks. This scenario cannot be modeled in a single­process 
+prolog environment, so we turn to the Marvel system to design a multiple agent 
+process. 
+3 Marvel 
+A Marvel environment is de#ned by a data model, process model, tool envelopes 
+and coordination model for a speci#c project. The data model is object­oriented, 
+
+4 
+parameters WR +­­­­­­­­­­­­­­­­­­­­­­­­­­­­+ 
+condition WR --- --- S --- X --- ShW--- WR --- 
+activity WR ---­­­­­---­­­­­---­­­­­---­­­­---­­­­­--- 
+effects X --- S ---yes---no ---no--- yes--- 
+---­­­­­---­­­­­---­­­­­---­­­­---­­­­­--- 
+# Lock Modes for builtins --- X --- ---no ---no--- yes--- 
+rename X ---­­­­­---­­­­­---­­­­­---­­­­---­­­­­--- 
+move X X --- ShW --- --- --- yes--- yes--- 
+copy S X ---­­­­­---­­­­­---­­­­­---­­­­---­­­­­--- 
+link X X --- WR --- --- --- --- yes--- 
+unlink X X +­­­­­­­­­­­­­­­­­­­­­­­­­­­­+ 
+delete SX X #S# shared #ShW# shared write 
+add X #X# exclusive #WR# weak read 
+Figure 4: Transaction Table and Lock Compatibility Matrix 
+and uses classes to de#ne an objectbase. The process is speci#ed by Marvel's 
+process modeling language, msl #Marvel strategy language#. Each process step is 
+encapsulated byarule, which has a name and typed parameters. 
+An msl rule has four parts, a query, condition, activity and e#ects. When a rule is 
+requested, a query is made on the database, and the rule's condition is checked. If it 
+is satis#ed, the activity is carried out and the assertions are made. A rule's activity 
+is a shell envelope #2# which allows an administrator to integrate conventional tools 
+into the process. There is a rule engine which employs chaining to drive the process. 
+Backward chaining is initiated to satisfy the failed condition of a user's rule request. 
+Forward chaining carries out the implications of a rule's assertions by #ring those 
+rules whose condition has become satis#ed by the assertion. Backward and forward 
+chaining are both recursive procedures. 
+Each rule is encapsulated by a transaction by which the rule accesses the objects it 
+needs. Once the rule's query has determined the necessary objects, the rule processor 
+acquires locks for these objects with lock modes based upon how the rule will access 
+the objects. For example, as seen in #gure 4, only those those objects being updated 
+in the e#ects need to be locked in X exclusive mode. This table is the mapping table 
+which maps rules to transactions. 
+Alock con#ict situation occurs when a rule attempts to acquire a lock on an object 
+which con#icts with an existing lock held by another rule. The con#icts are deter­ 
+mined by a lock compatibility matrix supplied by the administrator. Figure 4 contains 
+a sample table of four particular lock modes: Shared, Exclusive, Shared Write, and 
+Weak Read. The matrix de#nes the compatibilityoftwolock modes; for example, 
+ShW and X con#ict, while WR is compatible with eachlock mode. 
+In response to a particular locking con#ict, Marvel turns to the speci#ed coordi­ 
+nation model to determine an appropriate response. This model contains a set of 
+cord #Coordination Rule Language# rules which outlines the prescribed actions to 
+take. If a rule matches a situation, a set of actions are carried out and the con#ict 
+
+5 
+OBJECT—CLASS :: superclass ENTITY; 
+clear : boolean = true; 
+on—top—of : set—of OBJECT; 
+end 
+OBJECT :: superclass OBJECT—CLASS; 
+Movable : boolean = true; 
+end 
+TABLE :: superclass OBJECT—CLASS; 
+Movable : boolean = false; 
+end 
+Figure 5: msl data schema 
+Figure 6: Marvel blocks representation 
+is resolved, otherwise the transaction is aborted, and its rule is stopped. Wenow 
+presentaMarvel environment which solves the multiple agent blocks world. 
+3.1 Multiple Agent Solution 
+The data model, shown in #gure 5, is comprised of three classes, object class, 
+object, and table. The clear attribute of an object tells whether it is clear or 
+not, and the movable attribute determines if an object can be moved. The on top of 
+attribute is a composition attribute which contains the block #if it exists#, whichis 
+sitting on a given object. Figure 6 shows an objectbase which models the blocks 
+world example from #gure 1. The block B, for example, has its clear attribute equal 
+to false, and its on top of attribute would be equal to the block fDg. 
+The process model has four rules. There are two put on rules, to handle di#erent 
+cases, and an auto move rule which automatically sets the clear attribute of a block 
+Xtofalse when a block is placed on X. There is one clear space rule which makes 
+a particular block clear. The rules are shown in #gure 7. 
+
+6 
+# When ?src comes from on top of another object 
+put—on #?src:OBJECT, ?dst:OBJECT—CLASS#: 
+#exists OBJECT ?under suchthat #member #?under.on—top—of ?src###: 
+# CLEARER clear—space ?src.Name ?dst.Name # 
+#and #move #?src ?dst on—top—of ?under## 
+no—chain #?under.clear = true##; 
+no—assertion; 
+# When ?src comes from the TABLE 
+put—on #?src:OBJECT, ?dst:OBJECT—CLASS#: 
+#exists TABLE ?tbl suchthat #member #?tbl.on—top—of ?src###: 
+# CLEARER clear—space ?src.Name ?dst.Name # 
+#move #?src ?dst on—top—of ?tbl##; 
+no—assertion; 
+hide auto—move#?o:OBJECT#: 
+# This rule doesn't apply to the Table, since the Table is always clear 
+#exists OBJECT—CLASS ?under suchthat #and #member #?under.on—top—of ?o## 
+#?under.Movable = true###: 
+## 
+#?under.clear = false#; 
+clear—space #?tbl:TABLE#: 
+: 
+## 
+; 
+clear—space #?object:OBJECT#: 
+: 
+no—chain #?object.clear = true# 
+## 
+; 
+clear—space #?under:OBJECT#: 
+#and #exists OBJECT ?obj suchthat no—chain #member #?under.on—top—of ?obj####: 
+no—chain #?under.clear = false# 
+# PLACER put—on ?obj.Name ''Table'' # 
+#?under.clear = true#; 
+no—assertion; 
+Figure 7: Marvel multiple agent solution 
+
+7 
+ENVELOPE clear—space; 
+INPUT 
+string : SRC; 
+string : DST; 
+OUTPUT none; 
+BEGIN 
+## Clear both objects by invoking an agent to execute: clear—space#SRC# clear—space#DST# 
+SCRIPT—FILE=#tmp#clear—space 
+echo ''#!marvel script'' # $SCRIPT—FILE 
+echo ''clear—space $SRC'' ## $SCRIPT—FILE 
+echo ''clear—space $DST'' ## $SCRIPT—FILE 
+## Invoke the agent ## 
+OUTPUT—FILE=#tmp#OUTPUT 
+marvel ­b $SCRIPT—FILE # $OUTPUT—FILE 
+## Check status and clear up ## 
+RC=1 
+ERROR=`grep ''Failed while interpreting $#SCRIPT—FILE#'' $#OUTPUT—FILE#` 
+if # ''x$ERROR'' = ''x'' # 
+then 
+RC=0 # Succeeded 
+fi 
+rm $OUTPUT—FILE 
+RETURN ''$RC''; 
+END 
+Figure 8: sel envelope for put on 
+In order to separate tasks belonging to di#erent agents, the put on and clear space 
+rules have no logical condition associated with them. The put on#X,Y# rule, for ex­ 
+ample, must invoke an agent to clear both X and Y for it to perform its operation. To 
+do so, the put on rule executes the shell envelope shown in #gure 8. This envelope 
+creates a new agent which will execute clear space#X# and clear space#Y#, return­ 
+ing #0'' on success, and #1'' on failure. This return code will direct Marvel to assert 
+the appropriate e#ect as de#ned in the put on rule #i.e., on success, the move oper­ 
+ation is asserted#. This process is recursive as the agent executing clear space#X# 
+might create a new agent to complete its task. 
+The #nal information Marvel needs is the coordination model, which is de#ned in 
+terms of cord rules. Speci#cally, the msl rules in #gure 7 will produce con#icting 
+database access. Consider issuing the put on#D,A# rule on the example in #gure 6. 
+This, wehave seen, will cause an agent to be created to invoke clear space#D# and 
+clear space#A#. The original put on rule, however, must access the objects D and 
+A in exclusive access mode, since it must prevent other agents from interfering with 
+its operation. The objectbase would become inconsistent if another agent mistakenly 
+placed another blockonD after the clear space#D#invocation has completed, but 
+before clear space#A# has started. However, clear space#D# #invoked by the 
+cooperating agent# needs to access D in an exclusive mode also, since it removes G 
+from on top of D.We need some mechanism for allowing the cooperating agents to 
+access information jointly, while preventing con#icting access by independent agents. 
+
+8 
+X[Table], ShW[D], X[G] 
+put_on(D, A) 
+put_on(G, table) 
+clear_space(table) 
+clear_space(G) 
+clear_space(D) 
+WR[G] 
+X2[D], WR[G] 
+WR[Table] 
+clear_space(A) 
+ShW[Table], X1[D], X[A] 
+2 
+41 
+3 
+Figure 9: Locking con#icts for put on#D, A# 
+In our multiple agent blockworld example, there are four particular situations, labeled 
+1 through 4, which are resolved by the control rules in #gure 10. These situations 
+correspond exactly to those locking con#icts in #gure 9. In each case, the cord action 
+simply ignores the con#ict, allowing the lock request to succeed, and thus the entire 
+process succeeds. 
+Wenow explain the process trace in #gure 9, omitting all intention locks #these are 
+normally acquired because of the composition of the objectbase; see #1##. When 
+put on#D,A# is requested, the #rst put on rule is #red, and the three locks are 
+acquired #X1#D# is the #rst exclusivelock requested for block D#. This rule executes 
+the clear space envelope whichinvokes an agenttoclear space#D#. To execute 
+this rule, twolocks need to be acquired; however a con#ict occurs as the second X#D# 
+lock is requested, since the twolocks are incompatible. This lock con#ict is repaired 
+by the second condition pair in the OBJECT conflict cord rule. Note that both 
+X locks are set on D. The clear space rule executes the put on envelope which 
+invokes another agenttoput on#G, Table#. As these locks are acquired, three 
+separate con#icts occur, and each is handled by the appropriate cord condition pair. 
+We omit the right side of the process tree #clear space#A## as its execution is 
+identical. 
+4 Software Process Application 
+Figure 11 is a partial fragment from the ispw­7 sample problem #3#. We apply the 
+concepts shown in this paper to this fragment, and showhowmultiple agents can 
+cooperate. There are three agents, the Reviewer, the Designer, and the Programmer. 
+They eachhave a set of tasks #in white boxes# that they must perform. The solid 
+arrows de#ne the sequence of tasks for an individual agent, and the dashed arrows 
+showhow the agents communicate with each other. The long grey vertical boxes 
+represent the transactions encapsulating each agents's actions. The work starts when 
+
+9 
+OBJECT—conflict # OBJECT # 
+bindings: 
+?t1 = holds—lock ## 
+?t2 = requested—lock## 
+body: 
+if #and #?t1.rule = clear—space# # An agent is using put—on#obj, table# 
+#?t2.rule = put—on## # to clear—space for user command 
+then # # put—on#A, B#, where object ''obj'' is sitting on 
+notify#?t2, ''Conflict­1''# # object A. 
+ignore## 
+# 
+if #and #?t1.rule = put—on# # An agent is using clear—space#obj# to 
+#?t2.rule = clear—space## # clear space for user command 
+then # # put—on#obj, A# or put—on#A, obj#. 
+notify#?t2, ''Conflict­2''# 
+ignore## 
+# 
+if #and #?t1.rule = put—on# # An agent is using put—on#X, Y# and a 
+#?t2.rule = put—on## # subagent has been invoked to use 
+then # # put—on#Y,table# to clear—space for Y. 
+notify#?t2, ''Conflict­3''# 
+ignore## 
+# 
+end—body; 
+TABLE—conflict # TABLE # 
+bindings: 
+?t1 = holds—lock ## 
+?t2 = requested—lock## 
+body: 
+if #and #?t1.rule = put—on# # Two agents are trying to place 
+#?t2.rule = put—on## # blocks on the same table 
+then 
+# 
+notify#?t2, ''Conflict­4''# 
+ignore## 
+# 
+end—body; 
+Figure 10: cord coordination rules 
+
+10 
+Verify 
+Compile 
+Modify 
+Review 
+Submit 
+Approve 
+Feedback 
+Modify 
+Finish 
+Reviewer Programmer 
+Designer 
+Figure 11: Partial fragment from ispw­7 
+the Designer submits a modi#ed design for review. The Reviewer either approves 
+the design or produces feedback, and replies to the Designer who either continues to 
+modify the design, or submits it to the Programmer. Once the Programmer has made 
+the necessary modi#cations, the code is compiled and veri#ed, and the Designer is 
+noti#ed of either success or failure, in which case the design is #nished, or further 
+modi#ed, respectively. 
+The data model and process model which specify this process are shown in #gure 13. 
+This somewhat complex­looking set of msl rules is abstractly pictured in #gure 12, 
+where each rule is represented byabox whose logical condition is above the box, 
+and whose e#ects are below. A horizontal line of o's represents a rule invoking an 
+agent. In order for these agents to cooperate, two con#icting situations need to be 
+handled: when the Reviewer and the Programmer read the design which the Designer 
+is modifying. We use the same lock compatibility table and mapping table from 
+#gure 4. The modify design rule invokes a separate agent to review the design, and 
+the locking con#ict is resolved by the cord rules in #gure 14. 
+5 Conclusions 
+The approach outlined in this paper has its shortcomings. In this prototype example 
+of cooperating agents, a new agent is created each time one is needed. In addition 
+to wasting resources, this will sometimes incorrectly model certain situations. The 
+Marvel system needs to be modi#ed slightly to allowinter­agent communication be­ 
+tween existing agents, and this is one focus of future work. In addition, the cord rule 
+
+11 
+not modified 
+modify_design 
+not modified 
+not implemented 
+oo 
+o ooo 
+review_design 
+approved 
+not approved not approved 
+modified 
+modified 
+not modified 
+cont_modify 
+approved 
+modified 
+o modify_code 
+implemented 
+not implemented 
+not modified 
+implemented 
+approved 
+finish 
+o 
+o 
+oo o 
+submit 
+Figure 12: Cooperative solution to ispw­7 fragment 
+approach needs more extensions to be able to fully di#erentiate between interferences 
+of cooperating agents and independent agents. We are in the process of enhancing 
+cord, and this is an issue we need to address. Finally, the approach of tailoring lock 
+modes for rules, as described in #gure 4, is too general to be of much use. Making 
+all locks compatible avoids con#icts, but introduces chaos since there would be no 
+control over the operations. There currently exists in Marvel away to speci#cally 
+determine lock modes for the activity section of a rule, but this needs to be extended 
+to all symbols #and the objects bound to them# within the rule. 
+Even with its limitations, this paper does address, and propose solutions to, certain 
+issues regarding cooperating agents. The primary result of this work is to showhow 
+non­serializable behavior can be controlled by a set of coordination rules to allow 
+cooperating agents to function properly, while still preventing independent agents 
+from interfering with each other. The coordination rule approach can be applica­ 
+ble to any process modeling system, since the cord rule language is orthogonal to 
+the underlying pml which represents the process. We are currently implementing a 
+transaction manager component, called Pern, which will allow researchers to tailor 
+the concurrency control of a database to suit their applications' needs. 
+
+12 
+OBJECT :: superclass ENTITY; 
+design : DESIGN; 
+code : CODE; 
+end 
+DESIGN :: superclass ENTITY; 
+contents : text; 
+modified : #Yes, No, Initial# = Initial; 
+approved : #Yes, No, Initial# = Initial; 
+implemented : #Yes, No, Initial# = Initial; 
+end 
+CODE :: superclass ENTITY; 
+contents : text; 
+end 
+modify—design#?o:OBJECT#: 
+#exists DESIGN ?d suchthat #member #?o.design ?d###: 
+#and #or no—backward #?d.modified = No# 
+no—chain #?d.modified = Initial## 
+#or no—backward #?d.implemented = No# 
+no—chain #?d.implemented = Initial### 
+# MODIFY—TOOL modify—design ?o.Name # # invokes separate agent to review design 
+#and #?d.modified = Yes# 
+#?d.implemented = No##; 
+no—assertion; 
+review—design#?o:OBJECT#: 
+#exists DESIGN ?d suchthat #member #?o.design ?d###: 
+# MODIFY—TOOL review—design # 
+no—chain #?d.approved = No#; 
+no—chain #?d.approved = Yes#; 
+hide continue—modify—design#?o:OBJECT#: 
+#exists DESIGN ?d suchthat #member #?o.design ?d###: 
+#and no—backward #?d.modified = Yes# 
+no—backward #?d.approved = No## 
+## 
+#and no—chain #?d.approved = Initial# 
+#?d.modified = No##; 
+hide submit#?o:OBJECT#: 
+#exists DESIGN ?d suchthat #member #?o.design ?d###: 
+#and no—backward #?d.modified = Yes# 
+no—backward #?d.approved = Yes## 
+# MODIFY—TOOL submit ?o.Name # # invokes separate agent 
+#?d.modified = No#; 
+modify—code#?o:OBJECT#: 
+#exists CODE ?c suchthat #member #?o.code ?c####: 
+# MODIFY—TOOL verify—code ?o.Name # 
+no—chain #?d.implemented = Yes#; 
+no—chain #?d.implemented = No#; 
+hide finish#?o:OBJECT#: 
+#and #exists DESIGN ?d suchthat #member #?o.design ?d### 
+#exists CODE ?c suchthat #member #?o.code ?c####: 
+#and no—backward #?d.modified = No# 
+no—backward #?d.implemented = Yes# 
+no—backward #?d.approved = Yes## 
+## 
+#and no—chain #?d.modified = Initial# 
+no—chain #?d.implemented = Initial# 
+no—chain #?d.approved = Initial##; 
+Figure 13: msl rules for fragment ispw­7 solution 
+
+13 
+DESIGN—conflict # DESIGN # 
+bindings: 
+?t1 = holds—lock ## 
+?t2 = requested—lock## 
+body: 
+if #and #?t2.rule = review—design# # A sub­agent requests to review a design 
+#?t1.rule = modify—design## # which has just been modified. 
+then # 
+notify#?t2, ''DESIGN—conflict­1''# 
+ignore## 
+# 
+if #and #?t2.rule = modify—code# # A sub­agent requests to review a design 
+#?t1.rule = submit## # which has just been modified 
+then # 
+notify#?t2, ''DESIGN—conflict­2''# 
+ignore## 
+# 
+end—body; 
+Figure 14: cord rules for ispw fragment 
+References 
+#1# Israel Z. Ben­Shaul, Gail E. Kaiser, and George T. Heineman. An architecture 
+for multi­user software developmentenvironments. In Herbert Weber, editor, 5th 
+ACM SIGSOFT Symposium on Software Development Environments, pages 149# 
+158, Tyson's Corner VA, December 1992. Special issue of Software Engineering 
+Notes, 17#5#, December 1992. 
+#2# Mark A. Gisi and Gail E. Kaiser. Extending a tool integration language. In Mark 
+Dowson, editor, 1st International Conference on the SoftwareProcess: Manufac­ 
+turing Complex Systems, pages 218#227, Redondo Beach CA, October 1991. IEEE 
+Computer Society Press. 
+#3# Dennis Heimbigner and Marc Kellner. Software process example for ISPW­7, 
+August 1991. #pub#cs#techreports#ISPW7#ispw7.ex.ps.Z available by anonymous 
+ftp from ftp.cs.colorado.edu. 
+

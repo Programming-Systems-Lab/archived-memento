@@ -1,0 +1,6 @@
+TODO
+====
+
+
+- Speed up term creation
+- Stop duplicating term extraction in Relations extraction

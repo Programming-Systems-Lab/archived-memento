@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<prb>
+    <language name="en">
+        <phrase key="RelationsExtractionModule.title" value="Relations Extraction"/>
+        <phrase key="relationsextraction.windowTitle" value="Relations Extraction"/>
+        <phrase key="relationsextraction.associationRelationsListEmpty" value="No association relations were extracted"/>
+        <phrase key="relationsextraction.defaultPropertyName" value="defaultProperty{0}"/>
+        <phrase key="relationsextraction.chooseCorpus" value="~Corpus:"/>
+        <phrase key="relationsextraction.chooseOIModel" value="~OI-model:"/>
+        <phrase key="relationsextraction.chooseReuseHierarchyOIModel" value="OI-model for Hierarchy Reuse:"/>
+        <phrase key="relationsextraction.language" value="~Language:"/>
+        <phrase key="relationsextraction.applyPattenrs" value="Apply ~Text Patterns"/>
+        <phrase key="relationsextraction.applyAssociationRules" value="Apply ~Association Rules"/>
+        <phrase key="relationsextraction.applyHierarchyReuse" value="Apply ~Hierarchy Reuse"/>
+        <phrase key="relationsextraction.minimumSupport" value="Minimum ~Support:"/>
+        <phrase key="relationsextraction.minimumConfidence" value="Minimum ~Confidence:"/>
+        <phrase key="relationsextraction.premise" value="Premise"/>
+        <phrase key="relationsextraction.conclusion" value="Conclusion"/>
+        <phrase key="relationsextraction.conclusionFrequency" value="Conclusion Frequency"/>
+        <phrase key="relationsextraction.support" value="Support"/>
+        <phrase key="relationsextraction.confidence" value="Confidence"/>
+        <phrase key="relationsextraction.absoluteFrequency" value="Abs. Freq."/>
+        <phrase key="relationsextraction.patternNames" value="Pattern Names"/>
+        <phrase key="relationsextraction.property" value="Property"/>
+        <phrase key="relationsextraction.relationsFailed" value="{0} relations couldn't be created - they were deselected."/>
+
+        <phrase key="relationsextraction.progress.selectingConcepts" value="Phase {0} of {1} - Selecting concepts"/>
+        <phrase key="relationsextraction.progress.loadingConcepts" value="Phase {0} of {1} - Loading concepts ({2} of {3} concepts processed)"/>
+        <phrase key="relationsextraction.progress.processingDocuments" value="Phase {0} of {1} - Processing texts ({2} of {3} documents processed)"/>
+        <phrase key="relationsextraction.progress.extractFrequentObjects" value="Phase {0} of {1} - Extracting frequent objects ({2} of {3} object processed)"/>
+        <phrase key="relationsextraction.progress.generateCandidates" value="Phase {0} of {1} - Generating candidate object pairs ({2} of {3} steps processed)"/>
+        <phrase key="relationsextraction.progress.generateRelations" value="Phase {0} of {1} - Generating association relations ({2} of {3} candidates processed)"/>
+        <phrase key="relationsextraction.progress.selectingControlConcepts" value="Phase {0} of {1} - Selecting concepts in the control ontology"/>
+        <phrase key="relationsextraction.progress.loadingControlConcepts" value="Phase {0} of {1} - Loading control concepts ({2} of {3} concepts processed)"/>
+        <phrase key="relationsextraction.progress.reusingHierarchy" value="Phase {0} of {1} - Generating reused hierarchy rules ({2} of {3} stem words processed)"/>
+
+        <phrase key="language.en" value="English"/>
+
+        <phrase key="action.relationsextraction.newRelationsExtraction" value="New ~Relations Extraction"/>
+        <phrase key="action.relationsextraction.newRelationsExtraction.short" value="New Relations Extraction"/>
+        <phrase key="action.relationsextraction.newRelationsExtraction.long" value="Opens a new relations extraction window."/>
+
+        <phrase key="action.relationsextraction.startRelationsExtraction" value="~Start Relations Extraction"/>
+        <phrase key="action.relationsextraction.startRelationsExtraction.short" value="Start"/>
+        <phrase key="action.relationsextraction.startRelationsExtraction.long" value="Starts the association relations extraction algorithm."/>
+
+        <phrase key="action.relationsextraction.stopRelationsExtraction" value="S~top Relations Extraction"/>
+        <phrase key="action.relationsextraction.stopRelationsExtraction.short" value="Stop"/>
+        <phrase key="action.relationsextraction.stopRelationsExtraction.long" value="Stops the relations extraction algorithm."/>
+
+        <phrase key="action.relationsextraction.addToOIModelAsProperty" value="~Add to OI-model as Property"/>
+        <phrase key="action.relationsextraction.addToOIModelAsProperty.short" value="As property"/>
+        <phrase key="action.relationsextraction.addToOIModelAsProperty.long" value="Adds selected rule as a property between concepts to OI-model."/>
+
+        <phrase key="action.relationsextraction.addToOIModelAsHierarchy" value="~Add to OI-model as Hierarhcy"/>
+        <phrase key="action.relationsextraction.addToOIModelAsHierarchy.short" value="As hierarchy"/>
+        <phrase key="action.relationsextraction.addToOIModelAsHierarchy.long" value="Adds selected rule as a hierarchical relation between concepts to OI-model."/>
+
+        <phrase key="action.relationsextraction.deleteSelectedRules" value="~Delete Rules"/>
+        <phrase key="action.relationsextraction.deleteSelectedRules.short" value="Delete"/>
+        <phrase key="action.relationsextraction.deleteSelectedRules.long" value="Removes currently selected rules from the table."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_premise" value="Sort on ~Premise"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_premise.short" value="Premise"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_premise.long" value="Orders the rows in the table by premise."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_conclusion" value="Sort on ~Conclusion"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_conclusion.short" value="Conclusion"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_conclusion.long" value="Orders the rows in the table by conclusion."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_support" value="Sort on ~Support"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_support.short" value="Support"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_support.long" value="Orders the rows in the table by support."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_confidence" value="Sort on ~Confidence"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_confidence.short" value="Confidence"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_confidence.long" value="Orders the rows in the table by confidence."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_absolute_frequency" value="Sort on ~Absolute Frequency"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_absolute_frequency.short" value="Absolute Frequency"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_absolute_frequency.long" value="Orders the rows in the table by absolute frequency."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_pattern_names" value="Sort on ~Pattern Names"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_pattern_names.short" value="Pattern Names"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_pattern_names.long" value="Orders the rows in the table by pattern names."/>
+
+        <phrase key="action.relationsextraction.toggleColumnSort_property" value="Sort on Property ~Name"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_property_frequency.short" value="Property Name"/>
+        <phrase key="action.relationsextraction.toggleColumnSort_property_frequency.long" value="Orders the rows in the table by property name."/>
+
+        <phrase key="action.relationsextraction.startRelationsExtraction_local" value="~Start Extraction"/>
+        <phrase key="action.relationsextraction.stopRelationsExtraction_local" value="S~top Extraction"/>
+        <phrase key="action.relationsextraction.addToOIModelAsProperty_local" value="~Add as Property"/>
+        <phrase key="action.relationsextraction.addToOIModelAsHierarchy_local" value="~Add as Hierarchy"/>
+    </language>
+</prb>
