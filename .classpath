@@ -2,5 +2,7 @@
 <classpath>
     <classpathentry kind="src" path="virtual/server/src"/>
     <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
+    <classpathentry kind="lib" path="C:/ditd/memento/virtual/server/libs/dom4j.jar"/>
+    <classpathentry kind="lib" path="C:/ditd/memento/virtual/server/libs/log4j.jar"/>
     <classpathentry kind="output" path="virtual\server\build\class"/>
 </classpath>
