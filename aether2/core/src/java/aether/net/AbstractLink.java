@@ -23,7 +23,7 @@ public abstract class AbstractLink implements Link
 {
 	/**
 	 * GUID of the last component to send a response or the end point of this
-	 * link.
+	 * link. This could also be a URL.
 	 */
 	protected String destination;
 

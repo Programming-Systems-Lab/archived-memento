@@ -55,7 +55,7 @@ public class DomainAgentTest extends AetherTestCase
 		DefaultWorldModel model = new DefaultWorldModel();
 		Advertisement adv = new Advertisement();
 		adv.set(WorldAdvertisement.RequestTopic, "aether://mcbain/830?request");
-		adv.set(WorldAdvertisement.ModelTopic, "aether://mcbain/830");
+		adv.set(WorldAdvertisement.ModelTopic, "aether://mcbain/830/objcts/323524352354");
 		adv.set("replication-priority", "3");
 		model.setAdvertisement(adv);
 		container.add(model);
