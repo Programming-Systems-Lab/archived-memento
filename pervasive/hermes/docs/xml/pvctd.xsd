@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by publisher (spectator) -->
+<xs:schema targetNamespace="voice_to_text_to_data_rmb51_cc_columbia_edu" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="voice_to_text_to_data_rmb51_cc_columbia_edu" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="pvctd">
+		<xs:annotation>
+			<xs:documentation>PVCTD elements contain messages. </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="message">
+					<xs:complexType>
+						<xs:choice>
+							<xs:element name="connect" fixed="1" id="1">
+								<xs:annotation>
+									<xs:documentation>connect message is sent from the client to the server requesting a connection.  the client provides its ip address.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="ip" type="xs:string"/>
+										<xs:element name="chatName" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="confirmConnect" id="2">
+								<xs:annotation>
+									<xs:documentation>confirms a connection request from a client.  It also provides a list of possible chat buddies.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="clientID" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>client ID is what the client will use to identify itself with the server.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="chatBuddies">
+											<xs:complexType>
+												<xs:sequence maxOccurs="unbounded">
+													<xs:element name="chatBuddy">
+														<xs:complexType>
+															<xs:sequence>
+																<xs:element name="ip" type="xs:string"/>
+																<xs:element name="chatName" type="xs:string">
+																	<xs:annotation>
+																		<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+																	</xs:annotation>
+																</xs:element>
+															</xs:sequence>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="serverID" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>server id is what the server will use to identify itself with the client.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="disconnect" type="xs:ID" fixed="2" id="3">
+								<xs:annotation>
+									<xs:documentation>disconect is sent from the client or the server.  if sent from the client the server stops all chats and signs the user off. if sent from the server the client informs user that server is shutting down.</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="openChat" id="5">
+								<xs:annotation>
+									<xs:documentation>open chat is sent from client to server.  it contains the ip address of the buddy or buddies the client would like to chat with</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence maxOccurs="unbounded">
+										<xs:element name="chatBuddy">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="ip" type="xs:string"/>
+													<xs:element name="chatName" type="xs:string">
+														<xs:annotation>
+															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="confirmOpenChat" id="6">
+								<xs:annotation>
+									<xs:documentation>confirms client request to open chat.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="requestChat">
+								<xs:annotation>
+									<xs:documentation>server sends this to a chat buddy.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatBuddy">
+											<xs:annotation>
+												<xs:documentation>chat buddy that wants to chat with this client</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="ip" type="xs:string"/>
+													<xs:element name="chatName" type="xs:string">
+														<xs:annotation>
+															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="acceptChat">
+								<xs:annotation>
+									<xs:documentation>a chat buddy sends this to the server.  and the server sends this to a client.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="declineChat">
+								<xs:annotation>
+									<xs:documentation>a chat buddy sends this to the server</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="exitChat">
+								<xs:annotation>
+									<xs:documentation>a chat buddy sends this to the server to exit.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="chatUpdate" id="6">
+								<xs:annotation>
+									<xs:documentation>confirms client request to open chat.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="status" type="xs:int">
+											<xs:annotation>
+												<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:sequence maxOccurs="unbounded">
+											<xs:element name="chatBuddy">
+												<xs:annotation>
+													<xs:documentation>chat buddy that wants to chat with this client</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+													<xs:sequence>
+														<xs:element name="ip" type="xs:string"/>
+														<xs:element name="chatName" type="xs:string">
+															<xs:annotation>
+																<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+															</xs:annotation>
+														</xs:element>
+													</xs:sequence>
+												</xs:complexType>
+											</xs:element>
+										</xs:sequence>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="closeChat" id="7">
+								<xs:annotation>
+									<xs:documentation>close chat is sent server to client.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="chatter" id="9">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="voice" type="xs:hexBinary">
+											<xs:annotation>
+												<xs:documentation>voice wraps the binary which is the conversation.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="data" default="6" id="10">
+								<xs:annotation>
+									<xs:documentation>data will change as the types to be sent are decided upon.  The chat ID will allow the server to know what chat this data is relevent to.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="decodedChatter" id="11">
+								<xs:annotation>
+									<xs:documentation>Sent from the server to the data relation engine (dre).  The dre creates data objects and sends it back to the server.  </xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="fromIP" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>the client's ip who sent the message</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="text" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>the conversation decoded.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="chatID" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>chat id is unique id given to all chats.  it is used to know where data objects are sent, who should receive chatter (if multiple members are chatting), and for keeping track of chats.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="error" id="12">
+								<xs:annotation>
+									<xs:documentation>error messages are sent when something gets screwy.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:choice>
+											<xs:element name="noReceiver" type="xs:string">
+												<xs:annotation>
+													<xs:documentation>this is sent from the server if the chat buddy is no longer present</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+											<xs:element name="badXML" type="xs:string">
+												<xs:annotation>
+													<xs:documentation>sent if the server or client cannot read the xml.</xs:documentation>
+												</xs:annotation>
+											</xs:element>
+										</xs:choice>
+										<xs:element name="id" type="xs:long">
+											<xs:annotation>
+												<xs:documentation>id is ref to message which generated response.</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="chatBuddiesUpdate">
+								<xs:annotation>
+									<xs:documentation>chatBuddiesUpdates are sent from server to clients.  it is only sent to clients that are not in an active chat.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence maxOccurs="unbounded">
+										<xs:element name="chatBuddy">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="ip" type="xs:string"/>
+													<xs:element name="chatName" type="xs:string">
+														<xs:annotation>
+															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="status" type="xs:int">
+														<xs:annotation>
+															<xs:documentation>1 chat buddy can be chatted with.   2 - chat buddy is in another chat. 3 - chat buddy is offline.</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+						</xs:choice>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="time" type="xs:dateTime"/>
+				<xs:element name="id" type="xs:long">
+					<xs:annotation>
+						<xs:documentation>this is an id associated with each message sent</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:choice>
+					<xs:annotation>
+						<xs:documentation>clients send with the client id set.  servers send with the server id set.</xs:documentation>
+					</xs:annotation>
+					<xs:element name="clientID" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>client ID is what the client will use to identify itself witht the server.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="serverID" type="xs:string">
+						<xs:annotation>
+							<xs:documentation>server id is used by server to identify itself with the client.</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:choice>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
