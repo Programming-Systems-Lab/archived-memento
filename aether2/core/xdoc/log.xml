@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<project name="aether" xmlns="http://concedere.net/plog/April2003">
+	<log date="4/8/03" time="10:00pm EST">
+
+        <todo date="4/8/03" time="11:42pm EST" complete="true">
+			<text>
+				Every Message will need to keep a number (or string)
+				explaining what kind of message it is--Request, Response or
+				Notification.
+ 			</text>
+        </todo>
+
+		<reminder date="4/8/03" time="11:44pm EST">
+			<text>
+                Is it true that every request requires a response? For example,
+				when a user is moving around does it make sense to generate
+				a response for each of these events even if it's only '200 OK'?
+			</text>
+		</reminder>
+	</log>
+</project>

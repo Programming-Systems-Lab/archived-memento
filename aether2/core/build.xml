@@ -1,0 +1,161 @@
+<?xml version="1.0" ?>
+<project name="aether-core" default="compile" basedir=".">
+
+	<!-- project wide properties -->
+	<property name="project.name" value="aether-core" />
+	<property name="project.version" value="0.1" />
+	<property name="project.title" value="${project.name}-${project.version}" />
+	<property name="project.author.name" value="Buko Obele" />
+	<property name="project.author.email" value="buko@cs.columbia.net"  />
+
+	<!-- setup project directories -->
+	<property name="src.dir" location="src/java" />
+	<property name="src.test.dir" location="src/test" />
+	<property name="lib.dir" location="lib" />
+	<property name="build.dir" location="build" />
+	<property name="test.dir" location="${build.dir}/test" />
+	<property name="test.data.dir" location="${test.dir}/data" />
+	<property name="test.reports.dir" location="${test.dir}/reports" />
+	<property name="xdoc.dir" location="xdoc" />
+	<property name="doc.dir" location="doc" />
+	<property name="javadoc.dir" location="${doc.dir}/javadoc" />
+	<property name="dist.dir" location="dist" />
+	<property name="jarfile.name" value="${project.title}.jar" />
+	<property name="jarfile.path" location="${dist.dir}/${jarfile.name}" />
+
+	<property name="aether-lib.dir" location="..\lib\" />
+
+	<!-- compiling options -->
+	<property name="compile.debug" value="true" />
+	<property name="compile.optimize" value="false" />
+	<property name="compile.deprecation" value="false" />
+
+	<!-- external deps -->
+	<property name="log4j.jar" location="${aether-lib.dir}/log4j.jar" />
+	<property name="junit.jar" location="${aether-lib.dir}/junit.jar" />
+    <property name="elvin.jar" location="${aether-lib.dir}/je4.jar" />
+
+
+	<!-- setup classpaths -->
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}" includes="*.jar" />
+		<pathelement location="${log4j.jar}" />
+		<pathelement location="${elvin.jar}" />
+	</path>
+
+	<path id="test.classpath">
+		<path refid="compile.classpath" />
+		<pathelement location="${build.dir}/classes" />
+		<pathelement location="${build.dir}/test" />
+		<pathelement location="${junit.jar}" />
+	</path>
+
+	<!-- create the dirs -->
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- clean compile -->
+	<target name="all" depends="clean, compile" />
+
+	<!-- compile the java source -->
+	<target name="compile">
+		<mkdir dir="${build.dir}/classes" />
+		<javac
+			destdir="${build.dir}/classes"
+			srcdir="${src.dir}"
+			debug="${compile.debug}"
+			deprecation="${compile.deprecation}"
+			optimize="${compile.optimize}"
+			>
+			<classpath refid="compile.classpath" />
+		</javac>
+
+		<!-- copy resources -->
+		<copy todir="${build.dir}/classes">
+			<fileset dir="${src.dir}" excludes="**/*.java" />
+		</copy>
+	</target>
+
+	<target name="test-init" depends="init">
+		<mkdir dir="${test.dir}" />
+		<mkdir dir="${test.reports.dir}" />
+	</target>
+
+	<!-- compile junit tests -->
+	<target name="test-compile" depends="compile, test-init">
+		<javac
+			destdir="${test.dir}"
+			debug="${compile.debug}"
+			srcdir="${src.test.dir}"
+		>
+			<classpath refid="test.classpath" />
+		</javac>
+
+		<copy todir="${test.dir}">
+			<fileset dir="${src.test.dir}" excludes="**/*.java" />
+		</copy>
+	</target>
+
+	<!-- run the tests -->
+	<target name="test" depends="test-compile">
+        <junit printsummary="withOutAndErr" haltonfailure="true"
+			errorProperty="test.failed" failureproperty="test.failed" >
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+
+			<test name="${testcase}" todir="${test.data.dir}" if="testcase" />
+			<batchtest todir="${test.data.dir}" unless="testcase">
+				<fileset dir="${test.dir}" includes="**/*Test.class" />
+			</batchtest>
+        </junit>
+	</target>
+
+	<!-- build the javadoc -->
+	<target name="javadoc" depends="compile">
+		<mkdir dir="${javadoc.dir}" />
+		<javadoc
+			author="true"
+			destdir="${javadoc.dir}"
+			packagenames="*"
+			sourcepath="${src.dir}"
+			use="true"
+			version="true"
+			windowtitle="Aether-Core API Documentation"
+			private="false"
+			>
+			<classpath refid="compile.classpath" />
+		</javadoc>
+	</target>
+
+	<!-- just create the jar file -->
+	<target name="archive" depends="compile">
+		<mkdir dir="${dist.dir}" />
+		<jar destfile="${jarfile.path}" index="true">
+			<fileset dir="${build.dir}/classes" />
+		</jar>
+	</target>
+
+	<!-- make a complete source distribution -->
+	<target name="dist" depends="archive, javadoc">
+		<!-- copy documentation -->
+		<mkdir dir="${dist.dir}/doc" />
+		<copy todir="${dist.dir}/doc">
+			<fileset dir="${doc.dir}" />
+		</copy>
+
+		<!-- copy source files -->
+		<mkdir dir="${dist.dir}/src" />
+		<copy todir="${dist.dir}/src">
+			<fileset dir="${src.dir}" />
+		</copy>
+	</target>
+
+	<!-- delete all build artifacts -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+</project>

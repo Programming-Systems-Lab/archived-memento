@@ -1,0 +1,57 @@
+VetoableChangeSupport
+PropertyChangeSupport
+
+
+# provide Sessions to objects in the container
+(aether.net.Session is the service)
+SessionProvider
+	Session getSession(String componentId);
+
+# provide Connections to objects in the container, allow them to broadcast messages
+
+(aether.net.MessageConnection is the service)
+MessageConnectionProvider
+	MessageConnection getConnection()	
+
+# provide Monitors to allow them to receive events
+(aether.net.Monitor is the service)
+MonitorProvider
+	Monitor getMonitor()
+
+# allow Services to engage in (Request,Response) cycle
+ServiceRegistry
+	public void register(Service service);
+
+Services are EtherBeans so they get unique ids to, to contact a service then, you publish events to
+
+CORE EVENT ATTRIBUTES
+
+aether.event.id = {messageId}
+aether.event.type = {aether:request}|{aether:response}|{aether:notice}
+aether.event.source.id = {sourceBeanId}
+aether.event.time = {currentTime}
+
+HOW MESSAGE PASSING WORKS
+
+Request/Response messageshave a link id that identifies the message link
+
+aether.message.link.id = {linkId}
+aether.message.dest = {destGuid} || {url}
+
+
+
+There components in a Link must subscribe to: (aether.event.type == aether:response && aether.message.link.id == {busId}) in order to receive responses. This literally gets all responses sent over a message link. Note that the requestors in a link may not know the GUID of the component sending responses.
+
+Meanwhile, services wishing to receieve requests should subscribe to: (aether.message.dest = {guid of target}).
+If they are Addressable and have URLs assigned to them, eg (aether://cs.columbia.edu/master), then they should also subscribe to (aether.message.dest == {url}*). Note that since a URL can contain a query or a fragment, eg aether://master?since=43/43/23, such resources must subscribe to the URL wildcard. Also if Addressable.getUrl() returns a string with a '/' as the last character, this must be chopped off.
+
+Authenticator: aether://cs.columbia.edu/login
+Master: aether://cs.columbia.edu/master/,users/,users?filter=active
+
+Aether PTP supports both HTTP-style (RESTful) messaging and SOAP-style (Service) messaging. That is, if a Request is sent to a URL than the VERB of the Request should be one of the standard (HTTP verbs). Otherwise, the verb may be an arbitrary string or url, like 'getAllOrders'. Generally it's up to components to decide what kind of processing they'll allow.
+
+HOW TO RECEIVE NOTICES
+
+To receieve notices from a component you just have to subscribe to (aether.event.source.id == {sourceId} && aether.event.type == {aether:notice})
+
+Components that have registered as a RemoteComponent must subscribe to (response.target.id == {beanId}

@@ -1,0 +1,226 @@
+
+-- NO POINT IN HIDING Elvin, will depend on its regex ability anyways!
+
+-- Three topics assigned to every resource. request:aether://, response:aether://, and notify:aether://
+
+package aether.event;
+
+[Contains(elvin.Notification)]
+public abstract class Message
+{
+	Message()
+	Message(Event)
+
+	String:topicUri << includes query parameters >>
+	String:messageId
+	
+	String:getHeader(String)
+	void:setHeader(String)
+	Enumeration:headers()
+
+	byte[]:body
+	
+	{-- might be used later, for now all messages should have XML payloads --}
+	Object:getAttribute(String)
+	void:setAttribute(String, Object)	
+
+	Object:getProcessingInstruction(String)
+	void:setProcessingInstruction(String,Object)
+}
+
+public class Request extends Message
+{
+	String:verb
+	
+	String:getParameter(String)
+	void:setParameter(String)
+	Enumeration:parameters()	
+
+	String:requestUri << no query parameters >>
+}
+
+public class Response extends Message
+{
+	int:code
+	String:reasonLine
+	String:effectiveUri
+	String:requestId
+}	
+
+public class Notification extends Message
+{
+}
+
+public class UriFactory 
+{
+	static URI createRequestUri()
+	static URI createResponseUri()
+	static URI createNotifyUri()
+}
+
+public class ElvinConnection
+{
+	ElvinConnection(String host, int port, MessageQueue queue) throws MessageException;
+	
+	protected void:open(String host, int port) throws MessageException;
+	
+	void:publish(Message msg) throws MessageException;
+
+	void:subscribe(String uri) throws MessageException;
+	void:unsubscribe(String uri) throws MessageException;	
+	void:close();
+}
+
+package aether.client;
+
+// a connection to a specific resource in Aether
+public interface Connection
+{
+	// -- move these into the Request class!
+	static int:Head
+	static int:Get
+	static int:Put
+	static int:Post
+	static int:Delete
+	static int:Options
+	static int:Trace
+
+	String:getResourceUri();	
+	Request:createRequest(int verbType);
+	Response:send(Request req);
+	void:close();	
+}
+
+
+-- a client must automatically subscribe to the aether:response//{resource} before it sends a request.
+
+-- sending a request causes the calling thread to block. then another thread must, when a response to the specific request arrives (with the given responseId), wake up the blocking thread. A Connection ignores all receieved events until it gets one that it is looking for.
+
+public class AbstractConnection implements Connection
+{
+	protected String lastRequestId;
+	protected Response response;
+	protected String resourceUri;
+
+	protected AbstractConnection(String resourceUri);
+
+	protected void blockUntilResponse(String requestId);
+	protected boolean handle(Message msg);
+}
+
+-- opens up a brand new MessageConnection to the server. Provides a special MessageQueue that calls
+ handle(Message) when messages are enqueued on it.
+public class ClientConnection extends AbstractConnection
+{
+	ClientConnection(String resourceUri, String host, int port);
+}
+
+public interface Monitor
+{
+	public void monitor(String host, String path, MessageQueue sink);
+	public void ignore(String host, String path);
+	public void open();
+	public void close();
+}
+
+public class AbstractMonitor implements Monitor
+{
+	protected abstract MessageConnection getMessageConnection();
+}
+
+public class ClientMonitor extends Monitor
+{
+}
+
+-- on the server side, a MessageHandler/Queue is registered with the central server, SubscriptionManager to subscribe to that URI. then when this handler gets a message it calls handle(Message). If the message is handled, then the MessageHandler is unsubscribed.
+
+public class ContainerConnection extends AbstractConnection
+{
+	ContainerConnection(String resourceUri, Container container);	
+}
+
+public class ContainerMonitor extends AbstractMonitor
+{
+}
+
+-- The base interfaces should all go in aether.container                                               
+package hermes;
+
+public interface Service
+{
+	void:init() throws ServiceException
+	void:service(Request req, Response resp) throws ServiceException
+	void:notify(String srcUri, byte[] data)	
+	void:destroy()
+	
+	ServiceConfig:config
+}
+
+public class ServiceConfig
+{
+	String:contextPath
+	Container:container	
+	
+	String:getParameter(String)
+	Enumeration:parameters()
+}
+
+$home/services <-- contains service descriptors for services to be deployed
+$home/logs     <-- logging statements output
+$home/container.xml <-- configuration file
+
+Services should subscribe to given context, eg: request:aether://{containerUri}/context*
+All responses are sent by: response:aether://{containerUri}/context*
+All notifications are sent by: notify:aether://{containerUri}/context*
+
+public interface Container
+{
+	Client:createClient()
+
+	ComponentFinder:componentFinder {get}
+}
+
+public class DefaultContainer implements Container
+{
+	DefaultContainer(String host, int port, String containerUri, File home)
+}
+
+VERY LIGHTWEIGHT Component Architecture!!
+-- All components must be threadsafe! As much as possible, factor our world request processing into components. World persistence should be a component, PersistentWorld(.createRoom()), Object<->XML should be a component, ObjectIO, 
+
+-- Use the Javabeans EventModel! PropertyChangeListeners. When objects in the world are created, destroyed, or updated, fire an event. Then serialize the event to cXML!! <a:changed,created,destroyed>
+
+-- Use SOAP/XML Schema to send the objects back and forth. Use Castor or some tool to generate XML Schema of the objects and then send this back. 
+		
+public interface Component
+{
+	void:init() throws ComponentException;
+	void:configure(Map params, Container container) throws ComponentException
+	void:destroy()
+}
+
+public class ComponentFinder
+{
+	Component find(Class clazz);
+	Component find(Class clazz, String hint);
+	Component find(String hint);
+}
+
+--- Services can define components that they need! ---
+
+<service id="myWorld" context="bukos">
+	<class>...</class>
+
+	<param name="..." value="..." />
+	<param name="..." value="..." />	
+
+	<component id="vem">
+		<class>....</class>
+		<param name="..." value="..." />
+		<param name="..." value="..." />
+	</component>
+</service>
+
+Hercules -- name of the default container
+Hermes -- a special browser for the aether network
+Aphrodite -- name of the default client

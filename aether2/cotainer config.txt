@@ -1,0 +1,77 @@
+
+
+-- to register a service call
+	BeanContextServices.addService(Class serviceClass, BeanContextServiceProvider service);
+	
+-- to unregister a service call
+	BeanContextServices.revokeService(Class serviceClass, BeanContextServiceProvider bsp, boolean revokeNow);
+
+-- to test for  service call
+	BeanContextServices.hasService(Class serviceClass)
+
+<!-- beans can be remoted! -->
+<bean name="..." remote="[true|false]">
+	<class>{class of the bean}</class>
+	<param name="..." value="..." />
+</bean>
+
+<provider name="...">
+	<class>{class of the provider implementation}</class>
+	<param name="..." value="..." />
+</provider>
+
+<provider name="connectionProvider">
+	<class>aether.server.provider.ConnectionProvider</class>
+	<param name="default-connection.host">localhost</param>
+	<param name="default-connection.port">2917</param>
+	
+	<!-- if it sees this parameter, it'll get the default-connection from the container! -->
+	<param name="default-connection.beanName">....</param>
+</provider>
+
+<provider name="monitorProvider">
+	<class>aether.server.provider.MonitorProvider</class>
+</provider>
+
+<provider name="linkProvider">
+	<class>aether.server.provider.LinkProvider</class>
+</provider>
+
+<container>
+	<provide>
+		<service>aether.net.MessageConnection</service>
+		<provider-ref>connectionProvider</provider-ref>
+	</provide>
+
+	<provide>
+		<service>aether.net.Publisher</service>
+		<provider-ref>connectionProvider</provider-name>
+	</provide>
+
+	<provide>
+		<service>aether.net.Monitor</service>
+		<provider-name>monitorProvider</provider-name>
+	</provide>
+
+	<provide>
+		<service>aether.net.Link</service>
+		<provider-name>linkProvider</provider-name>
+	</provide>
+
+	<host bean-ref="{bean-name}" />
+</container>
+
+<component name="..." type="[bean|provider|container]">
+	<class>...</class>
+	<param name="{name}">{value}</param>
+
+	<component name="..." type="bean">
+		<class>....</class>
+		<property name="{propName}">
+			<component>
+				<class>...</class>
+			</component>
+			<value type="[string|int|date|boolean]>{string}</value>
+		</property>
+	</component>
+</component>

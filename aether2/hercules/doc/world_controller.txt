@@ -1,0 +1,75 @@
+-- Objects only 'exist' in the world when you get the 'world entry event'
+
+0. client begins by getting a map of the world
+0.1 client subscribes to the world model topic, begins receiving events to be processed, queueing 
+them.
+
+create a monitor for aether://psl.cs.columbia.edu/
+get a publisher to send notices to aether://psl.cs.columbia.edu/?request
+
+0.2 send a WorldEntry event asking to enter the world
+
+0.3 watch for a WorldEntryEvent describing the Avatar that has been created in the world with its client guid. 
+
+[ THE CLIENT IS JUST REPLICATING THE WORLD MODEL, IT MUST PROCESS ALL EVENTS ]
+--> client gets an event saying this object has moved, but it doesn't yet have a copy of the object. what to do? retrieve a copy of the object first and requeue the incoming event.
+
+1. client sends WorldEntryEvent
+
+2. WorldController gets it. 
+2.1 creates an Avatar to represent the client, mapping the avatar to a specific client GUID
+2.2 the WorldController than selects an appropriate Sector from the world and puts the object in the sector and sets its position
+2.2 then enters the client into the world by calling WorldModel.enter()
+
+3. WorldView intercepts the object creation event, broadcasts it
+3.1 intercepts the addition of the client to the lobby, broadcasts it
+3.2 intercepts the position update of the client, broadcasts it
+3.3 intercepts the world entry event of the client, broadcasts it
+
+
+-- how does the WorldView know about the creation of the lobby if it hasn't gotten a chance yet to start listening to the model and subscribing to objects? 
+WorldBuilder interface, part of the WorldModel. The WorldManager, executes a worldModel's builder after it initializes the controller and view but before it fires the event saying the world model is ready. The WorldBuilder is part of the world's advertisement (is it a string? or an object?)
+
+-- how does the world select a starting point? it should simply select the first room it finds for now, what the hell. can formalize it later. maybe certain sectors could be marked as 'spawn points' 
+
+
+
+
+
+WorldController : A component that manages all the World components inside a container. When a WorldController is added to a container it registers itself to provide the 'WorldController' service. Then, when Worlds wish to be activated they register themselves with the WorldController.
+
+public interface WorldController
+	public void register(WorldDescriptor wd, World world);
+	public void unregister(WorldDescriptor wd, World world);
+
+public class WorldDescriptor
+	public String getWorldUrl();
+	public void setWorldUrl();
+
+When events are published to the world URL by clients in the world, the WorldController is responsible for interpreting the events and calling the correct methods on the World object.
+
+WorldModel : When a WorldModel is added to a container it looks for a WorldController and registers itself with the WorldController.
+ 
+public interface WorldModel
+	public WorldObject create(Class c);
+	public WorldObject retrieve(String guid);
+	public void delete(WorldObject wo);
+	public void addWorldModelListener(WorldModelListener wl);
+	public void removeWorldModelListener(WorldModelListener wl);
+
+public interface WorldModelListener
+{
+	public void objectCreated(WorldEvent we);	
+	public void objectDestroyed(WorldEvent we);
+	public void objectUpdated(WorldEvent we);
+}
+
+-- how can a world model change? 
+	1) object created
+	2) object destroyed
+	3) object enters one room, leaves another
+	
+
+
+
+
