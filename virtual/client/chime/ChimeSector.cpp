@@ -217,7 +217,7 @@ bool ChimeSector::AddDoorEntity (csPoly3D &door, char *strDoorTexture, csVector3
 {
     if (!thisRoom)
 		return false;
-	
+
 	// make door mesh
     csRef<iMeshWrapper> mesh = driver->csEngine->CreateThingMesh (thisRoom, "entrance");
     mesh->SetZBufMode (CS_ZBUF_USE);
@@ -252,6 +252,7 @@ bool ChimeSector::AddDoorEntity (csPoly3D &door, char *strDoorTexture, csVector3
 
     // add door to the list of active entities
     chActiveEntities->Push (d);
+
 	return true;
 }
 
@@ -594,7 +595,7 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 	// that needs to be created for this sector
 	char regionName[150];
 	ChimeSector::GetRegionName (strISectorName, strISectorSource, regionName);
-	
+
 	// build the actual sector
 	sector->BuildSector (sectorStruct, regionName, iEntranceRoom);
 

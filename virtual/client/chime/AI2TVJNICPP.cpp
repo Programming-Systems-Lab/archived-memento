@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.2 $
- *  $Date: 2003-08-05 16:11:35 $
+ *  $Revision: 1.3 $
+ *  $Date: 2003-08-12 22:21:49 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
@@ -113,7 +113,7 @@ JNIEnv* AI2TVJNICPP::create_vm(JavaVM* jvm) {
   args.nOptions = numOptions;
   args.ignoreUnrecognized = JNI_TRUE;
 
-  jint result = JNI_CreateJavaVM(&jvm, (void **)&env, &args);
+  jint result = -1; //JNI_CreateJavaVM(&jvm, (void **)&env, &args);
   if( result < 0 )
     {
       printf("Could not create JVM, error code %d\n", result);

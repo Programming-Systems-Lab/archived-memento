@@ -150,6 +150,7 @@ ChimeSector* ChimeSystemDriver::LoadNewSector (char *strSectorName, char *strSec
 	new_sector = ChimeSector::SetupSector (iSectorOrigin, iSectorRotation, 
 		"none", strSectorName, strSectorSource, 
 		chView ? chView->GetCamera ()->GetSector () : NULL);
+
 	chNeighborQueue->AddSector (new_sector);
 
 	// Update engine if necessary
@@ -196,7 +197,8 @@ bool ChimeSystemDriver::LoadFont (char *file, char *type)
 {
 
 	// If font is loaded, assiugn new index based on type
-	if (csFontServer->LoadFont (file))
+	csFontServer->LoadFont (file);
+	if (1)
 	{
 		if (!strcmp (type, "label"))
 		{
@@ -1146,8 +1148,6 @@ bool ChimeSystemDriver::HandleMenuEvent (iEvent &Event)
 		return false;
 
 	// pass event code to selected entity
-	printf("Command code: %d\n", Event.Command.Code);
-	printf("Command key: %d\n", Event.Command.Info);
 	return chSelectedEntity->HandleMenuEvent (Event.Command.Code);
 }
 

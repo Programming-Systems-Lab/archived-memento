@@ -72,10 +72,12 @@ bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetSource)
 	{
 		int numLetters = strlen (strTargetName), letter = 'a';
 		csRef<iMaterialWrapper> texture = NULL;
-		char *txtName = "letter_a";
+		char txtName[9]; strcpy (txtName, "blank");
+
 		for (int i = 0; i < numLabels; i++)
 		{
 			texture = driver->csEngine->GetMaterialList ()->FindByName ("blank");
+
 			if (i < numLetters)
 			{
 				letter = strTargetName[i];
@@ -83,7 +85,7 @@ bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetSource)
 					letter += 32;
 				if ( (letter >= 'a' && letter <= 'z') || (letter >= '0' && letter <= '9') )
 				{
-					txtName[7] = (char)letter;
+					sprintf (txtName, "letter_%c", (char)letter);
 					texture = driver->csEngine->GetMaterialList ()->FindByName (txtName);
 				}
 			}
@@ -318,11 +320,9 @@ void ChimeSectorDoor::HandleRightMouseClick (iEvent &event)
  *****************************************************************/
 bool ChimeSectorDoor::HandleMenuEvent (int iMenuCode)
 {
-	printf("Looking for code: %d\n", DOOR_MENU_SET_NAME);
 	switch (iMenuCode)
 	{
 	case DOOR_MENU_SET_NAME : 
-		printf("Pop-up window\n");
 		ModularWindow *w = new ModularWindow (driver->GetApplication (), "Door Window");
         w->SetSize (100, 40);
         w->Center ();
