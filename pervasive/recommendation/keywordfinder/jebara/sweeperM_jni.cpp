@@ -20,7 +20,7 @@ extern "C" {
 
 // JC(2/28/2003):Added headers
 #include <vector>
-#include "impKeywordFinder.h"
+#include "psl_memento_pervasive_recommendation_keywordfinder_jebara_impKeywordFinder.h"
 using namespace std;
 
 #define  MAXLINE  512
