@@ -1,15 +1,15 @@
 package memento.world.model;
 
 import javax.swing.event.EventListenerList;
-import java.util.Enumeration;
-import java.util.Set;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Basic implementation of the Sector interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class Sector extends WorldObject

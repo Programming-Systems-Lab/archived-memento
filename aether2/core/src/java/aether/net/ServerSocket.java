@@ -1,8 +1,8 @@
 package aether.net;
 
-import aether.event.Response;
-import aether.event.Request;
 import aether.event.EventHandler;
+import aether.event.Request;
+import aether.event.Response;
 
 import java.io.IOException;
 

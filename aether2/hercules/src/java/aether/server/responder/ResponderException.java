@@ -6,7 +6,7 @@ import net.concedere.dundee.ComponentException;
 /**
  * Indicates a general error within the Responder subsystem.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class ResponderException extends ComponentException

@@ -15,7 +15,7 @@ import java.beans.beancontext.BeanContextChildSupport;
 
 /**
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultSwitchBoardTest extends AetherTestCase

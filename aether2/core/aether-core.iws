@@ -6,7 +6,6 @@
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/MulticastSocket.java" line="0" column="58" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.56232685" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultConnection.java" line="9" column="70" vertical-scroll-proportion="0.22743683" horizontal-scroll-proportion="0.67867035" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultMulticastSocket.java" line="23" column="13" vertical-scroll-proportion="-3.6371841" horizontal-scroll-proportion="0.12603877" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultServerSocket.java" line="63" column="5" vertical-scroll-proportion="0.43140793" horizontal-scroll-proportion="0.048476454" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Event.java" line="13" column="22" vertical-scroll-proportion="-0.48375452" horizontal-scroll-proportion="0.2132964">
         <folding>
           <element signature="imports" expanded="true" />
@@ -17,17 +16,14 @@
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Message.java" line="32" column="5" vertical-scroll-proportion="1.1750902" horizontal-scroll-proportion="0.048476454" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/ServerSocket.java" line="64" column="35" vertical-scroll-proportion="0.77256316" horizontal-scroll-proportion="0.33933517" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Socket.java" line="14" column="17" vertical-scroll-proportion="-1.4566787" horizontal-scroll-proportion="0.16481994" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Response.java" line="17" column="33" vertical-scroll-proportion="0.44584838" horizontal-scroll-proportion="0.3199446" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="1" column="0" vertical-scroll-proportion="0.037906136" horizontal-scroll-proportion="0.0" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultSocket.java" line="18" column="20" vertical-scroll-proportion="0.26534295" horizontal-scroll-proportion="0.19390582" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="16" column="19" vertical-scroll-proportion="0.45487365" horizontal-scroll-proportion="0.18421052" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="17" column="8" vertical-scroll-proportion="0.4927798" horizontal-scroll-proportion="0.077562325" />
+      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="1" column="0" vertical-scroll-proportion="0.037906136" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Response.java" line="17" column="33" vertical-scroll-proportion="0.44584838" horizontal-scroll-proportion="0.3199446" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultServerSocket.java" line="115" column="6" vertical-scroll-proportion="0.9163763" horizontal-scroll-proportion="0.058171745" />
     </history>
     <open-files>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Socket.java" line="14" column="17" vertical-scroll-proportion="-1.4566787" horizontal-scroll-proportion="0.16481994" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultSocket.java" line="18" column="20" vertical-scroll-proportion="0.26534295" horizontal-scroll-proportion="0.19390582" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="16" column="19" vertical-scroll-proportion="0.45487365" horizontal-scroll-proportion="0.18421052" selected="true" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="1" column="0" vertical-scroll-proportion="0.037906136" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Response.java" line="17" column="33" vertical-scroll-proportion="0.44584838" horizontal-scroll-proportion="0.3199446" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultServerSocket.java" line="115" column="6" vertical-scroll-proportion="0.9163763" horizontal-scroll-proportion="0.058171745" selected="true" />
     </open-files>
   </component>
   <component name="ToolWindowManager">

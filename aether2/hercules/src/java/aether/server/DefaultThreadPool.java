@@ -1,24 +1,13 @@
 package aether.server;
 
-import net.concedere.dundee.DefaultComponent;
-import net.concedere.dundee.ComponentException;
-import net.concedere.dundee.framework.Disposable;
-import net.concedere.dundee.framework.Startable;
-import net.concedere.dundee.framework.Initializable;
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import org.apache.log4j.Logger;
-
-import java.beans.beancontext.BeanContextServiceProvider;
-import java.beans.beancontext.BeanContextServices;
-import java.util.Iterator;
-
-import aether.server.ThreadPool;
 
 /**
  * Provides a threadpool component that can be aggressively tuned.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultThreadPool implements ThreadPool

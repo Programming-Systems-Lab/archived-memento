@@ -3,7 +3,7 @@ package aether.server.framework;
 /**
  * Implemented by objects that have a globally unique id.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface Identifiable

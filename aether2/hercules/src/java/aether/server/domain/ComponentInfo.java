@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Tracks basic information about components deployed within the aether
  * network.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class ComponentInfo implements Serializable

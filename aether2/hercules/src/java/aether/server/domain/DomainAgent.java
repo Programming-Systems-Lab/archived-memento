@@ -1,27 +1,17 @@
 package aether.server.domain;
 
-import net.concedere.dundee.DefaultComponent;
-import net.concedere.dundee.ComponentException;
-import net.concedere.dundee.Beans;
-import net.concedere.dundee.framework.Initializable;
-import net.concedere.dundee.framework.Disposable;
-
-import java.beans.beancontext.BeanContextMembershipListener;
-import java.beans.beancontext.BeanContextMembershipEvent;
-import java.beans.beancontext.BeanContextChild;
-import java.beans.beancontext.BeanContextChildSupport;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
-import java.io.*;
-
-import aether.net.*;
+import aether.event.Event;
+import aether.event.EventHandler;
+import aether.event.Notice;
+import aether.net.MulticastSocket;
 import aether.server.framework.Advertising;
 import aether.server.framework.Identifiable;
-import aether.event.Notice;
-import aether.event.EventHandler;
-import aether.event.Event;
 import org.apache.log4j.Logger;
+
+import java.beans.beancontext.BeanContextChildSupport;
+import java.beans.beancontext.BeanContextMembershipEvent;
+import java.beans.beancontext.BeanContextMembershipListener;
+import java.io.IOException;
 
 /**
  * Represents an agent in the peer-to-peer master server.
@@ -29,7 +19,7 @@ import org.apache.log4j.Logger;
  * TODO: this class should retreive Advertisement metadata for a component
  * --- by using BeanInfo objects
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DomainAgent extends BeanContextChildSupport

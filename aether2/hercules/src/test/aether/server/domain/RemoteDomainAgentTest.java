@@ -11,7 +11,7 @@ import aether.server.DefaultThreadPool;
 
 /**
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class RemoteDomainAgentTest extends AetherTestCase

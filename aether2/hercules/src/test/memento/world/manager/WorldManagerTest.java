@@ -17,7 +17,7 @@ import java.util.Iterator;
 
 /**
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class WorldManagerTest extends AetherTestCase

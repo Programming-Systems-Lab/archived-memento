@@ -6,7 +6,7 @@ import java.io.IOException;
 /**
  * A SwitchBoard dispatches incoming requests to the appropriate Responders.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface SwitchBoard

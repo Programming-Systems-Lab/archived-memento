@@ -2,24 +2,32 @@
 <project version="3" relativePaths="false">
   <component name="FileEditorManager">
     <history>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/ThreadPool.java" line="8" column="17" vertical-scroll-proportion="0.29268292" horizontal-scroll-proportion="0.3489736" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/ManagedPublisher.java" line="50" column="39" vertical-scroll-proportion="-1.4638989" horizontal-scroll-proportion="0.37811634" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoardListener.java" line="17" column="36" vertical-scroll-proportion="0.4512195" horizontal-scroll-proportion="0.34903046" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoardEvent.java" line="10" column="13" vertical-scroll-proportion="-1.304878" horizontal-scroll-proportion="0.12603877" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/RuntimeResponderException.java" line="9" column="13" vertical-scroll-proportion="0.101045296" horizontal-scroll-proportion="0.12603877" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/Responder.java" line="32" column="34" vertical-scroll-proportion="0.6707317" horizontal-scroll-proportion="0.32963988" />
-      <source-position-entry url="file://$PROJECT_DIR$/.cvsignore" line="0" column="0" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.0" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoard.java" line="11" column="17" vertical-scroll-proportion="-0.79268295" horizontal-scroll-proportion="0.16481994" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/framework/Advertising.java" line="11" column="17" vertical-scroll-proportion="0.34476534" horizontal-scroll-proportion="0.16481994" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="26" column="34" vertical-scroll-proportion="0.9855596" horizontal-scroll-proportion="0.32963988" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainInfo.java" line="69" column="58" vertical-scroll-proportion="0.9241877" horizontal-scroll-proportion="0.56232685" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/RegistryException.java" line="27" column="17" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.16481994" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="200" column="29" vertical-scroll-proportion="0.34146342" horizontal-scroll-proportion="0.28116342" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/ComponentRegistry.java" line="0" column="45" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.4362881" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="139" column="98" vertical-scroll-proportion="0.30487806" horizontal-scroll-proportion="0.9501385" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/ConnectionFactoryTest.java" line="80" column="11" vertical-scroll-proportion="2.5243902" horizontal-scroll-proportion="0.1066482" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="24" column="13" vertical-scroll-proportion="0.47560975" horizontal-scroll-proportion="0.12603877">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/Responder.java" line="25" column="38" vertical-scroll-proportion="0.70731705" horizontal-scroll-proportion="0.36842105" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/ComponentRegistry.java" line="6" column="44" vertical-scroll-proportion="0.19512194" horizontal-scroll-proportion="0.4265928" />
+      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="10" column="98" vertical-scroll-proportion="0.2400722" horizontal-scroll-proportion="0.9501385" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/manager/WorldController.java" line="109" column="10" vertical-scroll-proportion="0.81881535" horizontal-scroll-proportion="0.09695291">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
     </history>
     <open-files>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="139" column="98" vertical-scroll-proportion="0.30487806" horizontal-scroll-proportion="0.9501385" selected="true" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/manager/WorldController.java" line="109" column="10" vertical-scroll-proportion="0.81881535" horizontal-scroll-proportion="0.09695291" selected="true">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
     </open-files>
   </component>
   <component name="ToolWindowManager">
@@ -247,7 +255,6 @@
     <view id="ProjectPane">
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/server/domain" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/server/responder" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world/manager" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/doc" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether" />

@@ -5,7 +5,7 @@ import aether.server.domain.Advertisement;
 /**
  * Describes a world that is now available.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class WorldAdvertisement extends Advertisement

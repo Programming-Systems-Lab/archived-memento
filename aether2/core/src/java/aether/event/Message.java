@@ -1,7 +1,6 @@
 package aether.event;
 
-import org.elvin.je4.Notification;
-import org.elvin.je4.Subscription;
+
 
 /**
  * Indicates an Event that has a specific destination. Message events are used

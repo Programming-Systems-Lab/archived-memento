@@ -3,7 +3,7 @@ package aether.server;
 /**
  * Defines a threadpool that units of work can be queued upon.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface ThreadPool

@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Keeps information about a domain.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DomainInfo implements Serializable

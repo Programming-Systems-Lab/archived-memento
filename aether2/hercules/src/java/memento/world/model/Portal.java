@@ -3,7 +3,7 @@ package memento.world.model;
 /**
  * Basic implementation of the Portal interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class Portal extends LocatableWorldObject

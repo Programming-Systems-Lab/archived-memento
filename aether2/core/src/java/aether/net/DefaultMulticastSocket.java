@@ -4,11 +4,11 @@ import aether.event.Event;
 import aether.event.EventException;
 import aether.event.EventHandler;
 import aether.event.Notice;
+import org.apache.log4j.Logger;
 import org.elvin.je4.Consumer;
 import org.elvin.je4.Notification;
 import org.elvin.je4.NotificationListener;
 import org.elvin.je4.Subscription;
-import org.apache.log4j.Logger;
 
 import javax.swing.event.EventListenerList;
 import java.io.IOException;

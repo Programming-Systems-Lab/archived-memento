@@ -1,9 +1,6 @@
 package aether.event;
 
-import org.elvin.je4.Notification;
 import org.elvin.je4.Subscription;
-
-import java.util.*;
 
 /**
  * Defines an Aether Request issued against some Aether Resource.

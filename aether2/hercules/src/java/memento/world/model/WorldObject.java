@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Partial implementation of the WorldObject interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class WorldObject implements Serializable

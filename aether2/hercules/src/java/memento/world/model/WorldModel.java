@@ -1,14 +1,17 @@
 package memento.world.model;
 
-import java.util.*;
-import java.beans.PropertyChangeSupport;
-
 import aether.server.domain.Advertisement;
+
+import java.beans.PropertyChangeSupport;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Default implementation of the WorldModel interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class WorldModel

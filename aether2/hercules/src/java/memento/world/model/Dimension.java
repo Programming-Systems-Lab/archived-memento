@@ -3,7 +3,7 @@ package memento.world.model;
 /**
  * Describes the dimensions of an object in the world.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class Dimension

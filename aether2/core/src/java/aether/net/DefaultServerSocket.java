@@ -1,11 +1,11 @@
 package aether.net;
 
-import org.elvin.je4.Consumer;
-import org.elvin.je4.Subscription;
-import org.elvin.je4.NotificationListener;
-import org.elvin.je4.Notification;
-import org.apache.log4j.Logger;
 import aether.event.*;
+import org.apache.log4j.Logger;
+import org.elvin.je4.Consumer;
+import org.elvin.je4.Notification;
+import org.elvin.je4.NotificationListener;
+import org.elvin.je4.Subscription;
 
 import java.io.IOException;
 
@@ -107,7 +107,10 @@ public class DefaultServerSocket implements ServerSocket
                 }
 
                 // pass it to the event handler
-                eventHandler.handle(request);
+                if (eventHandler != null)
+                {
+                    eventHandler.handle(request);
+                }
             }
         };
         subscription.addNotificationListener(n);

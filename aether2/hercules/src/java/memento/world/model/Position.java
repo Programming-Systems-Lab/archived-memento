@@ -3,7 +3,7 @@ package memento.world.model;
 /**
  * Describes a position in the three dimensional world.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class Position

@@ -1,13 +1,14 @@
 package aether.server.responder;
 
-import aether.event.*;
+import aether.event.Event;
+import aether.event.EventHandler;
+import aether.event.Request;
+import aether.event.Response;
 import aether.net.Connection;
+import aether.net.DefaultServerSocket;
+import aether.net.ServerSocket;
 import aether.server.ThreadPool;
 import org.apache.log4j.Logger;
-import org.elvin.je4.Consumer;
-import org.elvin.je4.Notification;
-import org.elvin.je4.NotificationListener;
-import org.elvin.je4.Subscription;
 
 import javax.swing.event.EventListenerList;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.*;
 /**
  * Default implementation of the SwitchBoard interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultSwitchBoard implements SwitchBoard
@@ -32,9 +33,10 @@ public class DefaultSwitchBoard implements SwitchBoard
     protected EventListenerList listenerList = new EventListenerList();
 
     /**
-     * Mapping from Responder objects to (Elvin) Subscription objects.
+     * Mapping from Responder objects to ServerSocket objects.
      */
-    protected Map subMap = Collections.synchronizedMap(new IdentityHashMap());
+    protected Map socketMap =
+            Collections.synchronizedMap(new IdentityHashMap());
 
     /**
      * ThreadPool used to execute the handling of requests.
@@ -45,9 +47,6 @@ public class DefaultSwitchBoard implements SwitchBoard
      * Mapping from Destination IDs to Responder objects.
      */
     protected Map destMap = Collections.synchronizedMap(new HashMap());
-
-    private Consumer consumer;
-    private NotificationListener requestListener;
 
     private static final Logger log =
             Logger.getLogger(DefaultSwitchBoard.class);
@@ -121,27 +120,25 @@ public class DefaultSwitchBoard implements SwitchBoard
             throw new ResponderException(msg);
         }
 
-        // create a subscription to receive requests sent to this destination
-        Subscription sub = Message.createSubscriptionForDestination(dest);
+        // create a new ServerSocket to receive requests to this destination
+        ServerSocket serverSocket = new DefaultServerSocket(dest, connection);
 
-        // construct a notification listener that will queue the requests sent
-        // to the subscription
-        requestListener = new NotificationListener()
+        // construct an event handler that will process requests sent to the
+        // server socket
+        EventHandler requestHandler = new EventHandler()
         {
-            public void notificationAction(Notification notification)
+            public void handle(Event event)
             {
                 threadPool.execute(
-                        new RequestProcessor(responder, notification));
+                        new RequestProcessor(responder, (Request) event));
             }
         };
-        sub.addNotificationListener(requestListener);
-
-        // now add this subscription to the consumer
-        synchronized (this) { consumer.addSubscription(sub); }
+        serverSocket.setEventHandler(requestHandler);
+        serverSocket.bind();
 
         // now put this subscription in the map, corresponding to the
         // responder reference
-        subMap.put(responder, sub);
+        socketMap.put(responder, serverSocket);
 
         // put the responder in the destination map, corresponding to its
         // dest
@@ -156,8 +153,8 @@ public class DefaultSwitchBoard implements SwitchBoard
         return destMap.containsKey(destination);
     }
 
-    public void unbind(Responder responder, String dest) throws ResponderException,
-            IOException
+    public void unbind(Responder responder, String dest)
+            throws ResponderException, IOException
     {
         if ((responder == null) || (dest == null))
         {
@@ -166,7 +163,7 @@ public class DefaultSwitchBoard implements SwitchBoard
         }
 
         // make sure that this responder has actually been bound
-        if (destMap.containsKey(dest))
+        if (isBound(dest))
         {
             Responder oldResp = (Responder) destMap.get(dest);
 
@@ -175,27 +172,22 @@ public class DefaultSwitchBoard implements SwitchBoard
                 String msg = "given Responder is not bound to dest " + dest;
                 throw new ResponderException(msg);
             }
+
+            // close the server socket
+            ServerSocket socket = (ServerSocket) socketMap.remove(responder);
+            socket.unbind();
+
+            // remove it from the destination map
+            destMap.remove(dest);
+
+            // fire the unbinding event
+            fireResponderUnbound(responder, dest);
         }
         else
         {
             String msg = "no Responder bound to dest " + dest;
             throw new ResponderException(msg);
         }
-
-        // get the subscription that this responder was bound to
-        Subscription sub = (Subscription) subMap.get(responder);
-
-        // now stop subscribing to this responder
-        synchronized (this) { consumer.removeSubscription(sub); }
-
-        // remove the subscription and the destination binding
-        subMap.remove(responder);
-
-        // remove the destination binding
-        destMap.remove(dest);
-
-        // fire the unbinding event
-        fireResponderUnbound(responder, dest);
     }
 
     public void addSwitchBoardListener(SwitchBoardListener sbl)
@@ -252,30 +244,32 @@ public class DefaultSwitchBoard implements SwitchBoard
 
     public void initialize()
     {
-        // create the consumer
-        consumer = new Consumer(connection.elvinConnection());
     }
 
     public void dispose()
     {
-        // clear the subscription map
-        subMap.clear();
-        subMap = null;
-
-        // close the consumer and all subscriptions to it
-        consumer.close();
-        consumer = null;
+        // iterate over the still bound Responders and unbind each one
+        // --- note that unbinding a Responder makes changes to the collections
+        // --- being iterated so we have to make a copy
+        Map destMapCopy = new HashMap(destMap);
 
         // now fire unbinding events for all the still-bound responders
-        for (Iterator i = destMap.entrySet().iterator(); i.hasNext(); )
+        for (Iterator i = destMapCopy.entrySet().iterator(); i.hasNext(); )
         {
-            Map.Entry me = (Map.Entry) i.next();
-            String dest = (String) me.getKey();
-            Responder r = (Responder) me.getValue();
+            Map.Entry entry = (Map.Entry) i.next();
+            String dest = (String) entry.getKey();
+            Responder r =  (Responder)  entry.getValue();
 
-            fireResponderUnbound(r, dest);
-
-            i.remove();
+            try
+            {
+                unbind(r, dest);
+            }
+            catch (Exception e)
+            {
+                String msg = "encountered unexpected error unbinding " +
+                        "responder=" + r + " from dest=" + dest;
+                log.warn(msg, e);
+            }
         }
 
         destMap = null;
@@ -286,30 +280,30 @@ public class DefaultSwitchBoard implements SwitchBoard
      * RequestExecutors are usually queued up and then executed asynchronously in
      * the request processing threads.
      *
-     * @author Buko O. (buko@concedere.net)
+     * @author Buko O. (aso22@columbia.edu)
      * @version 0.1
      **/
     private class RequestProcessor implements Runnable
     {
         private Responder responder;
-        private Notification notifcation;
+        private Request request;
 
         /**
          * Construct a new RequestProcessor to process the given request.
          *
-         * @param resp  Responder that generates the response
-         * @param notif Notification containing Request data
+         * @param resp Responder that generates the response
+         * @param req  Request Event to be processed
          */
-        public RequestProcessor(Responder resp, Notification notif)
+        public RequestProcessor(Responder resp, Request req)
         {
-            if ((resp == null) || (notif == null))
+            if ((resp == null) || (req == null))
             {
                 String msg = "no parameter can be null";
                 throw new IllegalArgumentException(msg);
             }
 
             this.responder = resp;
-            this.notifcation = notif;
+            this.request = req;
         }
 
         /**
@@ -317,60 +311,44 @@ public class DefaultSwitchBoard implements SwitchBoard
          */
         public void run()
         {
-            Request request = null;
+            // construct the necessary Response object
+            final Response response = new Response(request);
 
-            if (Event.isRequest(notifcation))
+            // ask the responder to process it
+            try
             {
-                try
-                {
-                    request = new Request();
-                    request.parse(notifcation);
-                }
-                catch (EventException ee)
-                {
-                    log.warn("received bad request data", ee);
-                    ee.printStackTrace();
-                }
+                responder.respond(request, response);
+            }
+            catch (ResponderException re)
+            {
+                String msg = "responder " + responder + " failed to " +
+                        "process request " + request;
+                log.warn(msg, re);
 
-                // construct the necessary Response object
-                final Response response =
-                        request.createResponse(responder.getResponderId());
+                // todo: in the future when a responder fails to process
+                // --- an event it should probably be reloaded somehow
+                // --- like servlets
+            }
 
-                // ask the responder to process it
-                try
+            // instead of sending the response back in the request
+            // handling thread, in order to increase throughput we queue
+            // up the actual sending
+            threadPool.execute(new Runnable()
+            {
+                public void run()
                 {
-                    responder.respond(request, response);
-                }
-                catch (ResponderException re)
-                {
-                    throw new RespondFailedException(re);
-                }
-
-                // instead of sending the response back in the request
-                // handling thread, in order to increase throughput we queue
-                // up the actual sending
-                threadPool.execute(new Runnable()
-                {
-                    public void run()
+                    try
                     {
-                        try
-                        {
-                            connection.publish(response);
-                        }
-                        catch (IOException ioe)
-                        {
-                            log.warn("Failed to send response "
-                                     + response, ioe);
-                        }
+                        connection.publish(response);
                     }
-                });
-            }
-            else
-            {
-                // received a notification that wasn't a request
-                log.warn("recieved non-request notification: " + notifcation);
-            }
+                    catch (IOException ioe)
+                    {
+                        log.warn("Failed to send response "
+                                 + response, ioe);
+                    }
+                }
+            });
         }
     }
-
 }
+

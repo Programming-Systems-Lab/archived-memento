@@ -5,7 +5,7 @@ import java.util.EventObject;
 /**
  * Indicates an event that occured within a Switchboard object.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class SwitchBoardEvent extends EventObject

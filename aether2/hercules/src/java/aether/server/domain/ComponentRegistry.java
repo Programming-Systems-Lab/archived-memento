@@ -3,6 +3,9 @@ package aether.server.domain;
 /**
  * Defines a registry for known components within the event network.
  *
+ * todo: A ComponentRegistry should have its own listener and fire events when
+ * --- a component registers and unregisters
+ *
  * Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/

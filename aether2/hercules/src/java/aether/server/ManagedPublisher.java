@@ -1,21 +1,11 @@
 package aether.server;
 
-import net.concedere.dundee.DefaultComponent;
-import net.concedere.dundee.ComponentException;
-import net.concedere.dundee.framework.Initializable;
-import net.concedere.dundee.framework.Disposable;
-import net.concedere.dundee.framework.Startable;
+import aether.event.Event;
 import aether.net.Connection;
 import aether.net.Publisher;
-import aether.event.BlockingEventQueue;
-import aether.event.Event;
-
-import java.beans.beancontext.BeanContextServiceProvider;
-import java.beans.beancontext.BeanContextServices;
-import java.io.IOException;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
+
+import java.io.IOException;
 
 /**
  * Provides the publishing service to components in the container for sending
@@ -26,7 +16,7 @@ import org.apache.log4j.Logger;
  *
  * TODO: enforce stop() method contract
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class ManagedPublisher implements Publisher

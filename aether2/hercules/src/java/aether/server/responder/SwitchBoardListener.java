@@ -5,7 +5,7 @@ import java.util.EventListener;
 /**
  * Indicates an object wishing to listen to events on the SwitchBoard.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface SwitchBoardListener extends EventListener

@@ -3,7 +3,7 @@ package memento.world.model;
 /**
  * Indicates an object in the world that has a location.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class LocatableWorldObject extends WorldObject

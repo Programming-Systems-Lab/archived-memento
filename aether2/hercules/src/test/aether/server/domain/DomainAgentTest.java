@@ -8,14 +8,12 @@ import aether.server.AetherContainer;
 import aether.server.core.DefaultConnectionProvider;
 import aether.server.ManagedPublisher;
 import aether.server.DefaultThreadPool;
-import memento.world.manager.WorldManager;
-import memento.world.manager.DefaultWorldManager;
 import memento.world.model.WorldModel;
 import memento.world.model.WorldAdvertisement;
 
 /**
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DomainAgentTest extends AetherTestCase

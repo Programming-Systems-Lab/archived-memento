@@ -1,6 +1,5 @@
 package aether.event;
 
-import org.elvin.je4.Notification;
 import org.elvin.je4.Subscription;
 
 /**
