@@ -44,6 +44,30 @@ public class TopicConnection
 	}
 	
 	/**
+	 * Construct a new TopicConnection to be used only for subscribing to 
+	 * topics. Because no Component source is provided, this connection can't
+	 * be used to send events.
+	 * 
+	 * @param topic   topic to connect to
+	 * @param service event service to use 
+	 **/
+	TopicConnection(Topic topic, EventService service) throws EventException
+	{
+		if ((topic == null) || (service == null))
+		{
+			String msg = "no parameter can be null";
+			throw new IllegalArgumentException(msg);
+		}
+		
+		this.topic = topic;
+		this.eventService = service;
+		connected = true;
+		
+		// open the connection to the hub
+		service.openVirtualConnection(topic.getHost(), topic.getPort());
+	}
+	
+	/**
 	 * Close the connection to the topic. You should close a connection to a
 	 * topic whenever you are finished with it ie after you're done publishing
 	 * events to the topic or you've unsubscribed all handlers from the topic.
@@ -66,7 +90,16 @@ public class TopicConnection
 	 **/
 	public void publish(Event event) throws EventException
 	{
-		eventService.publish(topic, event, source);
+		if (source != null)
+		{
+			eventService.publish(topic, event, source);
+		}
+		else
+		{
+			String msg = "source is null; connection can't be used to send" +
+				" events";
+			throw new IllegalStateException(msg);
+		}
 	}
 	
 	/**

@@ -37,6 +37,22 @@ public abstract class EventService
 	}
 	
 	/**
+	 * Retrieve a connection to a topic hosted within the network without
+	 * providing a Component source. The returned TopicConnection cannot be
+	 * used to send events, it can only be used to subscribe to topics and
+	 * receieve events. This is useful if a non-Component must subscribe to a
+	 * specific set of events.
+	 * 
+	 * @param topic topic hosted within the network
+	 * @throws EventException
+	 *         if the connection coulnd't be established
+	 **/
+	public TopicConnection openConnection(Topic topic) throws EventException
+	{
+		return new TopicConnection(topic, this);
+	}
+	
+	/**
 	 * Open a connection to an event hub. Before subscribing to a topic or 
 	 * publishing an event to a topic you must first open a connection to the
 	 * event hub.

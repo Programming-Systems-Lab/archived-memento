@@ -1,5 +1,6 @@
 package psl.memento.server.container.component;
 
+import psl.memento.server.container.event.Topic;
 import psl.memento.server.util.Uid;
 
 /**
@@ -19,6 +20,7 @@ public class Address
 	private String ipAddress;
 	private Uid entityId;
 	private Uid componentId;
+	private Topic msgTopic;
 	
 	/**
 	 * Construct a new Address to represent some component on the 
@@ -28,12 +30,14 @@ public class Address
 	 * @param entityID    unique entity id for the entity
 	 * @param componentId unique component id of the component that generated 
 	 *                    this event
+	 * @param topic       special Topic used for ptp messaging
 	 **/
-	public Address(String ipAddress, Uid entityId, Uid componentId)
+	public Address(String ipAddress, Uid entityId, Uid componentId, Topic topic)
 	{
 		setIpAddress(ipAddress);
 		setEntityId(entityId);
 		setComponentId(componentId);
+		setMessageTopic(topic);
 	}
 	
 	/**
@@ -97,5 +101,56 @@ public class Address
 	public void setComponentId(Uid componentId)
 	{
 		this.componentId = componentId;
+	}
+	
+	/**
+	 * Get the messaging topic for this component. This Topic can be used by
+	 * a MessageService to send point-to-point messages directly to this 
+	 * component.
+	 * 
+	 * @return messaging Topic for this component
+	 **/
+	public Topic getMessageTopic()
+	{
+		return msgTopic;
+	}
+	
+	/**
+	 * Set the messaging topic to be used for this component.
+	 * 
+	 * @param topic Messaging topic for this component
+	 **/
+	public void setMessageTopic(Topic topic)
+	{
+		this.msgTopic = topic;
+	}
+	
+	/**
+	 * Determine if this Address equals the given address.
+	 * 
+	 * @param o Address to test for equality against
+	 **/
+	public boolean equals(Object o)
+	{
+		if ((o == null) || !(o instanceof Address))
+		{
+			return false;
+		}
+		
+		Address addr = (Address) o;
+		return (addr.entityId == entityId) && (addr.componentId == componentId)
+			&& (addr.ipAddress == ipAddress);
+	}
+	
+	/**
+	 * Get the hashcode for this Address.
+	 * 
+	 * @return hashcode for this address
+	 **/
+	public int hashCode()
+	{
+		StringBuffer buf = new StringBuffer(componentId.toString());
+		buf.append(entityId.toString()).append(ipAddress);
+		return buf.toString().hashCode();
 	}
 }

@@ -68,7 +68,19 @@ public abstract class Event
 			Uid compId = new Uid(getString("event.source.component-id"));
 			Uid entityId = new Uid(getString("event.source.entity-id"));
 			String ipAddr = getString("event.source.ip");
-			source = new Address(ipAddr, entityId, compId);
+			
+			try
+			{
+				Topic msgTopic = 
+					new Topic(getString("event.source.message-topic"));
+				source = new Address(ipAddr, entityId, compId, msgTopic);
+			}
+			catch (MalformedURLException mue)
+			{
+				// temporary fix
+				String msg = "bad topic url received";
+				throw new IllegalArgumentException(msg);
+			}
 		}
 		
 		return source;
@@ -91,7 +103,7 @@ public abstract class Event
 		put("event.source.component-id", source.getComponentId().toString());
 		put("event.source.entity-id", source.getEntityId().toString());
 		put("event.source.ip", source.getIpAddress());
-		
+		put("event.source.message-topic", source.getMessageTopic().toUrl());
 	}
 	
 	 /**
