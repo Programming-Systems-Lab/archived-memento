@@ -18,6 +18,14 @@
       <root type="composite">
         <root type="jdk" rootType="classPath" name="java version &quot;1.4.2&quot;" />
         <root type="output" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/aether-core-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/concurrent.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/dom4j.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/dom4jutil-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/dundee-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/je4.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/junit.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java2/school/psl/memento/aether2/lib/log4j.jar!/" />
       </root>
     </classPath>
     <excludePath>
