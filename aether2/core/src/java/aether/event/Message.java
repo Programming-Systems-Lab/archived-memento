@@ -12,26 +12,6 @@ import org.elvin.je4.Subscription;
  **/
 public abstract class Message extends Event implements Attribute.Message
 {
-	/**
-	 * Default ctor.
-	 */
-	protected Message()
-	{
-		super();
-	}
-
-	/**
-	 * Construct a new Message from an existing Notification.
-	 *
-	 * @param notif Notification containing Notification data
-	 * @throws EventException
-	 *         if something goes wrong
-	 */
-	protected Message(Notification notif) throws EventException
-	{
-		super(notif);
-	}
-
     /**
 	 * Get the link ID of this Message.
 	 *

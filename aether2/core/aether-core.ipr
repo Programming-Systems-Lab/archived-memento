@@ -65,9 +65,10 @@
   </component>
   <component name="AntConfiguration">
     <buildFile url="file://$PROJECT_DIR$/build.xml">
+      <runInBackground value="true" />
       <useEmacsModeOutput value="true" />
       <useCustomJdk value="false" />
-      <treeView value="true" />
+      <treeView value="false" />
       <useJavaw value="false" />
       <verbose value="true" />
       <includeProjectClasspath value="false" />

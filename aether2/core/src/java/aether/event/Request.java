@@ -10,7 +10,7 @@ import java.util.*;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class Request extends Message implements Attribute.Request, Verb
+public class Request extends Message implements Attribute.Request
 {
     public String getEventType()
     {
