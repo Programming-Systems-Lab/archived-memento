@@ -6,8 +6,8 @@ import aether.net.DefaultConnection;
 import aether.net.Monitor;
 import aether.server.AetherContainer;
 import aether.server.core.DefaultConnectionProvider;
-import aether.server.core.PublisherProvider;
-import aether.server.core.ThreadPoolProvider;
+import aether.server.ManagedPublisher;
+import aether.server.DefaultThreadPool;
 import memento.world.manager.WorldManager;
 import memento.world.manager.DefaultWorldManager;
 import memento.world.model.WorldModel;
@@ -29,13 +29,13 @@ public class DomainAgentTest extends AetherTestCase
 		dcp.setDefaultConnection(conn);
 		container.add(dcp);
 
-		PublisherProvider pub = new PublisherProvider();
+		ManagedPublisher pub = new ManagedPublisher();
 		container.add(pub);
 
 		MonitorProvider mon = new MonitorProvider();
 		container.addService(Monitor.class, mon);
 
-		ThreadPoolProvider tpp = new ThreadPoolProvider();
+		DefaultThreadPool tpp = new DefaultThreadPool();
 		container.add(tpp);
 
 		// before we add the world manager, add the domain agent

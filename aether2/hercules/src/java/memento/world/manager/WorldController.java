@@ -5,7 +5,7 @@ import memento.world.model.WorldAdvertisement;
 import aether.net.Monitor;
 import aether.net.Connection;
 import aether.server.domain.Advertisement;
-import aether.server.core.ThreadPool;
+import aether.server.ThreadPool;
 import aether.event.EventHandler;
 import aether.event.Event;
 import aether.event.Notice;

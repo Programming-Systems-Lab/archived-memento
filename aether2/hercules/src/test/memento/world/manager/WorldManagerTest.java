@@ -7,8 +7,8 @@ import aether.net.Monitor;
 import aether.server.AetherContainer;
 import aether.server.domain.Advertisement;
 import aether.server.core.DefaultConnectionProvider;
-import aether.server.core.PublisherProvider;
-import aether.server.core.ThreadPoolProvider;
+import aether.server.ManagedPublisher;
+import aether.server.DefaultThreadPool;
 import memento.world.model.WorldModel;
 import memento.world.model.WorldModel;
 import memento.world.model.WorldAdvertisement;
@@ -31,13 +31,13 @@ public class WorldManagerTest extends AetherTestCase
 		dcp.setDefaultConnection(conn);
 		container.add(dcp);
 
-        PublisherProvider pub = new PublisherProvider();
+        ManagedPublisher pub = new ManagedPublisher();
 		container.add(pub);
 
         MonitorProvider mon = new MonitorProvider();
 		container.addService(Monitor.class, mon);
 
-		ThreadPoolProvider tpp = new ThreadPoolProvider();
+		DefaultThreadPool tpp = new DefaultThreadPool();
 		container.add(tpp);
 
         WorldManager worldMan = new DefaultWorldManager();

@@ -1,6 +1,5 @@
 package aether.server.responder;
 
-import aether.net.Connection;
 
 import java.io.IOException;
 

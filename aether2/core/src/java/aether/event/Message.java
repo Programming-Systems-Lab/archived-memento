@@ -58,9 +58,10 @@ public abstract class Message extends Event implements Attribute.Message
 	 * Construct a Subscription indicating that a component wants to receive
 	 * messages sent to a certain destination.
 	 *
-	 * @param dest DESTINATION to subscribe to
+	 * @param dest destination to subscribe to (this may be either a GUID or a
+     *             URL)
 	 */
-	public static Subscription createSubForDestination(String dest)
+	public static Subscription createSubscriptionForDestination(String dest)
 	{
 		if (dest == null)
 		{
