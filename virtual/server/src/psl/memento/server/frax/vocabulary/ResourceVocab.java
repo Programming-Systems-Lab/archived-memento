@@ -4,7 +4,7 @@ import com.hp.hpl.mesa.rdf.jena.model.Property;
 import com.hp.hpl.mesa.rdf.jena.model.RDFException;
 import com.hp.hpl.mesa.rdf.jena.common.PropertyImpl;
 
-public class ResourceVocab {
+public class ResourceVocab implements Vocab {
 	private static final String kNamespace =
     "http://www.psl.cs.columbia.edu/frax-rdf-resource/1.0#";
 
