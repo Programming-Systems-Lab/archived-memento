@@ -1714,6 +1714,7 @@ void ChimeSystemDriver::CloseModularWindow (ModularWindow* window)
 {
 	if (chModularWindow == window)
 		chModularWindow = NULL;
+	Redraw ();
 	Start3D ();
 }
 
