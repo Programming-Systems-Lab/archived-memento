@@ -2,6 +2,7 @@ package psl.memento.server.frax;
 
 // jdk imports
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 
 // non-jdk imports
@@ -9,7 +10,7 @@ import com.hp.hpl.mesa.rdf.jena.model.Resource;
 import org.apache.commons.logging.*;
 import psl.memento.server.frax.FraxException;
 
-public abstract class Plug {
+public abstract class Plug implements Serializable {
   private static final String kWarningCouldNotInstantiatePlug = 
     "Could not instantiate plug class: ";
   

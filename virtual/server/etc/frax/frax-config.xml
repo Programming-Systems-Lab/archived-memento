@@ -6,36 +6,53 @@
 -->
 
 <frax-config>
-  <!-- The IP and port number of the oracle server. -->
-  <oracle ip="oracle.psl.cs.columbia.edu" port="7395"/>  
+  <!-- The hostname and port number of the oracle server. -->
+  <oracle host="localhost" port="1099"/>
   
   <!-- Metadata extractors. -->
-  <extractors>
-    <extractor scheme="http" class="psl.memento.server.frax.HTTPExtractor"/>
-    <extractor scheme="file" class="psl.memento.server.frax.FileExtractor"/>
-    <extractor scheme="ftp" class="psl.memento.server.frax.FTPExtractor"/>
-    <extractor scheme="cvs" class="psl.memento.server.frax.CVSExtractor"/>
-    <extractor scheme="ldap" class="psl.memento.server.frax.LDAPExtractor"/>
-    <extractor scheme="bscw" class="psl.memento.server.frax.BSCWExtractor"/>
+  <extractors>    
+    <extractor
+      class="psl.memento.server.frax.FileExtractor"
+      schemes="file"
+      dependencies=""
+    />
+    <extractor
+      class="psl.memento.server.frax.HTTPExtractor"
+      schemes="http, https"
+      dependencies="libs/commons-httpclient.jar"
+    />
+    <extractor
+      class="psl.memento.server.frax.FTPExtractor"
+      schemes="ftp"
+      dependencies="libs/jftp-bea.jar"
+    />
+    <extractor
+      class="psl.memento.server.frax.DatabaseExtractor"
+      schemes="db, jdbc"
+      dependencies="libs/pgjdbc2.jar|libs/mysql-connector-java-2.0.14-bin.jar"
+    />
   </extractors>
   
   <!-- Content plugs. -->
   <plugs>
-    <plug mimetype="image/jpeg" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/gif" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/bmp" class="psl.memento.server.frax.ImagePlug"/>    
-    <plug mimetype="image/x-pcx" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/png" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/x-cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="application/x-cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="image/x-portable-bitmap" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="application/x-shockwave-flash" class="psl.memento.server.frax.ImagePlug"/>
-    <plug mimetype="application/msword" class="psl.memento.server.frax.OLEPlug"/>
-    <plug mimetype="application/excel" class="psl.memento.server.frax.OLEPlug"/>
-    <plug mimetype="application/x-excel" class="psl.memento.server.frax.OLEPlug"/>
-    <plug mimetype="application/x-msexcel" class="psl.memento.server.frax.OLEPlug"/>
-    <plug mimetype="text/html" class="psl.memento.server.frax.HTMLPlug"/>
+    <plug
+      class="psl.memento.server.frax.ImagePlug"
+      types="image/jpeg, image/gif, image/bmp, image/x-pcx, image/png,
+        image/cmu-raster, image/x-cmu-raster, application/x-cmu-raster,
+        image/x-portable-bitmap, application/x-shockwave-flash"
+      dependencies=""
+    />
+    <plug
+      class="psl.memento.server.frax.OLEPlug"
+      types="application/msword, application/excel, application/x-excel,
+        application/x-msexcel"
+      dependencies="libs/jakarta-poi-1.5.1.jar|libs/log4j.jar"
+    />
+    <plug
+      class="psl.memento.server.frax.HTMLPlug"
+      types="text/html"
+      dependencies=""
+    />
   </plugs>
   
   <!-- A mapping of extensions to MIME types. -->
@@ -70,4 +87,10 @@
     <map-entry ext="zip" mimetype="application/zip"/>
     <map-entry ext="tar" mimetype="application/x-tar"/>
   </extension-map>
+  
+  <dbms-vendors>
+    <vendor>
+      
+    </vendor>
+  </dbms-vendors>
 </frax-config>

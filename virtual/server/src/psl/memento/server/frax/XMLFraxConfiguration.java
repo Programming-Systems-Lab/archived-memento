@@ -4,9 +4,7 @@ package psl.memento.server.frax;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 // non-jdk imports
 import org.apache.commons.digester.Digester;
@@ -20,23 +18,16 @@ public class XMLFraxConfiguration implements FraxConfiguration {
     "Could not find class: ";
 
   private static final String kDefaultFileName = "etc/frax/frax-config.xml";
+  private static final String[] kZeroString = new String[0];
   
   private static Log sLog = LogFactory.getLog(XMLFraxConfiguration.class);
   
-  /** A mapping of URI schemes to extractor class names. */
-  private Map mExtractorMap;
-  
-  /** A mapping of MIME types to content plug class names. */
-  private Map mPlugMap;
-  
-  /** A mapping of URI schemes to extractor class objects. */
   private Map mExtractorClassMap;
-  
-  /** A mapping of MIME types to content plug class objects. */
   private Map mPlugClassMap;
-  
-  /** A mapping of file extensions to MIME types. */
   private Map mExtensionMap;
+  private Map mClassDepMap;
+  private String mOracleHostName;  
+  private int mOraclePort;
   
   /** The digester object which interprets the configuration data. */
   private Digester mDigester;
@@ -47,47 +38,53 @@ public class XMLFraxConfiguration implements FraxConfiguration {
   
   public XMLFraxConfiguration(String iFilename)
       throws IOException, SAXException {
-		this(new FileInputStream(iFilename));
+		//this(new FileInputStream(iFilename));
+    this(ClassLoader.getSystemResourceAsStream(iFilename));
 	}
 
 	public XMLFraxConfiguration(InputStream iIn)
       throws IOException, SAXException {
 		if (iIn == null) {
 			throw new NullPointerException(kErrorInputStreamNull);
-    }		
+    }
+    
+    mExtractorClassMap = new HashMap();
+    mPlugClassMap = new HashMap();
+    mExtensionMap = new HashMap();
+    mClassDepMap = new HashMap();
     
     // create and configure the digester object
     mDigester = new Digester();
     mDigester.push(this);
-    
+
     // add extractor rules
-    mDigester.addObjectCreate("frax-config/extractor-map", HashMap.class);
-    mDigester.addSetNext("frax-config/extractor-map", "setExtractorMap");
-    mDigester.addCallMethod("frax-config/extractor-map/map-entry", "put", 2);
-    mDigester.addCallParam("frax-config/extractor-map/map-entry", 0, "scheme");
-    mDigester.addCallParam("frax-config/extractor-map/map-entry", 1, "class");
-    
+    mDigester.addCallMethod("frax-config/extractors/extractor",
+      "addExtractor", 3);
+    mDigester.addCallParam("frax-config/extractors/extractor", 0, "class");
+    mDigester.addCallParam("frax-config/extractors/extractor", 1, "schemes");
+    mDigester.addCallParam("frax-config/extractors/extractor", 2,
+      "dependencies");
+
     // add plug rules
-    mDigester.addObjectCreate("frax-config/plug-map", HashMap.class);
-    mDigester.addSetNext("frax-config/plug-map", "setPlugMap");
-    mDigester.addCallMethod("frax-config/plug-map/map-entry", "put", 2);
-    mDigester.addCallParam("frax-config/plug-map/map-entry", 0, "mimetype");
-    mDigester.addCallParam("frax-config/plug-map/map-entry", 1, "class");
-    
+    mDigester.addCallMethod("frax-config/plugs/plug", "addPlug", 3);
+    mDigester.addCallParam("frax-config/plugs/plug", 0, "class");
+    mDigester.addCallParam("frax-config/plugs/plug", 1, "types");
+    mDigester.addCallParam("frax-config/plugs/plug", 2, "dependencies");
+
     // add extension map rules
-    mDigester.addObjectCreate("frax-config/extension-map", HashMap.class);
-    mDigester.addSetNext("frax-config/extension-map", "setExtensionMap");
-    mDigester.addCallMethod("frax-config/extension-map/map-entry", "put", 2);
+    mDigester.addCallMethod("frax-config/extension-map/map-entry",
+      "addExtensionMapping", 2);
     mDigester.addCallParam("frax-config/extension-map/map-entry", 0, "ext");
-    mDigester.addCallParam("frax-config/extension-map/map-entry", 1,
-      "mimetype");
+    mDigester.addCallParam("frax-config/extension-map/map-entry", 1, "mimetype");    
+
+    // add oracle rules
+    mDigester.addCallMethod("frax-config/oracle", "setOracleHostAndPort", 2,
+      new String[] { "java.lang.String", "java.lang.Integer" });
+    mDigester.addCallParam("frax-config/oracle", 0, "host");
+    mDigester.addCallParam("frax-config/oracle", 1, "port");
     
     // parse the XML configuration data
     mDigester.parse(iIn);
-    
-    // initialize mappings from data we read in
-    initExtractorClassMap();
-    initPlugClassMap();
 	}
 
 	public Class getExtractorClass(String iScheme) {
@@ -102,49 +99,80 @@ public class XMLFraxConfiguration implements FraxConfiguration {
     return (String) mExtensionMap.get(iExtension);
   }
   
-  private void initExtractorClassMap() {
-    mExtractorClassMap = new HashMap();
-    if (mExtractorMap != null) {
-      String scheme;
-      String className;
-      for (Iterator i = mExtractorMap.keySet().iterator(); i.hasNext(); ) {
-        scheme = (String) i.next();
-        className = (String) mExtractorMap.get(scheme);
-        try {
-          mExtractorClassMap.put(scheme, Class.forName(className));
-        } catch (ClassNotFoundException ex) {
-          sLog.warn(kErrorCouldNotFindClass + className);
-        }
+  public String[] getLocalSchemes() {
+    return (String[]) mExtractorClassMap.keySet().toArray(kZeroString);
+  }
+  
+  public String[] getLocalTypes() {
+    return (String[]) mPlugClassMap.keySet().toArray(kZeroString);
+  }
+  
+  public List getDependencies(String iClassName) {
+    return Collections.unmodifiableList((List) mClassDepMap.get(iClassName));
+  }
+   
+  public void addExtractor(String iClass, String iSchemes, String iDeps) {
+    StringTokenizer st;
+    
+    // for each scheme
+    st = new StringTokenizer(iSchemes, ", \n\r\t");
+    while (st.hasMoreTokens()) {
+      String scheme = st.nextToken();
+      try {
+        mExtractorClassMap.put(scheme, Class.forName(iClass));
+      } catch (ClassNotFoundException ex) {
+        sLog.warn(kErrorCouldNotFindClass + iClass);
       }
     }
+    
+    // for each dependency
+    List depList = new ArrayList();
+    st = new StringTokenizer(iDeps, "|\n\r\t");
+    while (st.hasMoreTokens()) {
+      depList.add(st.nextToken());      
+    }
+    
+    mClassDepMap.put(iClass, depList);
   }
   
-  private void initPlugClassMap() {
-    mPlugClassMap = new HashMap();
-    if (mPlugMap != null) {
-      String mimeType;
-      String className;
-      for (Iterator i = mPlugMap.keySet().iterator(); i.hasNext(); ) {
-        mimeType = (String) i.next();
-        className = (String) mPlugMap.get(mimeType);
-        try {
-          mPlugClassMap.put(mimeType, Class.forName(className));
-        } catch (ClassNotFoundException ex) {
-          sLog.warn(kErrorCouldNotFindClass + className);
-        }
+  public void addPlug(String iClass, String iTypes, String iDeps) {
+    StringTokenizer st;
+    
+    // for each scheme
+    st = new StringTokenizer(iTypes, ", \n\r\t");
+    while (st.hasMoreTokens()) {
+      String type = st.nextToken();
+      try {
+        mPlugClassMap.put(type, Class.forName(iClass));
+      } catch (ClassNotFoundException ex) {
+        sLog.warn(kErrorCouldNotFindClass + iClass);
       }
     }
+    
+    // for each dependency
+    List depList = new ArrayList();
+    st = new StringTokenizer(iDeps, "|\n\r\t");
+    while (st.hasMoreTokens()) {
+      depList.add(st.nextToken());      
+    }
+    
+    mClassDepMap.put(iClass, depList);
   }
   
-  public void setExtractorMap(Map iMap) {
-    mExtractorMap = iMap;
+  public void addExtensionMapping(String iExt, String iType) {
+    mExtensionMap.put(iExt, iType);
   }
   
-  public void setPlugMap(Map iMap) {
-    mPlugMap = iMap;
+  public String getOracleHostName() {
+    return mOracleHostName;
   }
   
-  public void setExtensionMap(Map iMap) {
-    mExtensionMap = iMap;
+  public int getOraclePort() {
+    return mOraclePort;
+  }
+  
+  public void setOracleHostAndPort(String iHost, int iPort) {
+    mOracleHostName = iHost;
+    mOraclePort = iPort;
   }
 }

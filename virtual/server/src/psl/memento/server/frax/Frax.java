@@ -3,6 +3,7 @@ package psl.memento.server.frax;
 // jdk imports
 import java.io.InputStream;
 import java.net.URI;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,22 +39,24 @@ public final class Frax {
     "Could not set the default configuration: ";
   
   private static Log sLog = LogFactory.getLog(Frax.class);
-  private static Frax mInstance;  
+  private static Frax sInstance;  
   
   private FraxConfiguration mConfiguration;
+  private Oracle mOracle;
   
   public static Frax getInstance() {    
-    if (mInstance == null) {
-      mInstance = new Frax();
+    if (sInstance == null) {
+      sInstance = new Frax();
     }
     
-    return mInstance;
+    return sInstance;
   }
   
-  private Frax() {
+  private Frax() {    
     try {
-      setConfiguration(new XMLFraxConfiguration());
+      setConfiguration(new XMLFraxConfiguration());      
     } catch (Exception ex) {
+      ex.printStackTrace();
       sLog.warn(kWarningCouldNotSetDefaultConfig + ex);
     }
   }
@@ -62,8 +65,7 @@ public final class Frax {
    * <p>
    * Extracts metadata from the resource at the supplied URI and returns it as
    * an RDF resource object, not consulting the oracle server if it encounters
-   * unknown URI schemes or MIME content types, and taking as long as
-   * necessary for extraction to complete.
+   * unknown URI schemes or MIME content types.
    *
    * @param iURI a URI object that specifies the location of the resource --
    * this URI must be absolute (must contain a scheme component)
@@ -74,57 +76,9 @@ public final class Frax {
    * @exception IllegalStateException if the FraxConfiguration has not been set
    */
   public Resource extractMetadata(URI iURI) throws FraxException {
-    return extractMetadata(iURI, -1);
-  }
-  
-  /**
-   * <p>
-   * Extracts metadata from the resource at the supplied URI and returns it as
-   * an RDF resource object, not consulting the oracle server if it encounters
-   * unknown URI schemes or MIME content types.
-   *
-   * @param iURI a URI object that specifies the location of the resource --
-   * this URI must be absolute (must contain a scheme component)
-   * @param iMaxExtractionTime the maximum length of time, in milliseconds, to
-   * spend extracting metadata from the resource, or any negative value to
-   * spend as long as necessary
-   * @return the RDF resource object containing the extracted metadata
-   * @exception FraxException if there was an error extracting the metadata
-   * @exception NullPointerException if the supplied URI is null
-   * @exception IllegalArgumentException if the supplied URI is not absolute
-   * @exception IllegalStateException if the FraxConfiguration has not been set
-   */
-  public Resource extractMetadata(URI iURI, long iMaxExtractionTime)
-      throws FraxException {
-    return extractMetadata(iURI, false, false, iMaxExtractionTime);
+    return extractMetadata(iURI, false, false);
   }  
 
-  /**
-   * <p>
-   * Extracts metadata from the resource at the supplied URI and returns it as
-   * an RDF resource object, taking as long as necessary for extraction to
-   * complete.
-   *
-   * @param iURI a URI object that specifies the location of the resource --
-   * this URI must be absolute (must contain a scheme component)
-   * @param iUseOracleForExtractors if <code>true</code>, Frax will consult
-   * the oracle server whenever it encounters a URI scheme that it cannot
-   * procure an extractor object for locally
-   * @param iUseOracleForPlugs if <code>true</code>, Frax will consult
-   * the oracle server whenever it encounters either an unknown MIME content
-   * type or cannot procure a plug object for a known MIME content type
-   * @return the RDF resource object containing the extracted metadata
-   * @exception FraxException if there was an error extracting the metadata
-   * @exception NullPointerException if the supplied URI is null
-   * @exception IllegalArgumentException if the supplied URI is not absolute
-   * @exception IllegalStateException if the FraxConfiguration has not been set
-   */
-  public Resource extractMetadata(URI iURI, boolean iUseOracleForExtractors,
-      boolean iUseOracleForPlugs) throws FraxException {
-    return extractMetadata(iURI, iUseOracleForExtractors,
-      iUseOracleForPlugs, -1);
-  }
-  
   /**
    * <p>
    * Extracts metadata from the resource at the supplied URI and returns it as
@@ -138,9 +92,6 @@ public final class Frax {
    * @param iUseOracleForPlugs if <code>true</code>, Frax will consult
    * the oracle server whenever it encounters either an unknown MIME content
    * type or cannot procure a plug object for a known MIME content type
-   * @param iMaxExtractionTime the maximum length of time, in milliseconds, to
-   * spend extracting metadata from the resource, or any negative value to
-   * spend as long as necessary
    * @return the RDF resource object containing the extracted metadata
    * @exception FraxException if there was an error extracting the metadata
    * @exception NullPointerException if the supplied URI is null
@@ -148,7 +99,7 @@ public final class Frax {
    * @exception IllegalStateException if the FraxConfiguration has not been set
    */
   public Resource extractMetadata(URI iURI, boolean iUseOracleForExtractors,
-      boolean iUseOracleForPlugs, long iMaxExtractionTime)
+      boolean iUseOracleForPlugs)
       throws FraxException {
     if (iURI == null) {
       throw new NullPointerException(kErrorNullURI);
@@ -230,5 +181,31 @@ public final class Frax {
     }
     
     mConfiguration = iConfiguration;
+  }
+  
+  public void synchWithOracle() throws FraxException {
+    FraxConfiguration config = getConfiguration();
+    mOracle = OracleImpl.resolveOracle();
+    
+    try {
+      String[] schemes = config.getLocalSchemes();
+      String[] types = config.getLocalTypes();    
+      String[] unhandledSchemes = mOracle.getUnhandledSchemes(schemes);
+      String[] unhandledTypes = mOracle.getUnhandledTypes(types);
+
+      for (int i = 0; i < unhandledSchemes.length; i++) {
+        mOracle.registerExtractor(ClassBundle.getInstance(
+          config.getExtractorClass(unhandledSchemes[i])));
+      }
+
+      for (int i = 0; i < unhandledTypes.length; i++) {
+        mOracle.registerPlug(ClassBundle.getInstance(
+          config.getPlugClass(unhandledTypes[i])));
+      }
+      
+      mOracle.registerExtractor(ClassBundle.getInstance(config.getExtractorClass("db")));
+    } catch (RemoteException ex) {
+      throw new FraxException("RMI error.", ex);
+    }
   }
 }

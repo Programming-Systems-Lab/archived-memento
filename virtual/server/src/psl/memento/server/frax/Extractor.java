@@ -2,6 +2,7 @@ package psl.memento.server.frax;
 
 // jdk imports
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 
 // non-jdk imports
@@ -15,7 +16,7 @@ import psl.memento.server.frax.FraxException;
  *
  * @author Mark Ayzenshtat
  */
-public abstract class Extractor {
+public abstract class Extractor implements Serializable {
   protected static final String kErrorAddingProperty =
     "Error adding RDF Property object.";
   private static final String kWarningCouldNotInstantiateExtractor = 

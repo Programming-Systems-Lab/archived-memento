@@ -16,11 +16,16 @@ public class FraxGUI implements ActionListener {
   private static Font kProgramFont = new Font("Monospaced", Font.PLAIN, 12);
   private static int kMaxHistorySize = 20;
   
+  private Frax mFrax;
   private JFrame mFrame;
   private JTextArea mResultsText;
+  private JWindow mSplashWindow;
   private AddressPanel mAddressPanel;
   private JLabel mStatusLabel;
-  private JMenuItem mInsertAddressLocalFile;
+  private JMenu mMenuToolsAddressBuilder;
+  private JMenuItem mMenuBuilderLocalFile;
+  private JMenuItem mMenuBuilderFTP;
+  private JMenuItem mMenuBuilderDB;
   private JMenuItem mOptionsMenuItem;
   private JFileChooser mExtractFileChooser;
   
@@ -29,9 +34,48 @@ public class FraxGUI implements ActionListener {
   }
   
   private FraxGUI() {
-    // make sure Frax is initialized
-    Frax.getInstance();
+    mSplashWindow = new JWindow();
     
+    JLabel splashImageLabel = new JLabel(new ImageIcon("etc/frax/frax1.gif"));
+    splashImageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));        
+    mSplashWindow.getContentPane().add(splashImageLabel, BorderLayout.CENTER);
+    
+    JProgressBar loadProgress = new JProgressBar(1, 4);
+    loadProgress.setStringPainted(true);    
+    mSplashWindow.getContentPane().add(loadProgress, BorderLayout.SOUTH);
+    mSplashWindow.pack();
+    
+    centerOnScreen(mSplashWindow);
+    mSplashWindow.setVisible(true);
+    
+    // initialize Frax
+    loadProgress.setValue(1);
+    loadProgress.setString("Loading local extractors and plugs");
+        
+    mFrax = Frax.getInstance();
+    
+    // synch with the oracle
+    loadProgress.setValue(2);
+    loadProgress.setString("Synchronizing with oracle");
+    
+    try {
+      mFrax.synchWithOracle();
+    } catch (FraxException ex) {
+      JOptionPane.showMessageDialog(mSplashWindow,
+        ("Could not synchronize with the oracle server: " + ex), "Warning",
+        JOptionPane.WARNING_MESSAGE);
+    }
+    
+    // create the GUI
+    loadProgress.setValue(3);
+    loadProgress.setString("Creating GUI");    
+    createGUI();
+    
+    loadProgress.setValue(loadProgress.getMaximum());
+    mSplashWindow.setVisible(false);
+  }
+  
+  private void createGUI() {
     mFrame = new JFrame("Frax Metadata Extractor");
     
     mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,7 +105,8 @@ public class FraxGUI implements ActionListener {
       setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     mExtractFileChooser.setApproveButtonText("Extract");
     
-    mFrame.pack();    
+    mFrame.pack();
+    centerOnScreen(mFrame);
     mFrame.setVisible(true);
   }
   
@@ -76,10 +121,21 @@ public class FraxGUI implements ActionListener {
     menu.setMnemonic(KeyEvent.VK_T);
     menuBar.add(menu);
     
-    mInsertAddressLocalFile =
-      new JMenuItem("Extract from Local File...", KeyEvent.VK_E);
-    mInsertAddressLocalFile.addActionListener(this);
-    menu.add(mInsertAddressLocalFile);
+    mMenuToolsAddressBuilder = new JMenu("Address Builder");
+    mMenuToolsAddressBuilder.setMnemonic(KeyEvent.VK_A);
+    menu.add(mMenuToolsAddressBuilder);
+    
+    mMenuBuilderLocalFile = new JMenuItem("Local File", KeyEvent.VK_L);
+    mMenuBuilderLocalFile.addActionListener(this);
+    mMenuToolsAddressBuilder.add(mMenuBuilderLocalFile);
+    
+    mMenuBuilderFTP = new JMenuItem("FTP", KeyEvent.VK_F);
+    mMenuBuilderFTP.addActionListener(this);
+    mMenuToolsAddressBuilder.add(mMenuBuilderFTP);
+    
+    mMenuBuilderDB = new JMenuItem("Database", KeyEvent.VK_D);
+    mMenuBuilderDB.addActionListener(this);
+    mMenuToolsAddressBuilder.add(mMenuBuilderDB);
     
     menu.addSeparator();
     
@@ -91,7 +147,7 @@ public class FraxGUI implements ActionListener {
   public void actionPerformed(ActionEvent iEvent) {
     Object source = iEvent.getSource();
     
-    if (mInsertAddressLocalFile.equals(source)) {
+    if (mMenuBuilderLocalFile.equals(source)) {
       int value = mExtractFileChooser.showDialog(mFrame, null);
       if (value == JFileChooser.APPROVE_OPTION) {
         mAddressPanel.mAddressText.setSelectedItem(mExtractFileChooser.
@@ -202,6 +258,14 @@ public class FraxGUI implements ActionListener {
       // FIXME: calling this method doesn't actually
       // interrupt the extraction thread
     }
+  }
+  
+  private static void centerOnScreen(Component iC) {
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    Dimension cSize = iC.getSize();
+    
+    iC.setLocation((screenSize.width - cSize.width) / 2,
+      (screenSize.height - cSize.height) / 2);
   }
   
   private static class ExtractionThread extends Thread {
