@@ -1,4 +1,4 @@
-package psl.memento.server.vem;
+package psl.memento.server.vem.gui;
 
 /*
  * LayoutParameters.java
