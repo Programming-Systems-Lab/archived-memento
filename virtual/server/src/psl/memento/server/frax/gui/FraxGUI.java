@@ -10,11 +10,17 @@ import javax.swing.*;
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.model.*;
 import com.hp.hpl.mesa.rdf.jena.common.prettywriter.*;
+import org.apache.commons.logging.*;
 import psl.memento.server.frax.*;
 
 public class FraxGUI implements ActionListener {
   private static Font kProgramFont = new Font("Monospaced", Font.PLAIN, 12);
   private static int kMaxHistorySize = 20;
+  
+  private static Log sLog = LogFactory.getLog(FraxGUI.class);
+  
+  private static final String kWarningCouldNotSetDefaultConfig =
+    "Could not set the default configuration: ";
   
   private Frax mFrax;
   private JFrame mFrame;
@@ -40,7 +46,7 @@ public class FraxGUI implements ActionListener {
     splashImageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));        
     mSplashWindow.getContentPane().add(splashImageLabel, BorderLayout.CENTER);
     
-    JProgressBar loadProgress = new JProgressBar(1, 4);
+    JProgressBar loadProgress = new JProgressBar(1, 5);
     loadProgress.setStringPainted(true);    
     mSplashWindow.getContentPane().add(loadProgress, BorderLayout.SOUTH);
     mSplashWindow.pack();
@@ -49,10 +55,17 @@ public class FraxGUI implements ActionListener {
     mSplashWindow.setVisible(true);
     
     // initialize Frax
+    mFrax = Frax.getInstance();
+    
+    // load configuration data
     loadProgress.setValue(1);
     loadProgress.setString("Loading local extractors and plugs");
-        
-    mFrax = Frax.getInstance();
+            
+    try {
+      mFrax.setConfiguration(new XMLFraxConfiguration());
+    } catch (Exception ex) {      
+      sLog.warn(kWarningCouldNotSetDefaultConfig + ex);
+    }
     
     // synch with the oracle
     loadProgress.setValue(2);
@@ -66,12 +79,19 @@ public class FraxGUI implements ActionListener {
         JOptionPane.WARNING_MESSAGE);
     }
     
-    // create the GUI
+    // load persistent RDF model (metadata cache)
     loadProgress.setValue(3);
-    loadProgress.setString("Creating GUI");    
+    loadProgress.setString("Initializing metadata cache");
+        
+    mFrax.loadPersistentModel();    
+    
+    // create the GUI
+    loadProgress.setValue(4);
+    loadProgress.setString("Creating GUI");
     createGUI();
     
     loadProgress.setValue(loadProgress.getMaximum());
+    loadProgress.setString("Done");
     mSplashWindow.setVisible(false);
   }
   
@@ -160,16 +180,18 @@ public class FraxGUI implements ActionListener {
   
   private static class AddressPanel extends JPanel implements ActionListener {
     private FraxGUI mFraxGUI;
-    private JLabel mAddressLabel;    
+    private JLabel mAddressLabel;
     private JComboBox mAddressText;
     private JButton mExtractButton;
-    private JButton mStopButton;    
+    private JButton mStopButton;
+    private JCheckBox mUseCache;
+    private ExtractionThread mCurrentExtractionThread;
     
     public AddressPanel(FraxGUI iFraxGUI) {
       super();      
       
       mFraxGUI = iFraxGUI;    
-      setLayout(new BorderLayout());
+      setLayout(new BorderLayout());      
       
       mAddressLabel = new JLabel("Address");
       mAddressLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
@@ -183,7 +205,11 @@ public class FraxGUI implements ActionListener {
       addressPanel.setLayout(new BorderLayout());
       addressPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
       addressPanel.add(mAddressText, BorderLayout.CENTER);
-      add(addressPanel, BorderLayout.CENTER);      
+      add(addressPanel, BorderLayout.CENTER);
+      
+      mUseCache = new JCheckBox("Use metadata cache", true);
+      mUseCache.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
+      add(mUseCache, BorderLayout.SOUTH);
       
       JPanel buttonPanel = new JPanel();
       buttonPanel.setLayout(new BorderLayout());      
@@ -248,15 +274,21 @@ public class FraxGUI implements ActionListener {
       mStopButton.setEnabled(true);
       mFraxGUI.mResultsText.setText("");      
       
-      new ExtractionThread(uriString, this).start();
+      mCurrentExtractionThread = new ExtractionThread(uriString,
+        mUseCache.isSelected(), this);
+      mCurrentExtractionThread.start();
     }
     
     private void execStop() {
       mStopButton.setEnabled(false);
-      mExtractButton.setEnabled(true);
+      mExtractButton.setEnabled(true);      
       
-      // FIXME: calling this method doesn't actually
-      // interrupt the extraction thread
+      if (mCurrentExtractionThread != null) {
+        synchronized (mCurrentExtractionThread) {
+          mCurrentExtractionThread.setRunning(false);
+          mCurrentExtractionThread = null;
+        }
+      }
     }
   }
   
@@ -271,13 +303,16 @@ public class FraxGUI implements ActionListener {
   private static class ExtractionThread extends Thread {
     private String mURI;
     private AddressPanel mP;
+    private boolean mUseCache;
     private boolean mRunning;
     
-    public ExtractionThread(String iURI, AddressPanel iP) {
+    public ExtractionThread(String iURI, boolean iUseCache,
+        AddressPanel iP) {
       super();
       
       mURI = iURI;
-      mP = iP;      
+      mP = iP;
+      mUseCache = iUseCache;
     }
     
     public void run() {
@@ -295,7 +330,8 @@ public class FraxGUI implements ActionListener {
             "URI must be absolute (scheme element must be present)");
         }
         
-        Resource r = Frax.getInstance().extractMetadata(uri);
+        Model m = Frax.getInstance()
+          .extractMetadata(uri, true, true, mUseCache);        
 
         if (!mRunning) {
           return;
@@ -303,7 +339,7 @@ public class FraxGUI implements ActionListener {
         
         PrettyWriter pw = new PrettyWriter();
         StringWriter sw = new StringWriter();
-        pw.write(r.getModel(), sw, null);
+        pw.write(m, sw, null);
         
         if (!mRunning) {
           return;
@@ -330,7 +366,7 @@ public class FraxGUI implements ActionListener {
           JOptionPane.ERROR_MESSAGE);
         return;
       } finally {
-        mP.execStop();
+        mP.execStop();       
       }
     }
     

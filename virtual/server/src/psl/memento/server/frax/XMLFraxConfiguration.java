@@ -26,8 +26,12 @@ public class XMLFraxConfiguration implements FraxConfiguration {
   private Map mPlugClassMap;
   private Map mExtensionMap;
   private Map mClassDepMap;
+  private Map mDBMSVendorMap;
   private String mOracleHostName;  
   private int mOraclePort;
+  private String mMetadataCacheVendor;
+  private String mMetadataCacheJenaDBType;
+  private String mMetadataCacheLocation;
   
   /** The digester object which interprets the configuration data. */
   private Digester mDigester;
@@ -52,6 +56,7 @@ public class XMLFraxConfiguration implements FraxConfiguration {
     mPlugClassMap = new HashMap();
     mExtensionMap = new HashMap();
     mClassDepMap = new HashMap();
+    mDBMSVendorMap = new HashMap();
     
     // create and configure the digester object
     mDigester = new Digester();
@@ -82,6 +87,19 @@ public class XMLFraxConfiguration implements FraxConfiguration {
       new String[] { "java.lang.String", "java.lang.Integer" });
     mDigester.addCallParam("frax-config/oracle", 0, "host");
     mDigester.addCallParam("frax-config/oracle", 1, "port");
+    
+    // add DBMS vendor rules
+    mDigester.addCallMethod("frax-config/dbms-vendors/vendor",
+      "addDBMSVendorMapping", 2);
+    mDigester.addCallParam("frax-config/dbms-vendors/vendor", 0, "name");
+    mDigester.addCallParam("frax-config/dbms-vendors/vendor", 1, "class");
+    
+    // add metadata cache rules
+    mDigester.addCallMethod("frax-config/metadata-cache",
+      "setMetadataCache", 3);
+    mDigester.addCallParam("frax-config/metadata-cache", 0, "vendor");
+    mDigester.addCallParam("frax-config/metadata-cache", 1, "jena-db-type");
+    mDigester.addCallParam("frax-config/metadata-cache", 2, "location");
     
     // parse the XML configuration data
     mDigester.parse(iIn);
@@ -163,6 +181,10 @@ public class XMLFraxConfiguration implements FraxConfiguration {
     mExtensionMap.put(iExt, iType);
   }
   
+  public void addDBMSVendorMapping(String iName, String iClassName) {
+    mDBMSVendorMap.put(iName, iClassName);
+  }
+  
   public String getOracleHostName() {
     return mOracleHostName;
   }
@@ -174,5 +196,28 @@ public class XMLFraxConfiguration implements FraxConfiguration {
   public void setOracleHostAndPort(String iHost, int iPort) {
     mOracleHostName = iHost;
     mOraclePort = iPort;
+  }
+  
+  public Map getDBMSVendorMap() {
+    return Collections.unmodifiableMap(mDBMSVendorMap);
+  }
+  
+  public void setMetadataCache(String iVendor, String iJenaDBType,
+      String iLocation) {
+    mMetadataCacheVendor = iVendor;
+    mMetadataCacheJenaDBType = iJenaDBType;
+    mMetadataCacheLocation = iLocation;
+  }
+  
+  public String getMetadataCacheVendor() {
+    return mMetadataCacheVendor;
+  }
+  
+  public String getMetadataCacheJenaDBType() {
+    return mMetadataCacheJenaDBType;
+  }
+  
+  public String getMetadataCacheLocation() {
+    return mMetadataCacheLocation;
   }
 }

@@ -47,7 +47,7 @@ public class ClassBundle implements Serializable {
   }
   
   private static byte[] getResourceBytes(ClassLoader iCL, String iPath)
-      throws IOException {
+      throws IOException {    
     InputStream is = iCL.getResourceAsStream(iPath);
     ByteArrayOutputStream os = new ByteArrayOutputStream();
 

@@ -10,6 +10,10 @@ public class ResourceVocab {
 
   private Property mProperty;
   
+  public static final ResourceVocab kStatements =
+    new ResourceVocab(kNamespace, "statements");
+  public static final ResourceVocab kExists =
+    new ResourceVocab(kNamespace, "exists");
   public static final ResourceVocab kName =
     new ResourceVocab(kNamespace, "name");  
   public static final ResourceVocab kSummary =

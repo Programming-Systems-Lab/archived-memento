@@ -1,0 +1,117 @@
+/*
+ * PooledJdbcOneConnectionSource.java
+ *
+ * Copyright (c) 2002: The Trustees of Columbia University
+ * in the City of New York.  All Rights Reserved.
+ */
+
+package psl.memento.server.dataserver.sql;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.prefs.Preferences;
+
+/**
+ * A <code>ConnectionSource</code> implementation that pools connections
+ * obtained using <code>DriverManager.getConnection()</code> from the
+ * JDBC 1.0 API.
+ *
+ * @author Mark Ayzenshtat
+ */
+public class PooledJdbcOneConnectionSource extends ConnectionSourceBase
+    implements ConnectionSource {
+	// pool constants
+	private static final int kInitialPoolSize = 50;
+	private static final int kPoolIncrementSize = 50;
+
+	private Map mConnections;
+	
+  public PooledJdbcOneConnectionSource(VendorCoupler iVC) {
+		super(iVC);
+		
+		// load the DB driver
+		try {
+			Class.forName(iVC.getDriverClassName());
+		} catch (ClassNotFoundException ex) {
+			throw new java.lang.RuntimeException("Cannot load the DB driver.", ex);
+		}
+		
+		// initialize connection pool
+		mConnections = new HashMap(kInitialPoolSize + kPoolIncrementSize);
+		try {
+			for (int i = 0; i < kInitialPoolSize; i++) {
+				addNewConnection();
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException("Could not fill connection pool.", ex);
+		}
+	}
+
+	/**
+	 * Obtains a DB connection.
+	 *
+	 * @return the connection
+	 * @exception SQLException if a database error occurs
+	 */
+	public synchronized Connection obtainConnection(String iJdbcURL)
+      throws SQLException {
+		Iterator iterator = mConnections.keySet().iterator();
+		Connection c;
+
+		while (iterator.hasNext()) {
+			c = (Connection) iterator.next();
+			if (((Boolean) mConnections.get(c)).booleanValue()) {
+				// if there are problems with this connection,
+				// create a fresh one to take its place
+				if (!isWorking(c)) {
+					c = newConnection();
+				}
+
+				// mark this connection as taken
+				mConnections.put(c, Boolean.FALSE);
+				return c;
+			}
+		}
+
+		// since no more connections are available, add
+		// new ones numbering mIncrementSize to the pool
+		for (int i = 0; i < kPoolIncrementSize - 1; i++) {
+			addNewConnection();
+		}
+
+		return obtainConnection();
+	}
+	
+	/**
+	 * Instructs this connection source to perform clean-up on the supplied
+	 * connection.
+	 *
+	 * @param iConn the connection to release
+	 */
+	public synchronized void releaseConnection(Connection iConn) throws SQLException {
+		mConnections.put(iConn, Boolean.TRUE);
+	}
+	
+	private boolean isWorking(Connection iConn) {
+		try {
+			iConn.setAutoCommit(true);
+		} catch (SQLException ex) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	private void addNewConnection() throws SQLException {
+		Connection c = newConnection();
+		mConnections.put(c, Boolean.TRUE);
+	}
+	
+	private Connection newConnection(String iJdbcURL) throws SQLException {
+		return DriverManager.getConnection(iJdbcURL);
+	}
+}

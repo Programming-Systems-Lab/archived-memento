@@ -1,0 +1,43 @@
+/*
+ * JdbcTwoConnectionSource.java
+ *
+ * Copyright (c) 2002: The Trustees of Columbia University
+ * in the City of New York.  All Rights Reserved.
+ */
+
+package psl.memento.server.dataserver.sql;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+/**
+ * A <code>ConnectionSource</code> implementation that uses <code>
+ * DataSource.getConnection()</code> from the JDBC 2.0 API.
+ *
+ * @author Mark Ayzenshtat
+ */
+public class JdbcTwoConnectionSource extends ConnectionSourceBase
+    implements ConnectionSource {
+	public JdbcTwoConnectionSource(VendorCoupler iVC) {
+    super(iVC);
+	}
+	
+	/**
+	 * Obtains a DB connection.
+	 *
+	 * @return the connection
+	 * @exception SQLException if a database error occurs
+	 */
+	public Connection obtainConnection() throws SQLException {
+		return null;	// TODO: Implement
+	}
+	
+	/**
+	 * Instructs this connection source to perform clean-up on the supplied
+	 * connection.
+	 *
+	 * @param iConn the connection to release
+	 */
+	public void releaseConnection(Connection iConn) throws SQLException {
+	}
+}

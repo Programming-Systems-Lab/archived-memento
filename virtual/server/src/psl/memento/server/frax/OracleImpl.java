@@ -7,6 +7,8 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.apache.commons.logging.*;
+
 /**
  *
  * @author  Mark Ayzenshtat
@@ -18,11 +20,21 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
     "Could not resolve oracle from RMI registry.";
   private static final String kErrorCouldntRegisterOracle = 
     "Could not put oracle in RMI registry.";
+  private static final String kWarningCouldNotSetDefaultConfig =
+    "Could not set the default configuration: ";
+  
+  private static Log sLog = LogFactory.getLog(OracleImpl.class);
   
   private static FraxConfiguration sConfig;
   private static String sRMIString;
   
-  static {
+  static {    
+    try {
+      Frax.getInstance().setConfiguration(new XMLFraxConfiguration());
+    } catch (Exception ex) {      
+      sLog.warn(kWarningCouldNotSetDefaultConfig + ex);
+    }
+    
     sConfig = Frax.getInstance().getConfiguration();
     
     StringBuffer sb = new StringBuffer(50);
