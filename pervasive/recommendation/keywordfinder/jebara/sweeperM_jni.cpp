@@ -168,6 +168,9 @@ loadQuestions(char *qFile)
    for (i=0; i<cTotal; i++)
      {
        fgets(line, MAXLINE, fp);
+       int ll = strlen(line);
+       line[ll-1] = 0; // get rid of trailing \n
+
        cQuestions[i] = (char *) malloc(MAXLINE*sizeof(char));
        strcpy(cQuestions[i],line);
      }
@@ -315,7 +318,7 @@ JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_j
   double *p; // JC(2/26/2003):Holds the second field of an element in classes(defined below)
 
   const char *wordSequence = env->GetStringUTFChars(str, 0);
-  cout << "NATIVE CODE RECEIVES : " << wordSequence << endl;
+  //  cout << "NATIVE CODE RECEIVES : " << wordSequence << "*" << endl;
   vector<string> *words = tokenizeString(wordSequence, " "); 
   string s;
   string question;
@@ -405,23 +408,27 @@ JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_j
 
   //  printf("44444444444444\n");
 
-  /*  int len = strlen(question.c_str());
-  wchar_t *buf = 0;
+  int len = strlen(question.c_str());
+  // wchar_t *buf = 0;
+  //  cout << question << endl;
+  // printf("-%s-$d-", question.c_str(), len);
   jstring jQuestion = 0;
   if(len > 0) {
     //    printf("4aaaaaaaa1\n");
-    len = mbstowcs(NULL, question.c_str(), MB_CUR_MAX);
+    //len = mbstowcs(NULL, question.c_str(), MB_CUR_MAX);
     //    printf("4aaaaaaaa2\n");
-    buf = (wchar_t *)malloc(len*2 + 1);
+    //buf = (wchar_t *)malloc(len*2 + 1);
     //    printf("4aaaaaaaa3\n");
-    mbstowcs(buf, question.c_str(), len);
+    //mbstowcs(buf, question.c_str(), len);
     //    printf("4aaaaaaaa4\n");
-    jQuestion = env->NewString((jchar *)buf, len*2 + 1);
+    //jQuestion = env->NewString((jchar *)buf, len*2 + 1);
     //    printf("4aaaaaaaa5\n");
-        env->CallVoidMethod(obj, mid, jQuestion);
+    //    env->CallVoidMethod(obj, mid, jQuestion);
     //    printf("4bbbbbbbb\n");
-    free(buf);    
-    }*/
+    //free(buf);    
+    jQuestion = env->NewStringUTF(question.c_str()); // this makes things easier
+        env->CallVoidMethod(obj, mid, jQuestion);
+    }
   //  printf("5555555555555\n");
 
 }

@@ -54,6 +54,9 @@ public class impKeywordFinder implements KeywordFinder {
 	 */
 	private Hashtable topics = new Hashtable();
 
+    /** these are the topics we are going to return */
+    private Vector topics2 = new Vector();
+    
 	/* ***** REQUIRED INTERFACE CLASSES (For A) ***** */
 	/**
 	 * Constructor for impKeywordFinder.
@@ -85,26 +88,27 @@ public class impKeywordFinder implements KeywordFinder {
 	 */
 	public void signal(KeywordContainer kc) {
 		// System.out.println("JAVA KF: SIGNAL IS CALLED");
-		if (topicHistory.isEmpty()) { // nothing to return
+		if (topics.size() == 0) { // nothing to return
 			// System.out.println("JAVA KF: NOTHING TO RETURN");
 			return;
 		}
-		StringTokenizer stKeywords =
-			new StringTokenizer(
-				(String) topicHistory.get(topicHistory.size() - 1),
-				KEYWORD_SEPARATOR);
-		while (stKeywords.hasMoreTokens()) {
+
+		synchronized (topics2) {
+		    while (topics2.size() > 0) {
 			// add everything we need to return to the return container kc
 			// System.out.println("JAVA KF: RETURN KEYWORDS NOW");
 			try {
 			kc.add(
 				new Keyword(
-					stKeywords.nextToken(),
+					(String)topics2.get(0),
 					new Context(),
 					Keyword.NO_DELAY));
 			} catch (GenericException ge) {
 				ge.printStackTrace();
 			}
+			topics2.remove(0);
+
+		}
 		}
 		kc.close(); // return the keywords to the SuggestionManager 
 	}
@@ -167,6 +171,7 @@ public class impKeywordFinder implements KeywordFinder {
 		// System.out.println("setKeyword called with " + keyword);
 		topics.put(keyword, keyword);
 		topicHistory.add(topics.get(keyword));
+		synchronized(topics2) {		topics2.add(keyword);}
 		// The vector contains only a pointer.
 	}
 
