@@ -18,12 +18,12 @@ import psl.memento.server.vem.*;
  */
 public class LayoutDrawer {
     
-    Layout l;
+    SimpleLayout l;
     
     // legend info
     Hashtable colorHash = null;
 	
-    public LayoutDrawer(Layout iLayout) {
+    public LayoutDrawer(SimpleLayout iLayout) {
 	this.l = iLayout;
     }
     
@@ -104,9 +104,9 @@ public class LayoutDrawer {
 	    }
 	    
 	    g.setColor(color);
-	    g.fill3DRect(ro.xloc+1, ro.yloc+1, ro.width-1, ro.height-1, true);
+	    g.fill3DRect(ro.xloc+1, ro.yloc+1, ro.width-1, ro.length-1, true);
 	    g.setColor(Color.black);
-	    g.draw3DRect(ro.xloc, ro.yloc, ro.width, ro.height, true);
+	    g.draw3DRect(ro.xloc, ro.yloc, ro.width, ro.length, true);
 	}
     }
     
@@ -142,7 +142,7 @@ public class LayoutDrawer {
 			if (ro.xloc < minx) minx = ro.xloc;
 			if (ro.yloc < miny) miny = ro.yloc;
 			if (ro.xloc+ro.width > maxx) maxx = ro.xloc+ro.width;
-			if (ro.yloc+ro.height > maxy) maxy = ro.yloc+ro.height;
+			if (ro.yloc+ro.length > maxy) maxy = ro.yloc+ro.length;
 		}
 		
 		if (maxx < minx || maxy < miny)

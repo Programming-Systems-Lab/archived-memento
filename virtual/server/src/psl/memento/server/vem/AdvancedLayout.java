@@ -15,7 +15,7 @@ import java.awt.Polygon;
  *
  * @author  Vladislav
  */
-public class AdvancedLayout extends Layout {
+public class AdvancedLayout extends SimpleLayout implements Layout {
 	
 	public String getLayoutSchemeName() {
 		return "Advanced Layout";
@@ -61,7 +61,7 @@ public class AdvancedLayout extends Layout {
 	protected int placeObjects(Iterator iter, int numObj, Rectangle bound) {
 		if (bound == null) return 0;
 		
-		System.out.println("***Begin***");
+		//System.out.println("***Begin***");
 		RoomObject ro = null;
 		
 		int ytmp, xtmp, limitX = -1, limitY = -1, startX = -1, startY = -1;
@@ -75,7 +75,7 @@ public class AdvancedLayout extends Layout {
 		limitY = (bound.y+bound.height) * delta;
 		maxX = 0;
 		maxY = 0;
-		System.out.println("block: " + startX + ", " + startY + ", " + limitX + ", " + limitY);
+		//System.out.println("block: " + startX + ", " + startY + ", " + limitX + ", " + limitY);
 		
 		while (iter.hasNext()) {
 			ro = (RoomObject) iter.next();
@@ -83,7 +83,7 @@ public class AdvancedLayout extends Layout {
 			foundPosition = false;  // find position for room object
 			for (xtmp = startX; xtmp < limitX; xtmp += delta) {
 				for (ytmp = startY; ytmp < limitY; ytmp += delta) {
-					if (testAndOccupy(xtmp, ytmp, ro.width, ro.height)) {
+					if (testAndOccupy(xtmp, ytmp, ro.width, ro.length)) {
 						foundPosition = true;
 						placedCount++;
 						ro.xloc = xtmp;
@@ -91,9 +91,9 @@ public class AdvancedLayout extends Layout {
 						ro.placed = true;
 						
 						if (xtmp + ro.width > maxX) maxX = xtmp + ro.width;
-						if (ytmp + ro.height > maxY) maxY = ytmp + ro.height;
+						if (ytmp + ro.length > maxY) maxY = ytmp + ro.length;
 						
-						System.out.println("placed: " + xtmp + ", " + ytmp + ", " + ro.width + ", " + ro.height);
+						//System.out.println("placed: " + xtmp + ", " + ytmp + ", " + ro.width + ", " + ro.length);
 						break;
 					}
 				}

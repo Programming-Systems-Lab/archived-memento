@@ -13,7 +13,7 @@ package psl.memento.server.vem;
 public class RoomObject implements Comparable {
     
     public int xloc, yloc, zloc;
-    public int height, width, z;
+    public int length, width, height;
     public String type;
     public boolean fixed;
     public boolean placed;
@@ -28,8 +28,8 @@ public class RoomObject implements Comparable {
     {
         this();
         width = dx;
-        height = dy;
-        z = dz;
+        length = dy;
+        height = dz;
     }
     
     public RoomObject(int dx, int dy, int dz, int xloc, int yloc, int zloc)

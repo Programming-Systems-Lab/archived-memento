@@ -30,9 +30,9 @@ public class RoomViewerPanel extends DrawPanel {
      *  @param  dr  the DataReader object which will describe the room
      */
     public void setRoomInformation(DataReader dr) {
-       layout = new Layout();
-       layout.init(dr); 
-       this.drawer = new LayoutDrawer(layout);
+       layout = new SimpleLayout();
+       layout.doLayout(dr); 
+       this.drawer = new LayoutDrawer((SimpleLayout)layout);
     }
     
     /**
@@ -42,7 +42,6 @@ public class RoomViewerPanel extends DrawPanel {
     public void updateRoomView() {
         if (this.drawer == null) return;
         
-	layout.setParameters();
         layout.calculateLayout();        
         
         handleInput(drawer);

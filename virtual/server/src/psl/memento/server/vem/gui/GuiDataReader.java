@@ -14,10 +14,7 @@ import java.net.URI;
 
 // non-jdk imports
 import psl.memento.server.vem.*;
-import com.hp.hpl.mesa.rdf.jena.model.*;
-import com.hp.hpl.mesa.rdf.jena.rdb.*;
-import psl.memento.server.frax.*;
-import psl.memento.server.frax.vocabulary.*;
+import com.hp.hpl.mesa.rdf.jena.model.Model;
 
 /**
  *
@@ -25,30 +22,29 @@ import psl.memento.server.frax.vocabulary.*;
  */
 public class GuiDataReader extends psl.memento.server.vem.DataReader {
     
+    private FraxAdapter fraxAdapter = new FraxAdapter();
     private String contents;
-    private Frax mFrax;
-    
     private StringTokenizer strtok;
     
     /** Creates a new instance of GuiDataReader */
     public GuiDataReader() {
 	super();
     }
-    
-    public void initFrax() {
-	mFrax = Frax.getInstance();
+
+    public boolean getDataFromFrax(String uri) 
+    {
+	setRoom(300, 300, 300);
 	
-	// load configuration data
 	try {
-	    mFrax.setConfiguration(new XMLFraxConfiguration());
-	} catch (Exception ex) {
-	    ex.printStackTrace();
-	    System.exit(1);
+	    Model m = fraxAdapter.getModel(uri);
+	    return getObjectsFromModel(m, new DefaultObjectModeler());
+	} catch (Exception e) {
+	    System.out.println(e);
+	    e.printStackTrace();
+	    setError("Frax Problem: " + e);
+	    return false;
 	}
-	
-	FraxConfiguration config = mFrax.getConfiguration();
-	config.setExtractContentMetadata(true);
-    }
+    }    
     
     /**
      *	Opens the input file, saves the contents to a buffer and then calls
@@ -65,24 +61,7 @@ public class GuiDataReader extends psl.memento.server.vem.DataReader {
 	}
     }
     
-    public boolean getDataFromFrax(String uri) {
-	try {
-	    Model m = getFrax().extractMetadata(new URI(uri));
-	    return getObjectsFromModel(m);
-	} catch (Exception e) {
-	    System.out.println(e);
-	    e.printStackTrace();
-	    setError("Frax Problem: " + e);
-	    return false;
-	}
-    }
-    
-    public Frax getFrax() {
-	if (mFrax == null) {
-	    initFrax();
-	}
-	return mFrax;
-    }
+
     
     private void readData(String filename) throws IOException {
 	String line;

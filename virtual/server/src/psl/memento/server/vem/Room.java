@@ -14,13 +14,14 @@ import java.awt.Polygon;
  */
 public class Room {
     
-    public int height, width;
+    public int height, length, width;
     public Polygon plan;
     
     /** Creates a new instance of Room */
-    public Room(int w, int h) {
+    public Room(int w, int l, int h) {
         setHeight(h);
         setWidth(w);
+	setLength(l);
     }
     
     /** Getter for property height.
@@ -53,6 +54,22 @@ public class Room {
      */
     public void setWidth(int width) {
         this.width = width;
+    }
+    
+    /** Getter for property length.
+     * @return Value of property length.
+     *
+     */
+    public int getLength() {
+	return length;
+    }
+    
+    /** Setter for property length.
+     * @param length New value of property length.
+     *
+     */
+    public void setLength(int length) {
+	this.length = length;
     }
     
 }

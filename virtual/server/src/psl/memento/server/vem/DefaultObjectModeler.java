@@ -17,49 +17,41 @@ import psl.memento.server.frax.vocabulary.*;
  *
  * @author  vlad
  */
-public class DefaultObjectModeler implements ObjectModeler {
+public class DefaultObjectModeler extends ObjectModelerBase
+    implements ObjectModeler {
+
+    /** Creates a new instance of DefaultObjectModeler */
+    public DefaultObjectModeler() {
+	initialize();
+    }
     
-    public void initialize() {
-	ResourceFileManager rfm = ResourceFileManager.getInstance();
-	ModelerRule rule;
-	
+    protected static Property[] properties = {
+	HTMLVocab.kLinks.getProperty(),
+	HTMLVocab.kImages.getProperty(),
+	FileVocab.kContents.getProperty()
+    };
+    
+    protected void initialize() {
+	defineRules();
+	defineViews();
+    }
+    
+    protected void defineRules() {
 	addRuleEndsWith("/", "directory");
 	addRuleContains("@", "email");
 	addRule(MATCH_EXTENSION, null);
 	addRuleMatchAll(null);
-	
-	setView("directory", rfm.getRF("table.3ds"));
-	setView("email", rfm.getRF("letter.3ds"));
-	setView("unknown", rfm.getRF("box.3ds"));
     }
     
-    
-    public RoomObject createRoomObjectView(Object iVocab, String iName) {
-	
-	iName = preprocess((Property)iVocab, iName);
-	
-	/* traverse rules */
-	Iterator iter = rules.iterator();
-	ModelerRule r;
-	String type;
-	RoomObject ro;
-	
-	while (iter.hasNext()) {
-	    r = (ModelerRule) iter.next();
-	    
-	    if (r.matches(iName)) {
-		type = r.getType();	
-		ro = new RoomObject(15, 15, 15);
-		ro.type = type;
-		
-		return ro;
-	    }
-	}
-	
-	return null;
+    protected void defineViews() {
+	setView("directory", rfm.getRF("violin_case.3ds"));
+	setView("email", rfm.getRF("stool.3ds"));
+	setView("unknown", rfm.getRF("cube.3ds"));
+	setView(".gif", rfm.getRF("cube.3ds"));
+	setView(".html", rfm.getRF("stool.3ds"));	
     }
     
-    private String preprocess(Property prop, String iName) {
+    protected String preprocess(Property prop, String iName) {
 	
 	Property links = HTMLVocab.kLinks.getProperty();
 	Property images = HTMLVocab.kImages.getProperty();
@@ -75,52 +67,5 @@ public class DefaultObjectModeler implements ObjectModeler {
     
     public Object[] getVocabsToSearch() {
 	return properties;
-    }
-    
-    /** Creates a new instance of DefaultObjectModeler */
-    public DefaultObjectModeler() {
-	rules = new LinkedList();
-	initialize();
-    }
-    
-    public void addRule(ModelerRule iRule) {
-	rules.addLast(iRule);
-    }
-    
-    public void addRule(String pattern, String type) {
-	addRule(new ModelerRule(pattern, type));
-    }
-    
-    public void addRuleContains(String str, String type) {
-	addRule(ModelerRule.escape(str), type);
-    }
-    
-    public void addRuleStartsWith(String str, String type) {
-	addRule(MATCH_START + ModelerRule.escape(str), type);
-    }
-    
-    public void addRuleEndsWith(String str, String type) {
-	addRule(ModelerRule.escape(str) + MATCH_END, type);
-    }
-    
-    public void addRuleMatchAll(String type) {
-	addRule(MATCH_ALL, type);
-    }
-    
-    public void setView(String type, ResourceFile file) {
-	
-    }
-    
-    private static Property[] properties = {
-	HTMLVocab.kLinks.getProperty(),
-	HTMLVocab.kImages.getProperty(),
-	FileVocab.kContents.getProperty()
-    };
-    
-    private LinkedList rules;
-    
-    private static final String MATCH_EXTENSION = "\\.[^\\./]+$";
-    private static final String MATCH_START = "^";
-    private static final String MATCH_END = "$";
-    private static final String MATCH_ALL = ".*";
+    } 
 }

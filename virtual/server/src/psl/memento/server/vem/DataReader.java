@@ -39,12 +39,12 @@ public class DataReader {
     
     public void setRoom(Polygon poly, int dz) {
 	Rectangle b = poly.getBounds();
-	mRoom = new Room(b.width, b.height);
+	mRoom = new Room(b.width, b.height, DEFAULT_ROOM_HEIGHT);
 	mRoom.plan = poly;
     }
     
     public void setRoom(int dx, int dy, int dz) {
-	mRoom = new Room(dx, dy);
+	mRoom = new Room(dx, dy, dz);
     }
     
     public void addRoomObject(RoomObject ro) {
@@ -60,16 +60,13 @@ public class DataReader {
 	mDoors.add(d);
     }
     
-    public boolean getObjectsFromModel(Model m) {
-	
-	setRoom(300, 300, 300);
-	
+    public boolean getObjectsFromModel(Model m, ObjectModeler om) 
+    {	
 	RoomObject ro;
 	Property prop;
 	NodeIterator iter;
 	String name;
 
-	ObjectModeler om = new DefaultObjectModeler(); 
 	Property properties[] = (Property[])om.getVocabsToSearch();
 	
 	try {
