@@ -24,7 +24,7 @@ public class implKeywordFinder implements KeywordFinder {
 
 	//private String configfileName = "c:/Documents and Settings/jc424/My Documents/eclipse/workspace/keywords/psl/conversation/keywords2/KeywordFinderConfig.xml";
 	private String configfileName =
-		"/home/jc424/project2/psl/conversation/keywords2/KeywordFinderConfig.xml";
+		"psl/memento/pervasive/recommendation/keywordfinder/centroid/KeywordFinderConfig.xml";
 
 	// Contains 
 	// TfIDF = term freq * log(N / doc freq)
@@ -124,6 +124,7 @@ public class implKeywordFinder implements KeywordFinder {
 			termFrequency = new int[htWordOrder.size()];
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			(new KeywordException("Error on initialization.", e)).printStackTrace();
 		}
 

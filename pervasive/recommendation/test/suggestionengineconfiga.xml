@@ -1,4 +1,4 @@
 <SuggestionEngineConfiguration>
-<KeywordFinder classname="psl.memento.pervasive.recommendation.keywordfinder.jebara.impKeywordFinder" configclassname="psl.memento.pervasive.recommendation.keywordfinder.jebara.impXMLContainer" xmlconfig="psl/memento/pervasive/recommendation/keywordfinder/jebara/KeywordFinderConfig.xml"/>
+<KeywordFinder classname="psl.memento.pervasive.recommendation.keywordfinder.centroid.implKeywordFinder" configclassname="psl.memento.pervasive.recommendation.keywordfinder.centroid.implXMLContainer" xmlconfig="psl/memento/pervasive/recommendation/keywordfinder/centroid/KeywordFinderConfig.xml"/>
 <Search classname="psl.memento.pervasive.recommendation.search.test.SearchTestImpl" configclassname="psl.memento.pervasive.recommendation.search.test.SearchConfigurationTestImpl" xmlconfig="psl/memento/pervasive/recommendation/search/test/stestimplconf.xml"/>
 </SuggestionEngineConfiguration>
