@@ -16,15 +16,50 @@ import java.awt.*;
  */
 public class DataReader {
     
+    public static final int DEFAULT_ROOM_HEIGHT = 100;
+    
     public Room mRoom;
     public ArrayList mObjs, mFixedObjs, mDoors;
     private String contents;
     
     private StringTokenizer strtok;
     
-    /** Creates a new instance of DataReader */
-    public DataReader(String filename) {
-        mFilename = filename;
+    public DataReader() {
+	// initialize
+	mObjs = new ArrayList();
+	mFixedObjs = new ArrayList();
+        mDoors = new ArrayList();
+    }
+    
+    public void reset() {
+        mObjs.clear();
+        mFixedObjs.clear();
+        mDoors.clear();
+    }
+    
+    public void setRoom(Polygon poly, int dz) {
+        Rectangle b = poly.getBounds();
+        mRoom = new Room(b.width, b.height);
+        mRoom.plan = poly;        
+    }
+    
+    public void setRoom(int dx, int dy, int dz) {
+        mRoom = new Room(dx, dy);
+    }
+    
+    public void addRoomObject(RoomObject ro)
+    {
+        if (ro.fixed) {
+            mFixedObjs.add(ro);
+        } else {
+            mObjs.add(ro);
+        }
+    }
+  
+    public void addDoor(char direction, int offset, int length)
+    {
+        Door d = new Door(direction, offset, length);
+        mDoors.add(d);
     }
     
     /**
@@ -32,10 +67,10 @@ public class DataReader {
      *	<code>parseInput()</code>
      *
      */
-    public boolean getRoomData() 
+    public boolean getRoomData(String filename) 
     {
         try {
-            readData();
+            readData(filename);
 	    return parseInput();
         } catch (IOException ioe) {
             setError("I/O Problem: " + ioe);
@@ -43,9 +78,9 @@ public class DataReader {
         }
     }
     
-    private void readData() throws IOException {
+    private void readData(String filename) throws IOException {
         String line;
-        BufferedReader in = new BufferedReader(new FileReader(mFilename));
+        BufferedReader in = new BufferedReader(new FileReader(filename));
 	StringBuffer buf = new StringBuffer(100);
 	
         while ((line = in.readLine()) != null) {
@@ -66,10 +101,7 @@ public class DataReader {
         RoomObject o;
         Door d;
 	
-	// initialize
-	mObjs = new ArrayList();
-	mFixedObjs = new ArrayList();
-        mDoors = new ArrayList();
+        reset();
     
 	StringTokenizer reader = new StringTokenizer(contents, "\n");
 
@@ -83,10 +115,9 @@ public class DataReader {
             if (tok.equals("room")) {
                 if (gotRoom)
                     return false;
-                
  
 		if (count == 2) {
-		    mRoom = new Room(nextInt(), nextInt());
+		    setRoom(nextInt(), nextInt(), DEFAULT_ROOM_HEIGHT);
 		    gotRoom = true;
 		}
 		else if (count % 2 == 0) {
@@ -94,9 +125,7 @@ public class DataReader {
 		    while (strtok.hasMoreTokens()) {
 			poly.addPoint(nextInt(), nextInt());
 		    }
-		    Rectangle b = poly.getBounds();
-		    mRoom = new Room(b.width, b.height);
-		    mRoom.plan = poly;
+                    setRoom(poly, DEFAULT_ROOM_HEIGHT);
 		    gotRoom = true;
 		}
             }
@@ -106,28 +135,19 @@ public class DataReader {
 		    System.out.println("Object ignored: wrong number of parameters");
 		    continue;
 		}
-		
-                o = new RoomObject();
+
+                if (count == 5) {   // location fixed
+                    o = new RoomObject(nextInt(), nextInt(), 1, nextInt(), nextInt(), 0);
+                } else {
+                    o = new RoomObject(nextInt(), nextInt(), 1);
+                }
                 
-                o.width = nextInt();
-                o.height = nextInt();
-		
-		if (count == 5) {
-		    o.xloc = nextInt();
-		    o.yloc = nextInt();
-		    o.fixed = true;
-		}
                 o.type = nextStr();
-                
-		if (o.fixed)
-		    mFixedObjs.add(o);
-		else
-                    mObjs.add(o);
+                addRoomObject(o);
             }
             
             if (tok.equals("door")) {
-                d = new Door(nextStr().charAt(0), nextInt(), nextInt());
-                mDoors.add(d);
+                addDoor(nextStr().charAt(0), nextInt(), nextInt());
             }
         }
         
@@ -151,10 +171,6 @@ public class DataReader {
     public void setFileContent(String c) {
 	contents = c;
     }
-    
-    /** private variables **/
-    
-    private String mFilename;
     
     /** Holds value of property errorMessage. */
     private String errorMessage;

@@ -64,7 +64,7 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	    ro = (RoomObject) iter.next();
 	    
 	    if (!testAndOccupy(ro.xloc, ro.yloc, ro.width, ro.height))
-		return false;
+		;//return false;
 	    else
 		ro.placed = true;
 	}
@@ -303,9 +303,9 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	    }
 	    
 	    g.setColor(color);
-	    g.fillRoundRect(ro.xloc, ro.yloc, ro.width, ro.height, 5, 5);
+	    g.fill3DRect(ro.xloc+1, ro.yloc+1, ro.width-1, ro.height-1, true);
 	    g.setColor(Color.black);
-	    g.drawRoundRect(ro.xloc, ro.yloc, ro.width, ro.height, 5, 5);
+	    g.draw3DRect(ro.xloc, ro.yloc, ro.width, ro.height, true);
 	}
 	
 	if (lp.highlightFreeSpace()) {

@@ -49,7 +49,6 @@ public class RoomViewer extends javax.swing.JFrame
         jLabel1 = new javax.swing.JLabel();
         fileTextField = new javax.swing.JTextField();
         loadButton = new javax.swing.JButton();
-        drawPane = new DrawPanel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
@@ -68,6 +67,8 @@ public class RoomViewer extends javax.swing.JFrame
         spaceLabel = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         layoutLabel = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        drawPane = new DrawPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         openItem = new javax.swing.JMenuItem();
@@ -105,8 +106,6 @@ public class RoomViewer extends javax.swing.JFrame
         jPanel1.add(loadButton);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.NORTH);
-
-        getContentPane().add(drawPane, java.awt.BorderLayout.CENTER);
 
         jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.Y_AXIS));
 
@@ -191,6 +190,14 @@ public class RoomViewer extends javax.swing.JFrame
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.EAST);
 
+        jPanel5.setLayout(new java.awt.BorderLayout());
+
+        jPanel5.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(10, 10, 10, 10)));
+        drawPane.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(10, 10, 10, 10)));
+        jPanel5.add(drawPane, java.awt.BorderLayout.CENTER);
+
+        getContentPane().add(jPanel5, java.awt.BorderLayout.CENTER);
+
         jMenu1.setText("Action");
         jMenu1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -226,7 +233,7 @@ public class RoomViewer extends javax.swing.JFrame
     private void updateButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateButtonMouseClicked
 	// Add your handling code here:
 	if (dr == null)
-	    dr = new DataReader(null);
+	    dr = new DataReader();
 	
 	dr.setFileContent(textArea.getText());
 	dr.parseInput();
@@ -253,8 +260,8 @@ public class RoomViewer extends javax.swing.JFrame
     private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
         // Add your handling code here:
 
-	dr = new DataReader(fileTextField.getText());
-	if (dr.getRoomData()) {
+	dr = new DataReader();
+	if (dr.getRoomData(fileTextField.getText())) {
 	    updateDrawPanel();
 	} else {
 	    DrawPanel dp = (DrawPanel)drawPane;
@@ -351,6 +358,7 @@ public class RoomViewer extends javax.swing.JFrame
     private javax.swing.JTextField fileTextField;
     private javax.swing.JButton loadButton;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JLabel layoutLabel;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLabel cellSizeLabel;

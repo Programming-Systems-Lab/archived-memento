@@ -12,16 +12,33 @@ package psl.memento.server.vem;
  */
 public class RoomObject implements Comparable {
     
-    public int xloc, yloc;
-    public int height, width;
+    public int xloc, yloc, zloc;
+    public int height, width, z;
     public String type;
     public boolean fixed;
     public boolean placed;
     
     /** Creates a new instance of RoomObject */
     public RoomObject() {
-	fixed = false;
 	placed = false;
+        fixed = false;        
+    }
+    
+    public RoomObject(int dx, int dy, int dz)
+    {
+        this();
+        width = dx;
+        height = dy;
+        z = dz;
+    }
+    
+    public RoomObject(int dx, int dy, int dz, int xloc, int yloc, int zloc)
+    {
+        this(dx, dy, dz);
+        this.xloc = xloc;
+        this.yloc = yloc;
+        this.zloc = zloc;
+        this.fixed = true;
     }
     
     public int compareTo(Object o) {

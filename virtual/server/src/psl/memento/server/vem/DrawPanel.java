@@ -16,7 +16,6 @@ import java.awt.image.*;
  */
 public class DrawPanel extends JPanel {
     
-    /** Holds value of property offscreen. */
     VolatileImage vImg;   
     LayoutDrawer drawer;
     
@@ -59,7 +58,7 @@ public class DrawPanel extends JPanel {
             // Render to the Image
             renderFrame();
             // Render image to screen.
-            g.drawImage(vImg, 10, 10, this);
+            g.drawImage(vImg, 0, 0, this);
             // Test if content is lost
         } while(vImg.contentsLost());    
     }
@@ -85,4 +84,9 @@ public class DrawPanel extends JPanel {
 	createBackBuffer();
 	draw(getGraphics());
     }    
+    
+    public void redraw()
+    {
+        draw(getGraphics());
+    }
 }
