@@ -32,6 +32,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="c:\java1.4\lib\jvm.lib"
 				AdditionalDependencies="libcssys_d.lib libcsutil_d.lib libcsgeom_d.lib libcsgfx_d.lib libcstool_d.lib libcsws_d.lib"
 				ShowProgress="2"
 				OutputFile="$(OutDir)/chime.exe"

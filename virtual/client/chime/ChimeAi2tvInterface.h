@@ -22,13 +22,13 @@ public:
 
 	static ChimeAi2tvInterface* GetInstance (const char *strUserName);
 
-	void GetAvailableVideos (char videos[10][50]);
+	int GetAvailableVideos (char videos[10][50]);
 	void SetLoginInfo (const char *strUserName);
 	void SetCacheDir (const char *cacheDir);
 	void SelectVideo (char* strVideoSource, char* strVideoDate);
 
-	void LoadFrame (char *strFileName, char *strFrameName);
-	void DisplayFrame (char *strFrameName);
+	void LoadFrame (const char *strFileName, const char *strFrameName);
+	void DisplayFrame (const char *strFrameName);
 
 	void ShutDown ();
 

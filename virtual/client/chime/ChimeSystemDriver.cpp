@@ -1077,9 +1077,10 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 
 				char sources [10][50];
 				printf("gonna try to go get the available videos now\n");
-				chAi2tvInterface->GetAvailableVideos (sources);
+				int numVideos = chAi2tvInterface->GetAvailableVideos (sources);
+				printf("numVideos %d\n", numVideos);
 
-				new Ai2tvSourceSelectWindow (application, sources, 5);
+				new Ai2tvSourceSelectWindow (application, sources, numVideos);
 			      }
 			  }
 			break;

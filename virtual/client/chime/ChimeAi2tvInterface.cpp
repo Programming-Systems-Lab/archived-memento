@@ -83,8 +83,8 @@ void ChimeAi2tvInterface::SelectVideo (char *strVideoSource, char *strVideoDate)
 	printf("Selected video: %s @ %s\n", strVideoSource, strVideoDate);
 	if (client)
 	{
-		client->loadVideo (strVideoSource, strVideoDate);
-        client->initialize ();
+	  client->loadVideo (strVideoSource, strVideoDate);
+	  client->initialize ();
 	}
 }
 
