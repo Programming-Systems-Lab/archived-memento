@@ -9,7 +9,7 @@ package psl.memento.ether.component;
  */
 public abstract class AbstractComponent implements Component
 {
-   private ComponentContext context;
+	private ComponentContext context;
 
 	/**
 	 * Initialize the component. This implementation of the method does

@@ -1,10 +1,15 @@
 package psl.memento.ether.message;
 
-import psl.memento.ether.event.*;
+import psl.memento.ether.event.ComponentUrl;
+import psl.memento.ether.event.EventException;
+import psl.memento.ether.event.TopicUrl;
+import psl.memento.ether.event.TopicUrlConnection;
 import psl.memento.ether.util.CounterMap;
 import psl.memento.ether.util.Uid;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Sends Messages to to specific components distributed within the network
@@ -19,7 +24,7 @@ import java.util.*;
 public class MessageService
 {
 	// connection and topic used to receive messages from the messaging topic
-   private TopicUrlConnection msgTopicConn;
+	private TopicUrlConnection msgTopicConn;
 	private TopicUrl msgTopicUrl;
 
 	private MessageDispatcher dispatcher;
@@ -59,9 +64,9 @@ public class MessageService
 	 */
 	public void start() throws MessageException
 	{
-      // open a connection to the message topic
+		// open a connection to the message topic
 		msgTopicConn = new TopicUrlConnection(msgTopicUrl, null);
-      try
+		try
 		{
 			msgTopicConn.open();
 
@@ -71,7 +76,7 @@ public class MessageService
 		catch (EventException ee)
 		{
 			String msg = "couldn't open connection to msg topic " +
-				msgTopicUrl.toString();
+					msgTopicUrl.toString();
 			throw new MessageException(msg, ee);
 		}
 	}
@@ -102,7 +107,7 @@ public class MessageService
 	 */
 	public static void setInstance(MessageService msgService)
 	{
-      if (msgService == null)
+		if (msgService == null)
 		{
 			String msg = "msgService can't be null";
 			throw new IllegalArgumentException(msg);
@@ -120,7 +125,7 @@ public class MessageService
 	 *         if the connection couldn't be opened
 	 */
 	void openConnection(MessageUrl address, ComponentUrl source)
-			  throws MessageException
+			throws MessageException
 	{
 		if ((address == null) || (source == null))
 		{
@@ -128,8 +133,8 @@ public class MessageService
 			throw new IllegalArgumentException(msg);
 		}
 
-      // if there are no open connections to this component then make one
-      if (connCounter.getCount(address) < 1)
+		// if there are no open connections to this component then make one
+		if (connCounter.getCount(address) < 1)
 		{
 			// make a real connection to the destination component's messaging
 			// topic
@@ -137,8 +142,8 @@ public class MessageService
 			try
 			{
 				topicCon =
-						  new TopicUrlConnection(address.getMessageTopicUrl(), source);
-            topicCon.open();
+						new TopicUrlConnection(address.getMessageTopicUrl(), source);
+				topicCon.open();
 			}
 			catch (EventException ee)
 			{
@@ -177,17 +182,17 @@ public class MessageService
 
 		// if there is a single connection left to this address close the real
 		// one
-		if  (connCounter.getCount(address) == 1)
+		if (connCounter.getCount(address) == 1)
 		{
 			TopicUrlConnection conn = (TopicUrlConnection) connMap.get(address);
-         conn.close();
+			conn.close();
 		}
 
 		// decrement the connection count
 		connCounter.decrement(address);
 	}
 
-   /**
+	/**
 	 * Send a Message to a component at the given address.
 	 *
 	 * @param msg      Message to send
@@ -197,15 +202,15 @@ public class MessageService
 	 *         if the message can't be sent
 	 */
 	void send(Message msg, MessageUrl address, ComponentUrl sender)
-		throws MessageException
+			throws MessageException
 	{
-      if ((msg == null) || (address == null) || (sender == null))
+		if ((msg == null) || (address == null) || (sender == null))
 		{
 			String emsg = "no parameter can be null";
 			throw new IllegalArgumentException(emsg);
 		}
 
-      // set the receiver of the message
+		// set the receiver of the message
 		msg.setReceiver(address);
 
 		// construct the message url for the component sending it
@@ -218,16 +223,16 @@ public class MessageService
 			throw new IllegalStateException(emsg);
 		}
 
-      // send the message to the correct topic
+		// send the message to the correct topic
 		TopicUrlConnection conn = null;
-      try
+		try
 		{
-         conn = (TopicUrlConnection) connMap.get(address);
+			conn = (TopicUrlConnection) connMap.get(address);
 			conn.publish(msg.getUnderlyingEvent(), sender);
 		}
-      catch (EventException ee)
+		catch (EventException ee)
 		{
-         String emsg = "couldn't send message to " + address;
+			String emsg = "couldn't send message to " + address;
 			throw new MessageException(emsg);
 		}
 	}
@@ -244,7 +249,7 @@ public class MessageService
 	 * @param callback Callback to handle the eventual response to the message
 	 */
 	void send(Message msg, MessageUrl address, ComponentUrl sender,
-				 Callback callback) throws MessageException
+			  Callback callback) throws MessageException
 	{
 		// set the transaction id if the message doesn't already have one
 		// indicating this is the start of a new message transaction

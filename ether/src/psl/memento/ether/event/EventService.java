@@ -1,7 +1,7 @@
 package psl.memento.ether.event;
 
-import psl.memento.ether.event.session.SessionProvider;
 import psl.memento.ether.event.session.Session;
+import psl.memento.ether.event.session.SessionProvider;
 
 /**
  * Represents the main interface to the ether event system.
@@ -11,14 +11,14 @@ import psl.memento.ether.event.session.Session;
  */
 public abstract class EventService
 {
-   private VirtualConnectionManager vcm = new VirtualConnectionManager();
+	private VirtualConnectionManager vcm = new VirtualConnectionManager();
 	private EventHandlerRegistry handlerRegistry = new EventHandlerRegistry();
 	private EventDispatcher dispatcher;
 	private static EventService singleInstance;
 	private SessionProvider sessionProvider;
 
 
-   /**
+	/**
 	 * Default ctor.
 	 *
 	 * @param sessionProv SessionProvider to be used for event sessions
@@ -74,7 +74,7 @@ public abstract class EventService
 		dispatcher.stop();
 	}
 
-   /**
+	/**
 	 * Open a connection to an event hub. Before subscribing to a topic or
 	 * publishing an event to a topic you must first open a connection to the
 	 * event hub.
@@ -102,7 +102,7 @@ public abstract class EventService
 		vcm.openConnection(host, port);
 	}
 
-   /**
+	/**
 	 * Close a connection to an event hub. After you have unsubscribed from a
 	 * topic or finished sending an event you must close the outgoing connection
 	 * to the event hub.
@@ -129,7 +129,7 @@ public abstract class EventService
 		}
 	}
 
-   /**
+	/**
 	 * Open a physical connection to an event server. Subclasses must override
 	 * this method to implement the appropriate connection logic necessary to
 	 * publish and subscribe to events.
@@ -140,7 +140,7 @@ public abstract class EventService
 	 * 		   if the connection can't be made
 	 **/
 	protected abstract void openConnection(String host, int port)
-		throws EventException;
+			throws EventException;
 
 	/**
 	 * Close a physical connection to the event server. Subclasses must
@@ -152,7 +152,7 @@ public abstract class EventService
 	 **/
 	protected abstract void closeConnection(String host, int port);
 
-   /**
+	/**
 	 * Publish an event to a given topic.
 	 *
 	 * @param topic Topic to publish the event to
@@ -164,7 +164,7 @@ public abstract class EventService
 	 *         if the event can't be sent
 	 **/
 	void publish(TopicUrl topic, Event event, ComponentUrl source)
-		throws EventException
+			throws EventException
 	{
 		if ((topic == null) || (event == null) || (source == null))
 		{
@@ -175,7 +175,7 @@ public abstract class EventService
 		if (!vcm.isConnected(topic.getHostname(), topic.getPort()))
 		{
 			String msg = "no connection exists to " + topic.getHostname() + ":"
-				+ topic.getPort();
+					+ topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 
@@ -196,9 +196,9 @@ public abstract class EventService
 	 *         if the event can't be sent
 	 **/
 	protected abstract void publish(TopicUrl topic, Event event)
-		throws EventException;
+			throws EventException;
 
-   /**
+	/**
 	 * Subscribe a given topic hosted within the network.
 	 *
 	 * @param topic   the topic to subscribe to
@@ -207,7 +207,7 @@ public abstract class EventService
 	 *         if the subscription couldn't happen
 	 **/
 	void subscribe(TopicUrl topic, EventHandler handler)
-		throws EventException
+			throws EventException
 	{
 		if ((topic == null) || (handler == null))
 		{
@@ -219,7 +219,7 @@ public abstract class EventService
 		if (!vcm.isConnected(topic.getHostname(), topic.getPort()))
 		{
 			String msg = "no connection exists to " + topic.getHostname() + ":" +
-				topic.getPort();
+					topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 
@@ -234,7 +234,7 @@ public abstract class EventService
 		handlerRegistry.register(topic, handler);
 	}
 
-   /**
+	/**
 	 * Add a subscription using the underlying event system.
 	 *
 	 * @param topic the topic to subscribe to
@@ -242,9 +242,9 @@ public abstract class EventService
 	 *         if the subscription couldn't happen
 	 **/
 	protected abstract void addSubscription(TopicUrl topic)
-		throws EventException;
+			throws EventException;
 
-   /**
+	/**
 	 * Unsubscribe from a topic. Once you've unsubscribed from a topic you must
 	 * close the connection to the event hub to free up network resources.
 	 *
@@ -254,7 +254,7 @@ public abstract class EventService
 	 *         if the unsubscriotion doesn't happen
 	 **/
 	void unsubscribe(TopicUrl topic, EventHandler handler)
-		throws EventException
+			throws EventException
 	{
 		if ((topic == null) || (handler == null))
 		{
@@ -266,7 +266,7 @@ public abstract class EventService
 		if (!vcm.isConnected(topic.getHostname(), topic.getPort()))
 		{
 			String msg = "no connection exists to " + topic.getHostname() + ":" +
-				topic.getPort();
+					topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 
@@ -281,7 +281,7 @@ public abstract class EventService
 		handlerRegistry.unregister(topic, handler);
 	}
 
-   /**
+	/**
 	 * Remove a subscription from the underlying event service.
 	 *
 	 * @param topic topic to unsubscribe from
@@ -289,7 +289,7 @@ public abstract class EventService
 	 *         if the subscription couldn't be removed
 	 **/
 	protected abstract void removeSubscription(TopicUrl topic)
-		throws EventException;
+			throws EventException;
 
 	/**
 	 * Create an empty event.

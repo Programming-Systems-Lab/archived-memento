@@ -14,12 +14,12 @@ import java.net.MalformedURLException;
  */
 public class Message
 {
-   private MessageUrl sender;
+	private MessageUrl sender;
 	private MessageUrl receiver;
-   private Event event;
+	private Event event;
 	private Uid transactionId;
 
-   /**
+	/**
 	 * Construct a new Message with the underlying event that contains the
 	 * message data.
 	 *
@@ -41,21 +41,21 @@ public class Message
 	 *
 	 * @return underlying Event used to transport the message
 	 */
-   Event getUnderlyingEvent()
+	Event getUnderlyingEvent()
 	{
 		return event;
 	}
 
-   /**
+	/**
 	 * Get the message URL of the component which sent this message.
 	 *
 	 * @return message url of the component which sent this message
 	 */
 	public MessageUrl getSender()
 	{
-      if (sender == null)
+		if (sender == null)
 		{
-         try
+			try
 			{
 				sender = new MessageUrl(get("message.sender.message-url"));
 			}
@@ -76,13 +76,13 @@ public class Message
 	 */
 	public void setSender(MessageUrl sender)
 	{
-      if (sender == null)
+		if (sender == null)
 		{
 			String msg = "sender can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      put("message.sender.message-url", sender.toUrl());
+		put("message.sender.message-url", sender.toUrl());
 		this.sender = sender;
 	}
 
@@ -109,7 +109,7 @@ public class Message
 		return receiver;
 	}
 
-   /**
+	/**
 	 * Set the message URL of the component which should receive this message.
 	 *
 	 * @param receiver message URL of the component which should receive this
@@ -175,7 +175,7 @@ public class Message
 		return response;
 	}
 
-   /**
+	/**
 	 * Retrieve a named value from the message.
 	 *
 	 * @param key name of the value to retreieve from the message

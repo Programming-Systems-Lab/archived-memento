@@ -1,6 +1,9 @@
 package psl.memento.ether.naming;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * A NamingContext binds a set of given objects to a set of unique names. Later,
@@ -24,10 +27,10 @@ import java.util.*;
  */
 public abstract class NamingContext
 {
-   private static NamingContext rootCtx;
-   protected NamingContext parentCtx;
+	private static NamingContext rootCtx;
+	protected NamingContext parentCtx;
 
-   /**
+	/**
 	 * Get the local root context for the current container.
 	 *
 	 * @return local root context for the current container
@@ -71,8 +74,8 @@ public abstract class NamingContext
 			return get(name);
 		}
 
-		 // break the name path up into components
-      String[] path = tokenize(name);
+		// break the name path up into components
+		String[] path = tokenize(name);
 
 		// attempt to resolve the NamingContext which contains the last component
 		// of the path
@@ -101,7 +104,7 @@ public abstract class NamingContext
 	 */
 	protected abstract Object get(String name) throws NamingException;
 
-   /**
+	/**
 	 * Bind an object to a given name. The name may be absolute or relative.
 	 *
 	 * @param name name to bind the object against
@@ -152,7 +155,7 @@ public abstract class NamingContext
 	 */
 	protected abstract void put(String name, Object ob) throws NamingException;
 
-   /**
+	/**
 	 * Remove an object bounded from a given name.
 	 *
 	 * @param name absolute or relative name of the object to unbind from
@@ -179,7 +182,7 @@ public abstract class NamingContext
 		boolean absolute = isAbsoluteName(name);
 		String[] path = tokenize(name);
 
-      NamingContext ctx = resolve(path, absolute);
+		NamingContext ctx = resolve(path, absolute);
 
 		if (ctx == null)
 		{
@@ -201,7 +204,7 @@ public abstract class NamingContext
 	 */
 	protected abstract void delete(String name) throws NamingException;
 
-   /**
+	/**
 	 * Get an enumeration over all the names of the objects bound in the
 	 * current context. This does not search child or parent contexts.
 	 *
@@ -227,10 +230,10 @@ public abstract class NamingContext
 			throw new IllegalArgumentException(msg);
 		}
 
-      List stringList = new ArrayList();
+		List stringList = new ArrayList();
 
-      StringTokenizer tokenizer = new StringTokenizer(name, "/");
-      while (tokenizer.hasMoreTokens())
+		StringTokenizer tokenizer = new StringTokenizer(name, "/");
+		while (tokenizer.hasMoreTokens())
 		{
 			stringList.add(tokenizer.nextToken());
 		}
@@ -287,7 +290,7 @@ public abstract class NamingContext
 	 *         if the resolution fails
 	 */
 	protected NamingContext resolve(String[] path, boolean absolute)
-			  throws NamingException
+			throws NamingException
 	{
 		if (path == null)
 		{
@@ -295,7 +298,7 @@ public abstract class NamingContext
 			throw new IllegalArgumentException(msg);
 		}
 
-      NamingContext currentCtx = null;
+		NamingContext currentCtx = null;
 
 		// if it's an absolute name, start with the container's root context
 		// otherwise start with this context
@@ -309,29 +312,28 @@ public abstract class NamingContext
 			currentCtx = this;
 		}
 
-      // loop down each component of the name until you get to the
+		// loop down each component of the name until you get to the
 		// second to last component - each non-last component must be a naming
 		// context
 
-      for (int i = 0; i < path.length - 1; ++i)
+		for (int i = 0; i < path.length - 1; ++i)
 		{
 			// ask the current component directly for the given path component
-         Object ob = currentCtx.get(path[i]);
+			Object ob = currentCtx.get(path[i]);
 
 			// if we don't find it or we find a non-context then the path is bad
 			// so return null
 			if ((ob == null) || !(ob instanceof NamingContext))
 			{
-            return null;
+				return null;
 			}
 
-         // otherwise set the current naming context to the new one
+			// otherwise set the current naming context to the new one
 			currentCtx = (NamingContext) ob;
 		}
 
-      return currentCtx;
+		return currentCtx;
 	}
-
 
 
 }

@@ -11,7 +11,7 @@ package psl.memento.ether.cache;
  */
 public class CachePriority
 {
-   private int priority;
+	private int priority;
 
 	public static final CachePriority Highest = new CachePriority(5);
 	public static final CachePriority High = new CachePriority(4);

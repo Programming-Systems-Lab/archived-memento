@@ -1,8 +1,8 @@
 package psl.memento.ether.component;
 
+import psl.memento.ether.deploy.DeploymentDescriptor;
 import psl.memento.ether.event.ComponentUrl;
 import psl.memento.ether.message.MessageUrl;
-import psl.memento.ether.deploy.DeploymentDescriptor;
 
 /**
  * Represents a component's interface to the container.
@@ -33,7 +33,7 @@ public class ComponentContext
 		this.compManager = compManager;
 	}
 
-   /**
+	/**
 	 * Get the component's URL as assigned by the container.
 	 *
 	 * @return component's URL
@@ -93,7 +93,7 @@ public class ComponentContext
 		this.deployDescriptor = deployDesc;
 	}
 
-   /**
+	/**
 	 * Find another component hosted within the container.
 	 *
 	 * @param c Class of the component to find

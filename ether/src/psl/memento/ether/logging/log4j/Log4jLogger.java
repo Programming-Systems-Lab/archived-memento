@@ -37,7 +37,7 @@ class Log4jLogger implements psl.memento.ether.logging.Logger
 		logger.assertLog(assertion, msg);
 	}
 
-   /**
+	/**
 	 * Log a message at the debug level.
 	 *
 	 * @param msg message to log
@@ -58,7 +58,7 @@ class Log4jLogger implements psl.memento.ether.logging.Logger
 		logger.debug(msg, t);
 	}
 
-   /**
+	/**
 	 * Log a message at the info level.
 	 *
 	 * @param msg message to log
@@ -100,7 +100,7 @@ class Log4jLogger implements psl.memento.ether.logging.Logger
 		logger.warn(msg, t);
 	}
 
-   /**
+	/**
 	 * Log a message at the error level.
 	 *
 	 * @param msg message to log

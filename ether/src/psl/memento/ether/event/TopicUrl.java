@@ -1,6 +1,6 @@
 package psl.memento.ether.event;
 
-import java.net.MalformedURLException;;
+import java.net.MalformedURLException;
 
 /**
  * Represents a topic URL of the form 'topic:{topic-name}@{hostname}:{port}',
@@ -49,7 +49,7 @@ public class TopicUrl
 			throw new MalformedURLException(msg);
 		}
 
-      // the name is everything before the '@' sign
+		// the name is everything before the '@' sign
 		name = topicUrl.substring(atPos);
 
 		// get everything between the '@' and the ':'
@@ -185,7 +185,7 @@ public class TopicUrl
 		{
 			TopicUrl t = (TopicUrl) o;
 			return (t.hostname.equals(hostname)) && (t.name.equals(name))
-				&& (t.port == port);
+					&& (t.port == port);
 		}
 	}
 

@@ -9,7 +9,7 @@ package psl.memento.ether.logging;
  */
 public interface Logger
 {
-   /**
+	/**
 	 * Perform a logical assertion and log a message if it fails.
 	 *
 	 * @param assertion logical assertion to evaluate
@@ -17,7 +17,7 @@ public interface Logger
 	 */
 	public void logAssert(boolean assertion, String msg);
 
-   /**
+	/**
 	 * Log a message at the debug level.
 	 *
 	 * @param msg message to log
@@ -32,7 +32,7 @@ public interface Logger
 	 */
 	public void debug(Object msg, Throwable t);
 
-   /**
+	/**
 	 * Log a message at the info level.
 	 *
 	 * @param msg message to log
@@ -62,7 +62,7 @@ public interface Logger
 	 */
 	public void warn(Object msg, Throwable t);
 
-   /**
+	/**
 	 * Log a message at the error level.
 	 *
 	 * @param msg message to log

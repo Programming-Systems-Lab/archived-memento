@@ -9,15 +9,15 @@ package psl.memento.ether.cache;
  */
 public abstract class CacheProvider
 {
-   /** different sizes for the caches **/
-   public static final int Largest = 50;
+	/** different sizes for the caches **/
+	public static final int Largest = 50;
 	public static final int Large = 25;
 	public static final int Medium = 15;
 	public static final int Small = 10;
 
 	private static CacheProvider singleton;
 
-   /**
+	/**
 	 * Construct a new Cache with the default Medium size.
 	 *
 	 * @return server-side, managed cache

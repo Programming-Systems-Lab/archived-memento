@@ -22,9 +22,9 @@ public class ComponentUrl
 {
 	private Uid componentId;
 	private Uid containerID;
-   private String hostname;
+	private String hostname;
 
-   /**
+	/**
 	 * Construct a new ComponentUrl to represent the address of some component.
 	 *
 	 * @param componentUrl URL of the Component
@@ -37,7 +37,7 @@ public class ComponentUrl
 			throw new IllegalArgumentException(msg);
 		}
 
-      init(componentUrl);
+		init(componentUrl);
 	}
 
 	/**
@@ -71,18 +71,18 @@ public class ComponentUrl
 	 */
 	private void init(String componentUrl) throws MalformedURLException
 	{
-      // chop off the first 10 letters, the component:
-      componentUrl = componentUrl.substring(10);
+		// chop off the first 10 letters, the component:
+		componentUrl = componentUrl.substring(10);
 
 		// find the second colon pos
 		int colonPos = componentUrl.indexOf(':');
-      if (colonPos < 0)
+		if (colonPos < 0)
 		{
 			String msg = "no second colon";
 			throw new MalformedURLException(msg);
 		}
 
-      // the component ID is everything before the colon
+		// the component ID is everything before the colon
 		String componentIdStr = componentUrl.substring(0, colonPos);
 
 		// find the @-sign and get the component id
@@ -98,7 +98,7 @@ public class ComponentUrl
 
 		// find the second colon, by searching backwards
 		int secondColonPos = componentUrl.indexOf(':', colonPos + 1);
-      if (secondColonPos < 0)
+		if (secondColonPos < 0)
 		{
 			String msg = "no second colon pos";
 			throw new MalformedURLException(msg);
@@ -117,7 +117,7 @@ public class ComponentUrl
 	 *
 	 * @return IP address or hostname of the container hosting the component
 	 */
-   public String getHostname()
+	public String getHostname()
 	{
 		return hostname;
 	}
@@ -129,10 +129,10 @@ public class ComponentUrl
 	 */
 	public void setHostname(String hostname)
 	{
-      this.hostname = hostname;
+		this.hostname = hostname;
 	}
 
-   /**
+	/**
 	 * Get the container ID of the component. This is a unique ID assigned
 	 * by the master server to this container.
 	 *
@@ -174,7 +174,7 @@ public class ComponentUrl
 		this.componentId = componentId;
 	}
 
-   /**
+	/**
 	 * Get the URL representation for this component url. This is a string of
 	 * the form: 'component:{componentID}:{containerID}@{hostname}'.
 	 *
@@ -198,7 +198,7 @@ public class ComponentUrl
 		return toUrl();
 	}
 
-   /**
+	/**
 	 * Determine if this ComponentUrl equals another ComponentUrl.
 	 *
 	 * @param o ComponentUrl to test for equality against
@@ -210,10 +210,10 @@ public class ComponentUrl
 			return false;
 		}
 
-      ComponentUrl curl = (ComponentUrl) o;
-      return (curl.componentId.equals(this.componentId)) &&
-			(curl.containerID.equals(this.containerID)) &&
-			(curl.hostname.equals(this.hostname));
+		ComponentUrl curl = (ComponentUrl) o;
+		return (curl.componentId.equals(this.componentId)) &&
+				(curl.containerID.equals(this.containerID)) &&
+				(curl.hostname.equals(this.hostname));
 	}
 
 	/**

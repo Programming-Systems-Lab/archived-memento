@@ -1,7 +1,7 @@
 package psl.memento.ether.message;
 
-import psl.memento.ether.event.TopicUrl;
 import psl.memento.ether.event.ComponentUrl;
+import psl.memento.ether.event.TopicUrl;
 
 import java.net.MalformedURLException;
 
@@ -144,7 +144,7 @@ public class MessageUrl
 		this.compUrl = compUrl;
 	}
 
-   /**
+	/**
 	 * Get a string representation of the message url.
 	 *
 	 * @return string representation of this url
@@ -166,7 +166,7 @@ public class MessageUrl
 		return toUrl();
 	}
 
-   /**
+	/**
 	 * Determine if this message url equals another one.
 	 *
 	 * @param o Object to test against for equality
@@ -181,7 +181,7 @@ public class MessageUrl
 
 		MessageUrl murl = (MessageUrl) o;
 		return (murl.compUrl.equals(compUrl)) &&
-			(murl.msgTopicUrl.equals(msgTopicUrl));
+				(murl.msgTopicUrl.equals(msgTopicUrl));
 	}
 
 	/**

@@ -2,9 +2,9 @@ package psl.memento.ether.message;
 
 import psl.memento.ether.util.CounterMap;
 
-import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Object responsible for caching connections between components.
@@ -14,7 +14,7 @@ import java.util.HashMap;
  */
 class ConnectionCache
 {
-   private Map addressCacheMap = Collections.synchronizedMap(new HashMap());
+	private Map addressCacheMap = Collections.synchronizedMap(new HashMap());
 	private CounterMap connCount = new CounterMap();
 
 	/**

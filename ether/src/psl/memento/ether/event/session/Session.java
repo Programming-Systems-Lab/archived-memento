@@ -2,9 +2,9 @@ package psl.memento.ether.event.session;
 
 import psl.memento.ether.event.ComponentUrl;
 
-import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a component's session history with this container.
@@ -14,8 +14,8 @@ import java.util.HashMap;
  */
 public class Session
 {
-   private Map valMap = Collections.synchronizedMap(new HashMap());
-   private ComponentUrl owner;
+	private Map valMap = Collections.synchronizedMap(new HashMap());
+	private ComponentUrl owner;
 
 	/**
 	 * Construct a new Session for the given component.
@@ -77,7 +77,7 @@ public class Session
 		valMap.put(key, ob);
 	}
 
-   /**
+	/**
 	 * Remove an object from the session.
 	 *
 	 * @param key key the boject was stored under

@@ -1,8 +1,8 @@
 package psl.memento.ether.util;
 
-import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A map for associating integer counters with different keys. This class is

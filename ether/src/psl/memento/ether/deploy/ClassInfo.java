@@ -61,7 +61,7 @@ public class ClassInfo
 		try
 		{
 			theClass = Thread.currentThread().
-					  getContextClassLoader().loadClass(className);
+					getContextClassLoader().loadClass(className);
 		}
 		catch (ClassNotFoundException cnfe)
 		{

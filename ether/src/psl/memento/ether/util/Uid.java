@@ -1,6 +1,7 @@
 package psl.memento.ether.util;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.server.UID;
 import java.security.SecureRandom;
 
@@ -14,7 +15,7 @@ public class Uid
 {
 	private static String localIpAddress;
 	private String guid;
-		private static SecureRandom randomizer = new SecureRandom();
+	private static SecureRandom randomizer = new SecureRandom();
 
 	/**
 	 * Compute the local ip address.

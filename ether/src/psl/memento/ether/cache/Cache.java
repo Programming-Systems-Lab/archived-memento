@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class Cache
 {
-   private Map cacheMap;
+	private Map cacheMap;
 
 	/**
 	 * Construct a new Cache optimized to hold a given number of items.
@@ -19,10 +19,10 @@ public class Cache
 	 */
 	public Cache(int numItems)
 	{
-      cacheMap = Collections.synchronizedMap(new HashMap());
+		cacheMap = Collections.synchronizedMap(new HashMap());
 	}
 
-   /**
+	/**
 	 * Retrieve an object from the cache.
 	 *
 	 * @param key key which the object is stored under
@@ -30,21 +30,21 @@ public class Cache
 	 */
 	public Object get(String key)
 	{
-      if (key == null)
+		if (key == null)
 		{
 			String msg = "key can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      if (cacheMap.containsKey(key))
+		if (cacheMap.containsKey(key))
 		{
-         CacheInfo ci = (CacheInfo) cacheMap.get(key);
+			CacheInfo ci = (CacheInfo) cacheMap.get(key);
 
-         // make sure it hasn't expired yet
-         if ((ci.expires != null) &&
-				 (ci.expires.getTime() > System.currentTimeMillis()))
+			// make sure it hasn't expired yet
+			if ((ci.expires != null) &&
+					(ci.expires.getTime() > System.currentTimeMillis()))
 			{
-            remove(key);
+				remove(key);
 				return null;
 			}
 
@@ -56,7 +56,7 @@ public class Cache
 		}
 	}
 
-   /**
+	/**
 	 * Insert an object into the cache.
 	 *
 	 * @param key      key which the object is stored under
@@ -66,19 +66,19 @@ public class Cache
 	 * @param priority priority to describe how expensive the object is
 	 */
 	public void insert(String key, Object ob, Date expires,
-							 CachePriority priority)
+					   CachePriority priority)
 	{
-      if ((key == null) || (ob == null))
+		if ((key == null) || (ob == null))
 		{
 			String msg = "key or ob can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      CacheInfo ci = new CacheInfo(ob, expires, priority);
-      cacheMap.put(key, ci);
+		CacheInfo ci = new CacheInfo(ob, expires, priority);
+		cacheMap.put(key, ci);
 	}
 
-   /**
+	/**
 	 * Insert an object into the cache
 	 *
 	 * @param key key which the object is stored under
@@ -86,47 +86,47 @@ public class Cache
 	 */
 	public void insert(String key, Object ob)
 	{
-      insert(key, ob, null, null);
+		insert(key, ob, null, null);
 	}
 
-   /**
+	/**
 	 * Store an object in the cache with the given priority.
 	 *
 	 * @param key      key to store the object under
 	 * @param ob       object to store in the cache
 	 * @param priority priority describing object's expense
 	 */
-   public void insert(String key, Object ob, CachePriority priority)
+	public void insert(String key, Object ob, CachePriority priority)
 	{
-      insert(key, ob, null, priority);
+		insert(key, ob, null, priority);
 	}
 
-   /**
+	/**
 	 * Insert an object in the cache which expires at a given time in the future.
 	 *
 	 * @param key     key to store the object under
 	 * @param ob      object to store in the cache
 	 * @param expires time in the future the object should expire
 	 */
-   public void insert(String key, Object ob, Date expires)
+	public void insert(String key, Object ob, Date expires)
 	{
-      insert(key, ob, expires, null);
+		insert(key, ob, expires, null);
 	}
 
-   /**
+	/**
 	 * Remove an object from the cache.
 	 *
 	 * @param key key the object is stored under
 	 */
 	public void remove(String key)
 	{
-      if (key != null)
+		if (key != null)
 		{
-         String msg = "key can't be null";
+			String msg = "key can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      cacheMap.remove(key);
+		cacheMap.remove(key);
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class Cache
 	 */
 	synchronized void remove(CachePriority priority)
 	{
-      Iterator keyIter = cacheMap.keySet().iterator();
+		Iterator keyIter = cacheMap.keySet().iterator();
 		while (keyIter.hasNext())
 		{
 			Object key = keyIter.next();
@@ -145,7 +145,7 @@ public class Cache
 
 			// if it's expired remove the object
 			if ((ci.expires != null) &&
-				 (ci.expires.getTime() > System.currentTimeMillis()))
+					(ci.expires.getTime() > System.currentTimeMillis()))
 			{
 				cacheMap.remove(key);
 				continue;
@@ -160,7 +160,7 @@ public class Cache
 		}
 	}
 
-   /**
+	/**
 	 * Basic helper class used to track objects in the cache.
 	 *
 	 * @author Buko O. (buko@cs.columbia.edu)

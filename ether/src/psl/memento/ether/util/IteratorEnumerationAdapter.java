@@ -29,7 +29,7 @@ public class IteratorEnumerationAdapter implements Enumeration
 		this.iter = iter;
 	}
 
-   /**
+	/**
 	 * Determine if there are more elements left in the iterator.
 	 *
 	 * @return <code>true</code> if there are more elements in the enumeration

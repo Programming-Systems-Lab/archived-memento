@@ -14,10 +14,10 @@ import java.util.*;
  */
 class MessageHandlerRegistry
 {
-   private Map addressMap = Collections.synchronizedMap(new HashMap());
+	private Map addressMap = Collections.synchronizedMap(new HashMap());
 	private Map msgTransactions = Collections.synchronizedMap(new HashMap());
 
-	   /**
+	/**
 	 * Register a MessageHandler to handle messages sent to a specific component.
 	 *
 	 * @param componentUrl url for the component to handle messages for, it must
@@ -26,7 +26,7 @@ class MessageHandlerRegistry
 	 */
 	public void register(ComponentUrl componentUrl, MessageHandler handler)
 	{
-      if ((componentUrl == null) || (handler == null))
+		if ((componentUrl == null) || (handler == null))
 		{
 			String msg = "no parameter can be null";
 			throw new IllegalArgumentException(msg);
@@ -120,7 +120,7 @@ class MessageHandlerRegistry
 
 		// track what time the transaction was started
 		TransactionInfo txInfo =
-				  new TransactionInfo(System.currentTimeMillis(), callback);
+				new TransactionInfo(System.currentTimeMillis(), callback);
 		msgTransactions.put(txId, txInfo);
 	}
 

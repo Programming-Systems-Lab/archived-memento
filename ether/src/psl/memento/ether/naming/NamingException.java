@@ -8,7 +8,7 @@ package psl.memento.ether.naming;
  */
 public class NamingException extends Exception
 {
-   public NamingException()
+	public NamingException()
 	{
 		super();
 	}

@@ -1,10 +1,12 @@
 package psl.memento.ether.deploy;
 
-import org.dom4j.*;
-import org.dom4j.io.*;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 import java.io.*;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Represents a component deployed in a folder. In this case, all component
@@ -18,9 +20,9 @@ import java.util.*;
 
 public class FolderDeploymentDescriptor extends DeploymentDescriptor
 {
-   private File compDir;
+	private File compDir;
 
-   /**
+	/**
 	 * Construct a new FolderDeploymentDescriptor.
 	 *
 	 * @param cdm ComponentDeploymentManager deploying the component
@@ -30,30 +32,30 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 		super(cdm);
 	}
 
-   /**
+	/**
 	 * Initialize the folder deployment descriptor.
 	 *
 	 * @param param File representing the component folder
 	 * @throws DeploymentException
 	 *         if the descriptor is invalid
 	 */
-   public void initialize(Object param) throws DeploymentException
+	public void initialize(Object param) throws DeploymentException
 	{
-      if ((param == null) || !(param instanceof File))
+		if ((param == null) || !(param instanceof File))
 		{
-         String msg = "param must be a File object";
+			String msg = "param must be a File object";
 			throw new IllegalArgumentException(msg);
 		}
 
-      compDir = (File) param;
+		compDir = (File) param;
 
 		// process the deploy.xml file
-      File deployXml = new File(compDir, "deploy.xml");
-      Document document = null;
+		File deployXml = new File(compDir, "deploy.xml");
+		Document document = null;
 
 		try
 		{
-         SAXReader reader = new SAXReader();
+			SAXReader reader = new SAXReader();
 			document = reader.read(deployXml);
 		}
 		catch (Exception de)
@@ -62,9 +64,9 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 			throw new DeploymentException(msg);
 		}
 
-      // get all the parameter nodes and process them
-      List parameters = document.selectNodes("/deploy/parameters/param");
-		for (Iterator iter = parameters.iterator(); iter.hasNext(); )
+		// get all the parameter nodes and process them
+		List parameters = document.selectNodes("/deploy/parameters/param");
+		for (Iterator iter = parameters.iterator(); iter.hasNext();)
 		{
 			Element elem = (Element) iter.next();
 			String name = elem.attributeValue("name");
@@ -72,13 +74,13 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 			paramMap.put(name, val);
 		}
 
-      // get the class info
-      Element classInfoElem =
-         (Element) document.selectSingleNode("/deploy/component/class-info/name");
-      this.classInfo = new ClassInfo(classInfoElem.getText());
+		// get the class info
+		Element classInfoElem =
+				(Element) document.selectSingleNode("/deploy/component/class-info/name");
+		this.classInfo = new ClassInfo(classInfoElem.getText());
 	}
 
-   /**
+	/**
 	 * Retreive an input stream to a component resource from the deployment
 	 * folder.
 	 *
@@ -86,18 +88,18 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 	 * @throws DeploymentException
 	 *         if the resource doesn't exist or can't be retreived
 	 */
-   public InputStream getResourceInputStream(String relPath)
-		throws DeploymentException
+	public InputStream getResourceInputStream(String relPath)
+			throws DeploymentException
 	{
 		if (relPath == null)
 		{
-         String msg = "relPath can't be null";
+			String msg = "relPath can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
 		// append the relative path to the component directory
-      File resFile = new File(compDir, relPath);
-      try
+		File resFile = new File(compDir, relPath);
+		try
 		{
 			return new BufferedInputStream(new FileInputStream(resFile));
 		}
@@ -108,7 +110,7 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 		}
 	}
 
-   /**
+	/**
 	 * Get an OutputStream to a resource provided in the component's folder.
 	 *
 	 * @param relPath relative path to the resource
@@ -116,7 +118,7 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 	 *         if the OutputStream couldn't be generated
 	 */
 	public OutputStream getResourceOutputStream(String relPath)
-		throws DeploymentException
+			throws DeploymentException
 	{
 		if (relPath == null)
 		{
@@ -125,7 +127,7 @@ public class FolderDeploymentDescriptor extends DeploymentDescriptor
 		}
 
 		// append the relative path to the component directory
-      File resFile = new File(compDir, relPath);
+		File resFile = new File(compDir, relPath);
 		try
 		{
 			return new BufferedOutputStream(new FileOutputStream(resFile));

@@ -1,11 +1,16 @@
 package psl.memento.ether.event.elvin;
 
-import psl.memento.ether.event.*;
+import org.elvin.je4.*;
+import psl.memento.ether.event.Event;
+import psl.memento.ether.event.EventException;
+import psl.memento.ether.event.EventService;
+import psl.memento.ether.event.TopicUrl;
 import psl.memento.ether.event.session.SessionProvider;
 
-import org.elvin.je4.*;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Implementation of the EventService using Elvin.
@@ -14,7 +19,7 @@ import java.util.*;
  * @version 0.1
  */
 public class ElvinEventService extends EventService
-	implements NotificationListener
+		implements NotificationListener
 {
 	private Map consumerMap = Collections.synchronizedMap(new HashMap());
 	private Map producerMap = Collections.synchronizedMap(new HashMap());
@@ -51,7 +56,7 @@ public class ElvinEventService extends EventService
 	 */
 	private void closeConnections()
 	{
-		for (Iterator iter = connectionMap.values().iterator(); iter.hasNext(); )
+		for (Iterator iter = connectionMap.values().iterator(); iter.hasNext();)
 		{
 			Connection conn = (Connection) iter.next();
 			conn.close();
@@ -67,13 +72,13 @@ public class ElvinEventService extends EventService
 	 *         if the connection can't be opened
 	 **/
 	protected void openConnection(String host, int port)
-		throws EventException
+			throws EventException
 	{
 		// make the connection
 		try
 		{
 			ElvinURL url =
-				new ElvinURL("elvin:4.0/tcp,none,xdr/" + host + ":" + port);
+					new ElvinURL("elvin:4.0/tcp,none,xdr/" + host + ":" + port);
 			Connection conn = new Connection(url);
 
 			Object connKey = makeConnectionKey(host, port);
@@ -129,7 +134,7 @@ public class ElvinEventService extends EventService
 		if (conn == null)
 		{
 			String msg = "no connection to " + topic.getHostname() + ":" +
-				topic.getPort();
+					topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 
@@ -150,7 +155,7 @@ public class ElvinEventService extends EventService
 			// add the special topic key to the event
 			event.put("event.elvin.topic", topic.getName());
 			// send the event
-			producer.notify( ((ElvinEvent) event).getUnderlyingNotification() );
+			producer.notify(((ElvinEvent) event).getUnderlyingNotification());
 		}
 		catch (Exception e)
 		{
@@ -175,7 +180,7 @@ public class ElvinEventService extends EventService
 		if (conn == null)
 		{
 			String msg = "no connection to " + topic.getHostname() + ":" +
-				topic.getPort();
+					topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 
@@ -220,7 +225,7 @@ public class ElvinEventService extends EventService
 		if (conn == null)
 		{
 			String msg = "no connection to " + topic.getHostname() + ":" +
-				topic.getPort();
+					topic.getPort();
 			throw new IllegalStateException(msg);
 		}
 

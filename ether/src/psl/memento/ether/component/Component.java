@@ -20,7 +20,7 @@ public interface Component
 	 */
 	public void initialize() throws ComponentException;
 
-   /**
+	/**
 	 * Start the component. Called after the initialize method.
 	 */
 	public void startup();

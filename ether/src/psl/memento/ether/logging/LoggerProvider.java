@@ -49,7 +49,7 @@ public abstract class LoggerProvider
 		return rootLogger;
 	}
 
-   /**
+	/**
 	 * Construct a new logger with a given logger as its parent.
 	 *
 	 * @param name   name of the new logger to construct

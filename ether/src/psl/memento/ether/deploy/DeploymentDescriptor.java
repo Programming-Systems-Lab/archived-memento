@@ -1,9 +1,9 @@
 package psl.memento.ether.deploy;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a file which describes how to host a component within a given
@@ -14,25 +14,25 @@ import java.io.OutputStream;
  */
 public abstract class DeploymentDescriptor
 {
-   protected Map paramMap = new HashMap();
-   protected ClassInfo classInfo;
-   private ComponentDeploymentManager manager;
+	protected Map paramMap = new HashMap();
+	protected ClassInfo classInfo;
+	private ComponentDeploymentManager manager;
 
-   /**
+	/**
 	 * Construct a new DeploymentDescriptor.
 	 *
 	 * @param manager ComponentDeploymentManager object which constructed this
 	 *                descriptor
 	 */
-   protected DeploymentDescriptor(ComponentDeploymentManager manager)
+	protected DeploymentDescriptor(ComponentDeploymentManager manager)
 	{
-      if (manager == null)
+		if (manager == null)
 		{
 			String msg = "no parameter can be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      this.manager = manager;
+		this.manager = manager;
 	}
 
 	/**
@@ -44,9 +44,9 @@ public abstract class DeploymentDescriptor
 	 *         if the parameter is invalid
 	 */
 	public abstract void initialize(Object parameter)
-		throws DeploymentException;
+			throws DeploymentException;
 
-   /**
+	/**
 	 * Get information about the class of the component being deployed.
 	 *
 	 * @return ClassInfo object which describes the component's class
@@ -62,7 +62,7 @@ public abstract class DeploymentDescriptor
 	 * @param name name of the parameter defined in the descriptor
 	 * @return value of the parameter with <code>name</code> or <code>null</code>
 	 */
-   public String getParameter(String name)
+	public String getParameter(String name)
 	{
 		synchronized (paramMap)
 		{
@@ -70,7 +70,7 @@ public abstract class DeploymentDescriptor
 		}
 	}
 
-   /**
+	/**
 	 * Retreive a shared resourced provided by the container to all deployed
 	 * components.
 	 *
@@ -79,9 +79,9 @@ public abstract class DeploymentDescriptor
 	 *         if the resource couldn't be retreived
 	 */
 	public InputStream getSharedResourceInputStream(String relPath)
-		throws DeploymentException
+			throws DeploymentException
 	{
-      return manager.getSharedResourceInputStream(relPath);
+		return manager.getSharedResourceInputStream(relPath);
 	}
 
 	/**
@@ -92,7 +92,7 @@ public abstract class DeploymentDescriptor
 	 *         if the output stream couldn't be retreived
 	 */
 	public OutputStream getSharedResourceOutputStream(String relPath)
-		throws DeploymentException
+			throws DeploymentException
 	{
 		return manager.getSharedResourceOutputStream(relPath);
 	}
@@ -105,8 +105,8 @@ public abstract class DeploymentDescriptor
 	 * @throws DeploymentException
 	 *         if the inputstream couldn't be retreieved
 	 */
-   public abstract InputStream getResourceInputStream(String relPath)
-		throws DeploymentException;
+	public abstract InputStream getResourceInputStream(String relPath)
+			throws DeploymentException;
 
 	/**
 	 * Retrieve an OutputStream to a resource provided by the deployment
@@ -116,6 +116,6 @@ public abstract class DeploymentDescriptor
 	 * @throws DeploymentException
 	 *         if the outputstream couldn't be retreived
 	 */
-   public abstract OutputStream getResourceOutputStream(String relPath)
-		throws DeploymentException;
+	public abstract OutputStream getResourceOutputStream(String relPath)
+			throws DeploymentException;
 }

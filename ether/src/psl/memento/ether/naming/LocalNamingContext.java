@@ -2,10 +2,10 @@ package psl.memento.ether.naming;
 
 import psl.memento.ether.util.IteratorEnumerationAdapter;
 
-import java.util.Map;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A LocalNamingContext represents a context in which the object-name binding
@@ -18,7 +18,7 @@ public class LocalNamingContext extends NamingContext
 {
 	private Map valMap = Collections.synchronizedMap(new HashMap());
 
-   /**
+	/**
 	 * Construct a new LocalNamingContext which can serve as a root context.
 	 */
 	public LocalNamingContext()
@@ -36,7 +36,7 @@ public class LocalNamingContext extends NamingContext
 	 *         if the new context fails
 	 */
 	public LocalNamingContext(String name, NamingContext parent)
-		throws NamingException
+			throws NamingException
 	{
 		if ((name == null) || (parent == null))
 		{
@@ -56,7 +56,7 @@ public class LocalNamingContext extends NamingContext
 	 * @throws NamingException
 	 *         never
 	 */
-   protected Object get(String name) throws NamingException
+	protected Object get(String name) throws NamingException
 	{
 		if (name == null)
 		{
@@ -104,7 +104,7 @@ public class LocalNamingContext extends NamingContext
 		valMap.remove(name);
 	}
 
-   /**
+	/**
 	 * Get an enumeration of all the names bound in this context.
 	 *
 	 * @return Enumeration over all the names bound in this context

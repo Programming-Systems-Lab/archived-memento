@@ -8,7 +8,7 @@ package psl.memento.ether.message;
  */
 public interface MessageHandler
 {
-   /**
+	/**
 	 * Process an incoming Message.
 	 *
 	 * @param msg incoming message which has been received

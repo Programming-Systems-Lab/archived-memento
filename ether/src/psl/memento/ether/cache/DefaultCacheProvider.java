@@ -1,8 +1,8 @@
 package psl.memento.ether.cache;
 
-import java.util.List;
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A simple cache provider which stores all caches in memory.
@@ -12,9 +12,9 @@ import java.util.ArrayList;
  */
 public class DefaultCacheProvider extends CacheProvider
 {
-   private List cacheList = Collections.synchronizedList(new ArrayList());
+	private List cacheList = Collections.synchronizedList(new ArrayList());
 
-   /**
+	/**
 	 * Construct a new Cache with the given size descriptor.
 	 *
 	 * @param sizeDesc size descriptor for the cache
@@ -22,8 +22,8 @@ public class DefaultCacheProvider extends CacheProvider
 	 */
 	public Cache createCache(int sizeDesc)
 	{
-      Cache cache = new Cache(sizeDesc);
-      cacheList.add(cache);
+		Cache cache = new Cache(sizeDesc);
+		cacheList.add(cache);
 		return cache;
 	}
 

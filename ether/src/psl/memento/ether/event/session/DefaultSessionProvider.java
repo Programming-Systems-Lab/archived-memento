@@ -3,9 +3,9 @@ package psl.memento.ether.event.session;
 import psl.memento.ether.event.ComponentUrl;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Simple, in-memory session provider.

@@ -30,7 +30,7 @@ class MessageDispatcher implements EventHandler
 		this.registry = registry;
 	}
 
-   /**
+	/**
 	 * Construct a Message wrapper around a given event/message and dispatch
 	 * it.
 	 *
@@ -44,7 +44,7 @@ class MessageDispatcher implements EventHandler
 			throw new IllegalArgumentException(msg);
 		}
 
-      Message msg = new Message(event);
+		Message msg = new Message(event);
 
 		// if a message is received containing a transaction ID, first see if
 		// there's a callback waiting to handle this message response
@@ -61,7 +61,7 @@ class MessageDispatcher implements EventHandler
 		// dispatch the message to all handlers registered to the component
 		// url
 		MessageHandler[] handlers =
-				  registry.getHandlers(msg.getReceiver().getComponentUrl());
+				registry.getHandlers(msg.getReceiver().getComponentUrl());
 
 		for (int i = 0; i < handlers.length; ++i)
 		{

@@ -31,7 +31,7 @@ public class MessageUrlConnection
 			throw new IllegalArgumentException(msg);
 		}
 
-      this.destAddress = destAddress;
+		this.destAddress = destAddress;
 		this.source = source;
 	}
 
@@ -102,7 +102,7 @@ public class MessageUrlConnection
 	 * @param handler MessageHandler handler of the component for
 	 */
 	public void registerLocalHandler(ComponentUrl compUrl,
-												MessageHandler handler)
+									 MessageHandler handler)
 	{
 		msgService.getHandlerRegistry().register(compUrl, handler);
 	}
@@ -115,9 +115,9 @@ public class MessageUrlConnection
 	 * @param handler handler to unregister
 	 */
 	public void unregisterLocalHandler(ComponentUrl compUrl,
-												  MessageHandler handler)
+									   MessageHandler handler)
 	{
-      msgService.getHandlerRegistry().unregister(compUrl, handler);
+		msgService.getHandlerRegistry().unregister(compUrl, handler);
 	}
 
 	/**

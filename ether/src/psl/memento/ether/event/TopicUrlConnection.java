@@ -8,12 +8,12 @@ package psl.memento.ether.event;
  */
 public class TopicUrlConnection
 {
-   private TopicUrl topic;
-   private EventService eventService;
+	private TopicUrl topic;
+	private EventService eventService;
 	private ComponentUrl source;
 	private boolean connected;
 
-   /**
+	/**
 	 * Construct a new TopicUrlConnection to a given topic hosted within the
 	 * network.
 	 *
@@ -23,13 +23,13 @@ public class TopicUrlConnection
 	 */
 	public TopicUrlConnection(TopicUrl topic, ComponentUrl source)
 	{
-      if ((topic == null) || (source == null))
+		if ((topic == null) || (source == null))
 		{
 			String msg = "no parameter can be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-      this.topic = topic;
+		this.topic = topic;
 		this.source = source;
 
 		// get the event service
@@ -37,12 +37,12 @@ public class TopicUrlConnection
 		if (eventService == null)
 		{
 			String msg = "can't open TopicUrlConnection when there is no event " +
-				"service";
+					"service";
 			throw new IllegalStateException(msg);
 		}
 	}
 
-   /**
+	/**
 	 * Open the connection to the topic hosted on the network.
 	 *
 	 * @throws EventException
@@ -50,7 +50,7 @@ public class TopicUrlConnection
 	 */
 	public void open() throws EventException
 	{
-      if (connected)
+		if (connected)
 		{
 			String msg = "connection already open";
 			throw new IllegalStateException(msg);
@@ -58,7 +58,7 @@ public class TopicUrlConnection
 		else
 		{
 			eventService.openVirtualConnection(topic.getHostname(),
-														  topic.getPort());
+											   topic.getPort());
 			connected = true;
 		}
 	}
@@ -68,11 +68,11 @@ public class TopicUrlConnection
 	 */
 	public void close()
 	{
-      eventService.closeVirtualConnection(topic.getHostname(), topic.getPort());
+		eventService.closeVirtualConnection(topic.getHostname(), topic.getPort());
 		connected = false;
 	}
 
-   /**
+	/**
 	 * Publish an event on this topic.
 	 *
 	 * @param event event to publish on this topic
@@ -81,13 +81,13 @@ public class TopicUrlConnection
 	 */
 	public void publish(Event event) throws EventException
 	{
-      if (source == null)
+		if (source == null)
 		{
 			String msg = "source is null, event publishing impossible";
 			throw new IllegalStateException(msg);
 		}
 
-      eventService.publish(topic, event, source);
+		eventService.publish(topic, event, source);
 	}
 
 	/**
@@ -108,7 +108,7 @@ public class TopicUrlConnection
 		eventService.publish(topic, event, source);
 	}
 
-   /**
+	/**
 	 * Subscribe an EventHandler to the topic.
 	 *
 	 * @param handler EventHandler to subscribe to the topic
