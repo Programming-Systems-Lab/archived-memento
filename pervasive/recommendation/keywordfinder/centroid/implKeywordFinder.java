@@ -140,9 +140,9 @@ public class implKeywordFinder implements KeywordFinder {
 	 * @see psl.conversation.KeywordFinder#signal(psl.conversation.KeywordContainer)
 	 */
 	public void signal(KeywordContainer kc) {
-		System.out.println("JAVA KF: SIGNAL IS CALLED");
+		// System.out.println("JAVA KF: SIGNAL IS CALLED");
 		if (topicHistory.isEmpty()) {
-			System.out.println("JAVA KF: NOTHING TO RETURN");
+			// System.out.println("JAVA KF: NOTHING TO RETURN");
 			return;
 		}
 		StringTokenizer stKeywords =
@@ -150,9 +150,10 @@ public class implKeywordFinder implements KeywordFinder {
 				(String) topicHistory.get(topicHistory.size() - 1),
 				KEYWORD_SEPARATOR);
 		while (stKeywords.hasMoreTokens()) {
-			System.out.println("JAVA KF: RETURN KEYWORDS NOW");
+			// System.out.println("JAVA KF: RETURN KEYWORDS NOW");
 			try {
 				kc.add(new Keyword(stKeywords.nextToken(), new Context(), Keyword.NO_DELAY));
+				kc.close();
 			} catch (GenericException e) {
 				e.printStackTrace();
 			}
@@ -164,6 +165,7 @@ public class implKeywordFinder implements KeywordFinder {
 	 */
 	public void run() {
 		while (true) {
+			if (it != null)
 			while (it.hasNext()) {
 				ConversationMessage msg = it.next2();
 				String msgText = msg.getMessage();
@@ -205,6 +207,7 @@ public class implKeywordFinder implements KeywordFinder {
 					Centroid centroid = (Centroid) centroids.get(topic);
 					diff = VectorMath.dotProduct(document, centroid.centroid);
 					diff /= (centroid.length * docLength);
+					System.out.println(diff);
 					if (diff > maxCos) {
 						closestTopic = topic;
 						maxCos = diff;

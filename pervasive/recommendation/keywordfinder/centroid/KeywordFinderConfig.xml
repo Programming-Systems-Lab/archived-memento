@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <configuration>
-	<datafiles wordslist="psl/memento/pervasive/recommendation/keywordfinder/centroid/wordlist.dat" centroidfile="psl/conversation/keywords2/centroids.dat" />
+	<datafiles wordslist="psl/memento/pervasive/recommendation/keywordfinder/centroid/wordlist.dat" centroidfile="psl/memento/pervasive/recommendation/keywordfinder/centroid/centroids.dat" documentFrequency="psl/memento/pervasive/recommendation/keywordfinder/centroid/freq.dat"/>
 </configuration>

@@ -6,8 +6,7 @@ import psl.memento.pervasive.recommendation.exception.GenericException;
  * Implementation of a ConversationSuggestionEngine
  * @see psl.memento.pervasive.recommendation.ConversationSuggestionEngine
  */
-public class ConversationSuggestionEngineImpl
-	implements ConversationSuggestionEngine {
+public class ConversationSuggestionEngineImpl implements ConversationSuggestionEngine {
 
 	private ConversationLog _log = null;
 

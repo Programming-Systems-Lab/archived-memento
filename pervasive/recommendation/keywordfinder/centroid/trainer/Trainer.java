@@ -959,13 +959,11 @@ public class Trainer extends DefaultHandler{
 	
 
 	 public static void main(String args[]) {
-
 		 Trainer trainer = new Trainer();
 
 		 try {
 
 			 trainer.train();
-
 		 } catch (TrainingException e) {
 
 			 System.out.println("TRAINING ERROR: " + e.toString());

@@ -22,5 +22,5 @@
 	<!--document location="reut2-019.sgm" /-->
 	<!--document location="reut2-020.sgm" /-->
 	<!--document location="reut2-021.sgm" /-->
-	<outputFilenames wordlist="../wordlist.dat" centroidTemplate="../centroids.dat" />
+	<outputFilenames wordlist="psl/memento/pervasive/recommendation/keywordfinder/centroid/wordlist.dat" centroidTemplate="psl/memento/pervasive/recommendation/keywordfinder/centroid/centroids.dat" documentFrequency="psl/memento/pervasive/recommendation/keywordfinder/centroid/freq.dat"/>
 </trainingset>
