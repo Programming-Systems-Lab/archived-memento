@@ -1,0 +1,37 @@
+#Content Extractor Settings File
+#Mon Aug 05 16:39:24 EDT 2002
+<INPUT>\ tags\ are\ substance=false
+<IMG>\ tags\ are\ substance=true
+Display\ Image\ Link\ ALTs=false
+Ignore\ All\ Advertisements=true
+Ignore\ <INPUT>\ Tags=false
+Ignore\ Link\ Lists=true
+Maximum\ Number\ of\ Line\ Breaks=2
+Remove\ Empty\ Tables=true
+Ignore\ Styles=false
+Ignore\ Image\ Links\ in\ Link\ Lists=false
+Display\ Image\ ALTs=true
+Ignore\ Images=true
+Ignore\ <BUTTON>\ Tags=false
+<TEXTAREA>\ tags\ are\ substance=true
+Limit\ Number\ of\ Line\ Breaks=true
+<BUTTON>\ tags\ are\ substance=false
+Ignore\ Table\ Cell\ Widths=false
+<SELECT>\ tags\ are\ substance=false
+Ignore\ Text\ Links\ in\ Link\ Lists=true
+Print\ Only\ Text=false
+Ignore\ Meta\ Tags=true
+<IFRAME>\ tags\ are\ substance=false
+Ignore\ Text\ Links=false
+Ignore\ Style\ Attribute\ in\ <DIV>\ Tags=true
+Ignore\ Image\ Links=true
+Ignore\ Forms=false
+<A>\ tags\ are\ substance=true
+Ignore\ <NOSCRIPT>\ Tags=true
+Ignore\ <SELECT>\ Tags=false
+Ignore\ <IFRAME>\ Tags=true
+Link/Text\ Removal\ Ratio=0.25
+Ignore\ Only\ Links\ and\ Text\ in\ Link\ Lists=true
+<FORM>\ tags\ are\ substance=false
+Minimum\ text\ length\ as\ substance=12
+Ignore\ Scripts=true

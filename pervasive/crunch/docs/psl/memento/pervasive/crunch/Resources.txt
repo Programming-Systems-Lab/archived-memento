@@ -1,0 +1,15 @@
+=========================================================================
+Accordian Summarization for End-Game Browsing on PDAs and Cellular Phones
+	and
+Seeing the Whole in Parts: Text Summarization for Web Browsing on Handheld Devices
+=========================================================================
+This paper discusses methods to divide a web page into individual units referred to as STUs. These STUs are then presented in a hierarchical setup for the users of PDAs and Cellular Phones to easily browse. Although the STU development splits a web site in a hierarchical system that can be used to extract content, our method of content extraction provides some advantages that STUs don't have. By parsing a web site's HTML into a DOM tree, we can not only take advantage of large logical units that the STUs can extract, but we can also manipulate the smaller units such as specific links without leaving the structure of the DOM tree. Another advantage that DOM trees have over STUs is that they are highely editable and easy to reconstruct into a complete web site. The widespread support for the Document Object Model is another advantage for using it.
+==========================================================================
+
+==========================================================================
+Two Approaches to Bringing Internet Services to WAP Devices
+==========================================================================
+This paper discusses methods to divide a web page into individual units that are similar to cards in a deck of cards. The advantages that our method has over this one are very similar to the adavntages it has over STUs.
+==========================================================================
+
+The main problem that both concepts have is that they rely on splitting a site into tiny sections so that the user can easily determine where the content of the web site is. Neither of the concepts solve the problem of automatically extracting the content, although they do provide simpler means in which the content can be found. However, both concepts present limits for an algorithm to analyze a web site. By parsing a web site into a DOM tree, a lot more flexability can be achieved in analyzing the web site.
