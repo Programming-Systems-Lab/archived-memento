@@ -16,7 +16,7 @@ import java.io.File;
  *	Stores meta data about a resource file (either a model or image).
  *
  *	@author  Vladislav Shchogolev
- *	@version $Revision: 1.3 $
+ *	@version $Revision: 1.4 $
  */
 public class ResourceFile {
     
