@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<configuration>
+	<!--datafiles wordslist="/home/jc424/project/wordlist.dat" centroidfile="/home/jc424/project/centroids.dat" /-->
+	<datafiles wordslist="psl/memento/pervasive/recommendation/keywordfinder/centroid/wordlist.dat" centroidfile="psl/conversation/keywords2/centroids.dat" />
+</configuration>

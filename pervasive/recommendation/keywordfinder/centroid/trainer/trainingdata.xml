@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<trainingset>
+	<document location="reut2-000.sgm" />
+	<document location="reut2-001.sgm" />
+	<document location="reut2-002.sgm" />
+	<document location="reut2-003.sgm" />
+	<document location="reut2-004.sgm" />
+	<document location="reut2-005.sgm" />
+	<document location="reut2-006.sgm" />
+	<document location="reut2-007.sgm" />
+	<document location="reut2-008.sgm" />
+	<document location="reut2-009.sgm" />
+	<document location="reut2-010.sgm" />
+	<document location="reut2-011.sgm" />
+	<document location="reut2-012.sgm" />
+	<document location="reut2-013.sgm" />
+	<document location="reut2-014.sgm" />
+	<document location="reut2-015.sgm" />
+	<document location="reut2-016.sgm" />
+	<document location="reut2-017.sgm" />
+	<document location="reut2-018.sgm" />
+	<document location="reut2-019.sgm" />
+	<document location="reut2-020.sgm" />
+	<document location="reut2-021.sgm" />
+	<outputFilenames wordlist="wordlist.dat" centroidTemplate="centroids.dat" />
+</trainingset>
