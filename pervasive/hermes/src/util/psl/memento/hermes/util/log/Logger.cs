@@ -1,11 +1,11 @@
 using System;
 using System.IO;
 using System.Threading;
-using Utilities.runloop;
+using psl.memento.pervasive.hermes.util.runloop;
 
 
 
-namespace Utilities.log
+namespace psl.memento.pervasive.hermes.util.log
 {
 	/// <summary>
 	/// Summary description for Logger.

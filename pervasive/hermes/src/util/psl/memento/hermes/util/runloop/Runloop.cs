@@ -4,7 +4,7 @@ using System.Threading;
 using System.Security.Permissions;
 
 
-namespace Utilities.runloop
+namespace psl.memento.pervasive.hermes.util.runloop
 {
 	/// <summary>
 	/// Runloop is a thread which allows queueing of objects and the dispatch of these objects.

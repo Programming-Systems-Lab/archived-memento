@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Collections;
-using Utilities.exceptions;
-using Utilities.log;
+using psl.memento.pervasive.hermes.util.exceptions;
+using psl.memento.pervasive.hermes.util.log;
 
-namespace Utilities.constants
+namespace psl.memento.pervasive.hermes.util.constants
 {
 	/// <summary>
 	/// Constants class parses the constants.xml file and puts all the elements in a hash table.

@@ -1,6 +1,6 @@
 using System;
 
-namespace Utilities.exceptions
+namespace psl.memento.pervasive.hermes.util.exceptions
 {
 	/// <summary>
 	/// Simply give us a special type of LoggerCannotWriteException where we can list what is wrong.

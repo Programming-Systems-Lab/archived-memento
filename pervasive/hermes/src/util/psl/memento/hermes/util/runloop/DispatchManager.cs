@@ -3,7 +3,7 @@ using System.Collections;
 using System.Threading;
 using System.Security;
 
-namespace Utilities.runloop
+namespace psl.memento.pervasive.hermes.util.runloop
 {
 	/// <summary>
 	/// Handles the actual thread

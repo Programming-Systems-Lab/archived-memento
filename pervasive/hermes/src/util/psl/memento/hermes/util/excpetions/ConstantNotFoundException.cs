@@ -1,6 +1,6 @@
 using System;
 
-namespace Utilities.exceptions
+namespace psl.memento.pervasive.hermes.util.exceptions
 {
 	/// <summary>
 	/// Summary description for ConstantNotFoundException.

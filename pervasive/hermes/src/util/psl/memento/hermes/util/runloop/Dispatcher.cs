@@ -1,6 +1,6 @@
 using System;
 
-namespace Utilities.runloop
+namespace psl.memento.pervasive.hermes.util.runloop
 {
 	/// <summary>
 	/// Dispatcher is used by runloop to dispatch objects via the dispatch call.
