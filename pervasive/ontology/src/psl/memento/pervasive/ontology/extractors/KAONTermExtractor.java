@@ -1,4 +1,4 @@
-package psl.memento.pervasive.ontology;
+package psl.memento.pervasive.ontology.extractors;
 
 import java.util.*;
 import java.io.*;
@@ -8,7 +8,9 @@ import de.fzi.wim.texttoonto.dictionary.*;
 import de.fzi.wim.texttoonto.termextraction.algorithm.*;
 import de.fzi.wim.texttoonto.common.*;
 
-public class OntologyTermExtractor {
+import psl.memento.pervasive.ontology.*;
+
+public class KAONTermExtractor {
 	private Properties settings;
 	private Ontology ontology;
 	private TermExtractor termExtractor;
@@ -22,17 +24,15 @@ public class OntologyTermExtractor {
 	 * @param settings the settings for the extractor
 	 * @param ontology the ontology that the extractor should add to
 	 **/
-	public OntologyTermExtractor (Properties settings, Ontology ontology) {
+	public KAONTermExtractor (Properties settings, Ontology ontology) {
 		this.settings = settings;
 		this.ontology = ontology;
-
-		setupTermExtraction();
 	}
 
 	/**
 	 * Set up the term extractor
 	 **/
-	private void setupTermExtraction() {
+	public void setupTermExtraction() {
 		termExtractor = new TermExtractor(settings.getProperty("language"));
 		termExtractor.setPruneThreshold(Integer.parseInt(settings.getProperty("term_extractor_prune_threshold")));
 		termExtractor.setMaxNumberOfWords(Integer.parseInt(settings.getProperty("term_extractor_max_num_words")));

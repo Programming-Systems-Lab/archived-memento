@@ -3,6 +3,8 @@ package psl.memento.pervasive.ontology;
 import java.io.*;
 import java.util.*;
 
+import psl.memento.pervasive.ontology.extractors.*;
+
 public class OntologyTest {
 	public static void main(String[] args) {
 		try {
@@ -28,10 +30,10 @@ public class OntologyTest {
 			/////////////////////
 			// Perform extraction
 
-			if (choice.equals("extract")) {
+			else if (choice.equals("extract")) {
 				try {
-					OntologyTermExtractor tExtractor = new OntologyTermExtractor(settings, ontology);
-					OntologyRelationsExtractor rExtractor = new OntologyRelationsExtractor(settings, ontology);
+					OntologyDocumentExtractor extractor = new KAONDocumentExtractor();
+					extractor.init(ontology, settings);
 
 					File file = new File(args[1]);
 					File[] files = new File[0];
@@ -40,28 +42,13 @@ public class OntologyTest {
 						files = file.listFiles();
 						for (int i=0; i < files.length; i++) {
 							files[i].setReadOnly();
-							tExtractor.addDocument(files[i].getAbsolutePath());
+							extractor.addDocument(files[i].getAbsolutePath());
 						}
 					} else {
-						tExtractor.addDocument(args[1]);
+						extractor.addDocument(args[1]);
 					}
 
-					tExtractor.performExtraction();
-					tExtractor.addToOntology();
-					tExtractor.clearCorpus();
-
-					//Relations extraction
-
-					if (file.isDirectory()) {
-						for (int i=0; i < files.length; i++) {
-							rExtractor.addDocument(files[i].getAbsolutePath());
-							rExtractor.performExtraction();
-							rExtractor.addToOntology();
-							rExtractor.clearCorpus();
-						}
-					} else {
-						tExtractor.addDocument(args[1]);
-					}
+					extractor.extract();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -70,7 +57,7 @@ public class OntologyTest {
 			///////////
 			// Testing
 
-			if (choice.equals("print_all")) {
+			else if (choice.equals("print_all")) {
 				System.out.println("==================");
 				System.out.println("Nodes");
 				System.out.println("==================");
@@ -92,7 +79,7 @@ public class OntologyTest {
 				}
 			}
 
-			if (choice.equals("connect")) {
+			else if (choice.equals("connectFirst")) {
 				System.out.println("=========================");
 				System.out.println("Testing Connection");
 				System.out.println("=========================");
@@ -101,7 +88,7 @@ public class OntologyTest {
 				System.out.println("Depth:\t" + args[3]);
 
 				OntologyInquirer inq = new OntologyInquirer(ontology);
-				List list = inq.areRelated(args[1], args[2], Integer.parseInt(args[3]));
+				List list = inq.getFirstPath(args[1], args[2], Integer.parseInt(args[3]));
 
 				if (list == null) {
 					System.out.println("Terms Not Related");
@@ -120,6 +107,42 @@ public class OntologyTest {
 					}
 
 					System.out.println("");
+				}
+			}
+
+			else if (choice.equals("connectAll")) {
+			    System.out.println("=========================");
+				System.out.println("Testing Connection");
+				System.out.println("=========================");
+				System.out.println("Premise:\t" + args[1]);
+				System.out.println("Conclusion:\t" + args[2]);
+				System.out.println("Depth:\t" + args[3]);
+
+				OntologyInquirer inq = new OntologyInquirer(ontology);
+				List list = inq.getAllPaths(args[1], args[2], Integer.parseInt(args[3]));
+
+				if (list == null) {
+					System.out.println("Terms Not Related");
+				}
+				else {
+					Object[] lists = list.toArray();
+					for (int j=0; j<lists.length; j++) {
+					    List pathList = (List)lists[j];
+					    Object[] objs = pathList.toArray();
+
+					    OntologyNode start = (OntologyNode)objs[0];
+					    
+					    System.out.print("Path: " + start.getLabel());
+					    for (int i=1; i < objs.length; i++) {
+						OntologyNode next = (OntologyNode)objs[i];
+						long weight = start.getWeight(next);
+						
+						System.out.print(" --"+weight+"--> "+next.getLabel());
+						start = next;
+					    }
+					    
+					    System.out.println("");
+					}
 				}
 			}
 

@@ -1,14 +1,16 @@
-package psl.memento.pervasive.ontology;
+package psl.memento.pervasive.ontology.extractors;
 
 import java.util.*;
 import java.io.*;
 
 import de.fzi.wim.kaoncorpus.api.*;
 import de.fzi.wim.texttoonto.dictionary.*;
+
+import psl.memento.pervasive.ontology.*;
 import psl.memento.pervasive.ontology.relationsextraction.*;
 import psl.memento.pervasive.ontology.relationsextraction.algorithm.*;
 
-public class OntologyRelationsExtractor {
+public class KAONRelationsExtractor {
 	//instance variables
 	private Properties settings;
 	private Ontology ontology;
@@ -24,12 +26,10 @@ public class OntologyRelationsExtractor {
 	private double minimumConfidence;
 	private String language;
 
-	public OntologyRelationsExtractor(Properties settings, Ontology ontology) {
+	public KAONRelationsExtractor(Properties settings, Ontology ontology) {
 		this.settings = settings;
 		this.ontology = ontology;
 		this.existEntries = false;
-
-		setupRelationsExtraction();
 	}
 
 	public void setupRelationsExtraction() {
@@ -42,7 +42,7 @@ public class OntologyRelationsExtractor {
 		corpus = new Corpus();
 	}
 
-	private void setDictionaryEntries(DictionaryEntry[] entries) {
+	public void setDictionaryEntries(DictionaryEntry[] entries) {
 		this.entries = entries;
 		existEntries = true;
 	}
