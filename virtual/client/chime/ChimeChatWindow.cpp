@@ -21,58 +21,78 @@ extern ChimeSystemDriver *driver;
 //---- ChatBoxItem implementation -------//
 //------------------------------------------//
 
+/*************************************************************
+ * Constructor initializes parameters
+ *************************************************************/
 ChatBoxItem::ChatBoxItem (csComponent *iParent, 
 		const char *iUserName, const char *iUserSource, 
 		int iID, csListBoxItemStyle iStyle)
 		: csListBoxItem (iParent, iUserName, iID, iStyle)
 {
-	strUserName = (char*) malloc (100 * sizeof(char));
-	strUserSource = (char*) malloc (100 * sizeof(char));
-
+	// copy user parameters
 	strcpy (strUserName, iUserName);
 	strcpy (strUserSource, iUserSource);
-
-	csItemHint = NULL;
 }
 
-void ChatBoxItem::ShowHint ()
+/*************************************************************
+ * Returns true if given parameter is the same as user
+ * parameters in the following form: "name source"
+ *************************************************************/
+bool ChatBoxItem::IsThisUser (char *strFullUserName)
 {
-	char hint_text [200];
-	strcpy (hint_text, strUserName);
-	strcat (hint_text, " @ ");
-	strcat (hint_text, strUserSource);
-	csItemHint = new csHint (this, hint_text);
-	csItemHint->Show ();
+	bool r = false;
+
+	// parse name and source
+	char name[100], source[100];
+	sscanf (strFullUserName, "%s %s", name, source);
+	printf("Name: %s, Source: %s\n", name, source);
+
+	// see if the parameters are the same
+	if (!strcmp (name, strUserName) && !strcmp (source, strUserSource))
+		r = true;
+
+	return r;
 }
 
-void ChatBoxItem::HideHint ()
+/*************************************************************
+ * Copy user name into passed string
+ *************************************************************/
+void ChatBoxItem::GetUserName (char *iUserName)
 {
-	if (!csItemHint)
-		return;
-
-	csItemHint->Hide ();
-	csItemHint->Close ();
-	csItemHint = NULL;
+	strcpy (iUserName, strUserName);
 }
 
+/*************************************************************
+ * Copy user source into passed string
+ *************************************************************/
+void ChatBoxItem::GetUserSource (char *iUserSource)
+{
+	strcpy (iUserSource, strUserSource);
+}
+
+/*************************************************************
+ * Add specific event handling
+ *************************************************************/
 bool ChatBoxItem::HandleEvent (iEvent &Event)
 {
-	/**
 	switch (Event.Type)
 	{
-	case csevMouseDown:
-		if (Event.Mouse.Button == 2) ShowHint ();
-		break;
-	case csevMouseUp:
-		if (Event.Mouse.Button == 2) HideHint ();
-		break;
-	case csevMouseMove:
-		HideHint ();
+	// on double mouse click, activate this item
+	case csevMouseDoubleClick:
+		ActivateItem ();
 		break;
 	}
-	*/
 
 	return csListBoxItem::HandleEvent (Event);
+}
+
+/**************************************************************
+ * Activate this item: start chat session
+ **************************************************************/
+void ChatBoxItem::ActivateItem ()
+{
+	// for now, just print parameters
+	printf("User %s @ %s\n", strUserName, strUserSource);
 }
 
 
@@ -80,15 +100,16 @@ bool ChatBoxItem::HandleEvent (iEvent &Event)
 //---- Chat Window implementation -------//
 //------------------------------------------//
 
-// Scroll bar class default palette
 ChimeChatWindow::~ChimeChatWindow() {}
 
-
+/*************************************************************
+ * Create window components
+ *************************************************************/
 ChimeChatWindow::ChimeChatWindow(csComponent *iParent)
   : csWindow(iParent, " Chat ", CSWS_TITLEBAR, cswfsThin)
   {
 
-  SetRect (1, app->bound.Height() / 3 + 1, app->bound.Width() / 4, app->bound.Height() / 3 * 2);
+  SetRect (1, app->bound.Height() / 3 + 1, app->bound.Width() / 4 - 1, app->bound.Height() / 3 * 2);
 
   int px = 15, py = 20;
   int labelw = 150;
@@ -108,38 +129,58 @@ ChimeChatWindow::ChimeChatWindow(csComponent *iParent)
   ChatBut->SetPos(bound.Width ()/4, bound.Height() / 2 + 1);
   
   selected_item = NULL;
-  item_list = new csVector (8);
 }
 
-//Add an item to the Chat Box
+/*************************************************************
+ * Add an item to chat box, unless it already exists
+ *************************************************************/
 bool ChimeChatWindow::AddItem (char *iUserName, char *iUserSource) {
 
+	// if theitem is found, don't add
 	if (FindItem (iUserName, iUserSource))
 		return false;
+
+	// add new item
 	selected_item = new ChatBoxItem (list_box, iUserName, iUserSource);
-	item_list->Push (selected_item);
 	return true;
 }
 
-//Find list item corresponding to the parameters
+/*************************************************************
+ * Find list item corresponding to the parameters
+ *************************************************************/
 ChatBoxItem* ChimeChatWindow::FindItem (char *iUserName, char *iUserSource)
 {
-	ChatBoxItem *item = NULL;
-	for (int i = 0; i < item_list->Length (); i++)
-	{
-		item = (ChatBoxItem*) item_list->Get (i);
-		if (!strcmp (iUserName, item->GetUserName ()) && 
-			!strcmp (iUserSource, item->GetUserSource ()))
-			return item;
-	}
-	return NULL;
+	// create full user title
+	char full_user_name[200];
+	strcpy (full_user_name, iUserName);
+	strcat (full_user_name, " ");
+	strcat (full_user_name, iUserSource);
+
+	// see if the item exists
+	ChatBoxItem *item = (ChatBoxItem*) list_box->ForEachItem (UserExists, full_user_name, false);
+	return item;
+}
+
+/*********************************************************************************
+ * See if given ChatBoxItem corresponds to given full user name
+ *********************************************************************************/
+bool ChimeChatWindow::UserExists (csComponent *item, void *iFullUserName)
+{
+	return ((ChatBoxItem*) item)->IsThisUser ((char*) iFullUserName);
 }
 
 
-//Handle and Event generated by the Chat Window
+/************************************************************
+ * Handle an event generated by the Chat Window
+ ************************************************************/
 bool ChimeChatWindow::HandleEvent (iEvent &Event)
 {
 
+  // do not allow window movement
+  if (Event.Type == csevMouseMove)
+      return true;
+	
+  // let the window handle the event
   if (csWindow::HandleEvent (Event))
     return true;
 
@@ -147,16 +188,17 @@ bool ChimeChatWindow::HandleEvent (iEvent &Event)
   {
       switch (Event.Command.Code)
       {
-		case cscmdListBoxItemClicked:
+		// select an item
+	    case cscmdListBoxItemClicked:
 		case cscmdListBoxItemSelected:
 			selected_item = (ChatBoxItem*) Event.Command.Info;
 			return true;
 
-        case CHAT_CHAT_PRESSED:
+        // if "Chat" button was pressed, activate selected item
+		case CHAT_CHAT_PRESSED:
 			if (selected_item) 
 			{
-				printf ("%s @ %s\n", selected_item->GetUserName (), 
-					selected_item->GetUserSource ());
+				selected_item->ActivateItem ();
 			}
 		return true;
 	  }

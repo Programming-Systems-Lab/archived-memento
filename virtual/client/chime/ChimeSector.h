@@ -135,6 +135,9 @@ public:
   //Find the door that leads to the entrance sector
   ChimeSectorDoor* FindEntranceDoor ();
 
+  //Build a AI2TV screen at given coordinates
+  void BuildScreen (csOrthoTransform const &transform);
+
   //Update the entity with given name and type
   void UpdateObject (char *strObjectName, int iObjectType, 
 	  char *strObjectSource=NULL, char *strObjectModel=NULL, char *strObjectMaterial=NULL,

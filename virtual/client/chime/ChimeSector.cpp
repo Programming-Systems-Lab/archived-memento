@@ -351,6 +351,10 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 	csRef<iThingState> walls_state (SCF_QUERY_INTERFACE (walls->GetMeshObject (),
 		iThingState));
 
+	// also, add a mesh for AI2TV screens, and leave it empty for now
+	// it will be used later for building AI2TV screens
+	csRef<iMeshWrapper> screen_wall (driver->csEngine->CreateSectorWallsMesh (room, "screens"));
+
 	// declare some variables
 	int i = 0;
 	csRef<iMaterialWrapper> material;
@@ -436,6 +440,103 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 	}
 
 	return room;
+}
+
+
+/**********************************************************************
+ * Build a screen polygon on the closest wall
+ **********************************************************************/
+void ChimeSector::BuildScreen (csOrthoTransform const &transform)
+{
+
+	// find wall mesh wrapper
+	csRef<iMeshWrapper> screen_mesh = driver->csEngine->FindMeshObject ("screens");
+	if (!screen_mesh)
+		return;
+
+	// find thing state
+	csRef<iThingState> screen_state (SCF_QUERY_INTERFACE (screen_mesh->GetMeshObject (),
+		iThingState));
+	if (!screen_state)
+		return;
+
+	// find ai2tv ready screen texture
+	csRef<iMaterialWrapper> ready_screen = driver->csEngine->GetMaterialList ()->FindByName ("ai2tv_ready");
+	if (!ready_screen)
+		return;
+
+	// move transform 1 step forward
+	csVector3 up_pos (transform.This2OtherRelative (CS_VEC_FORWARD) + transform.GetOrigin ());
+	printf("Up pos: %f, %f, %f\n", up_pos.x, up_pos.y, up_pos.z);
+
+	// move transform 2 steps left
+	csVector3 left_pos (transform.This2OtherRelative (csVector3 (-1, 0, 0)) + up_pos);
+	printf("Left pos: %f, %f, %f\n", left_pos.x, left_pos.y, left_pos.z);
+
+	// move transform 2 steps right
+	csVector3 right_pos (transform.This2OtherRelative (csVector3 (1, 0, 0)) + up_pos);
+	printf("Right pos: %f, %f, %f\n", right_pos.x, right_pos.y, right_pos.z);
+
+	// create csPoly3D as a list of vertices for the screen
+	csPoly3D screen (4);
+	screen.AddVertex (left_pos);
+	screen.AddVertex (left_pos + csVector3 (0, 2, 0));
+	screen.AddVertex (right_pos + csVector3 (0, 2, 0));
+	screen.AddVertex (right_pos);
+
+	// create the screen
+	AddWall (screen_state, screen, ready_screen, csVector3 (1, 1, 1));
+
+	// now create the back screen
+	left_pos += transform.This2OtherRelative (csVector3 (0, 0, 0.1));
+	right_pos += transform.This2OtherRelative (csVector3 (0, 0, 0.1));
+	screen.MakeEmpty ();
+	screen.AddVertex (right_pos);
+	screen.AddVertex (right_pos + csVector3 (0, 2, 0));
+	screen.AddVertex (left_pos + csVector3 (0, 2, 0));
+	screen.AddVertex (left_pos);
+	AddWall (screen_state, screen, ready_screen, csVector3 (1, 1, 1));
+
+	/**
+	// find vertex with minimum distance from the user location
+	csVector3 minv (0);
+	int min_distance = 20000, temp = 0;
+	csVector3 *vertex = poly_mesh->GetVertices ();
+	for (int i = 0; i < poly_mesh->GetVertexCount (); i++)
+	{
+		temp = csVector3::Norm (vertex[i] - location);
+		if (temp < min_distance)
+		{
+			min_distance = temp;
+			minv.Set (vertex[i]);
+		}
+	}
+
+	// find vertex with second minimum distance from user
+	// location that has the same 'y' coordinate as the
+	// first minimum vertex (connects to first minimum
+	// vertex horizontally, not vertically)
+	csVector3 minv2 (minv);
+	min_distance = 20000;
+	for (int i = 0; i < poly_mesh->GetVertexCount (); i++)
+	{
+		// if vertex is higher or lower than minimum vertex
+		// or it is the same vertex, ignore it
+		if (vertex[i].y  - minv.y > 0.5 ||
+			(vertex[i].x == minv.x && vertex[i].y == minv.y && vertex[i].z == minv.z))
+			continue;
+
+		temp = csVector3::Norm (vertex[i] - location);
+		if (temp < min_distance)
+		{
+			min_distance = temp;
+			minv2.Set (vertex[i]);
+		}
+	}
+
+	printf("Min1: %f, %f, %f\n", minv.x, minv.y, minv.z);
+	printf("Min2: %f, %f, %f\n", minv2.x, minv2.y, minv2.z);
+	*/
 }
 
 

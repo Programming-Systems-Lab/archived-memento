@@ -76,8 +76,10 @@ private:
   ChimeSectorEntity			*chSelectedEntity;							//pointer to the entity selected with a single mouse click
 
   //other windows
+  csNotebook*			notebook;
   ChimeHistoryWindow*	chHistoryWindow;								//history list window
   ChimeChatWindow*		chChatWindow;									//chat window
+  ChimeAi2tvWindow*		chAi2tvWindow;									//AI2TV player window
 
   //helper variables
   int	chDebugMode;													//defines level of debugging output
@@ -108,6 +110,7 @@ private:
   bool HandleRightMouseDoubleClick (iEvent &Event);						//respond to double click from right mouse button
   bool HandleMouseMove (iEvent &Event);									//move an active object following mouse movement
   bool HandleEventFromOtherWindows (iEvent &Event);						//see if any of other windows can handle this event
+  bool HandleKeyEvent (iEvent &Event);									//handle a key-pressed event
   bool CloseMenu ();													//destroy a 2D menu if one exists
   ChimeSectorEntity* SelectEntity (float x, float y);					//select an entity pointed to by the mouse click
   void SelectVisibleObjects (csVector* iEntityList,						//select only those entities that are visible in the current view

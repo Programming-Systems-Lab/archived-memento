@@ -60,19 +60,19 @@ class ModularWindow : public csWindow
 class HistoryBoxItem : public csListBoxItem
 {
 private:
-	char *strSectorName, *strSectorSource;
-	csHint *csItemHint;
+	// parameters that define a sector (name + source)
+	char strSectorName [100], strSectorSource [100];
 
 public:
 	HistoryBoxItem (csComponent *iParent, 
 		const char *iSectorName, const char *iSectorSource, 
 		int iID=0, csListBoxItemStyle iStyle=cslisNormal);
 
-	char* GetSectorName () { return strSectorName; }
-	char* GetSectorSource () { return strSectorSource; }
-	bool HandleEvent (iEvent &Event);
-	void ShowHint ();
-	void HideHint ();
+	bool IsThisSector (char *strFullSectorName);		// returns true if this user has given full name
+	void GetSectorName (char *iSectorName);				// returns sector name
+	void GetSectorSource (char *iSectorSource);			// returns sector source
+	bool HandleEvent (iEvent &Event);					// add specific event handling
+	void ActivateItem ();								// activate this item
 };
 
 /**************************************************************
@@ -83,16 +83,19 @@ class ChimeHistoryWindow : public csWindow
 {
 
 private:
+	// list box of items
 	csListBox *list_box;
+
+	// selected item
 	HistoryBoxItem *selected_item;
-	csVector *item_list;
 
 public:
 
   ChimeHistoryWindow (csComponent *iParent);
-  bool AddItem (char *iSectorName, char *iSectorSource);
-  HistoryBoxItem* FindItem (char *iSectorName, char *iSectorSource);
-  virtual bool HandleEvent (iEvent &Event);
+  bool AddItem (char *iSectorName, char *iSectorSource);					// add another item
+  HistoryBoxItem* FindItem (char *iSectorName, char *iSectorSource);		// find item based on parameters
+  virtual bool HandleEvent (iEvent &Event);									// add specific event handling
+  static bool SectorExists (csComponent *item, void *iFullSectorName);		// find out if sector exists
 };
 
 
@@ -107,19 +110,19 @@ public:
 class ChatBoxItem : public csListBoxItem
 {
 private:
-	char *strUserName, *strUserSource;
-	csHint *csItemHint;
+	// parameters that define a user (name + source)
+	char strUserName [100], strUserSource [100];
 
 public:
 	ChatBoxItem (csComponent *iParent, 
 		const char *iUserName, const char *iUserSource, 
 		int iID=0, csListBoxItemStyle iStyle=cslisNormal);
 
-	char* GetUserName () { return strUserName; }
-	char* GetUserSource () { return strUserSource; }
-	bool HandleEvent (iEvent &Event);
-	void ShowHint ();
-	void HideHint ();
+	bool IsThisUser (char *strFullUserName);			// tell if this is the user
+	void GetUserName (char *iUserName);					// return user name
+	void GetUserSource (char *iUserSource);				// return user source
+	bool HandleEvent (iEvent &Event);					// add specific item handling
+	void ActivateItem ();								// activate this item
 };
 
 /**************************************************************
@@ -130,17 +133,36 @@ class ChimeChatWindow : public csWindow
 {
 
 private:
+	// list box of users
 	csListBox *list_box;
+
+	// selected item
 	ChatBoxItem *selected_item;
-	csVector *item_list;
 
 public:
 
   ChimeChatWindow (csComponent *iParent);
-  bool AddItem (char *iUserName, char *iUserSource);
-  ChatBoxItem* FindItem (char *iSectorName, char *iSectorSource);
-  virtual bool HandleEvent (iEvent &Event);
+  bool AddItem (char *iUserName, char *iUserSource);					// add one item with given parameters
+  ChatBoxItem* FindItem (char *iUserName, char *iUserSource);			// find item based on given parameters
+  virtual bool HandleEvent (iEvent &Event);								// add specific item handling
+  static bool UserExists (csComponent *item, void *iFullUserName);		// tell if this is the same user
 };
 
+
+//////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////// AI2TV Player Window ////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+/**************************************************************
+ * Chat window is a list of visited ChimeSectors
+ **************************************************************/
+class ChimeAi2tvWindow : public csWindow
+{
+
+private:
+
+public:
+
+  ChimeAi2tvWindow (csComponent *iParent);
+};
 
 #endif

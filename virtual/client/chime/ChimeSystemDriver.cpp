@@ -96,6 +96,7 @@ ChimeSystemDriver::ChimeSystemDriver (iObjectRegistry* object_reg)
   str2DMessage[0] = '\0';
   chHistoryWindow = NULL;
   chChatWindow = NULL;
+  chAi2tvWindow = NULL;
 }
 
 /*****************************************************************
@@ -288,21 +289,50 @@ void ChimeSystemDriver::SetupFrame ()
   // Now rotate the camera according to keyboard state
   float speed = (elapsed_time / 1000.0) * (0.03 * 50);
 
+  // Keep track of user movement
+  bool userMoved = false;
+  
   //Update user's position according to keyboard event
+  //Update map camera rotation with the user
   if (isRunning)
   {
       if (csKeyboardDriver->GetKeyState (CSKEY_RIGHT))
+	  {
 		  chUser->RotateUser(CS_VEC_ROT_RIGHT, speed);
+		  chMapView->GetCamera ()->GetTransform ().RotateOther (CS_VEC_ROT_RIGHT, speed);
+	  }
 	  if (csKeyboardDriver->GetKeyState (CSKEY_LEFT))
+	  {
           chUser->RotateUser(CS_VEC_ROT_LEFT, speed);
+		  chMapView->GetCamera ()->GetTransform ().RotateOther (CS_VEC_ROT_LEFT, speed);
+	  }
       if (csKeyboardDriver->GetKeyState (CSKEY_PGUP))
           chUser->RotateUser(CS_VEC_TILT_UP, speed);
       if (csKeyboardDriver->GetKeyState (CSKEY_PGDN))
           chUser->RotateUser(CS_VEC_TILT_DOWN, speed);
       if (csKeyboardDriver->GetKeyState (CSKEY_UP))
+	  {
           chUser->MoveUser(CS_VEC_FORWARD * 4 * speed, fps, checkVertical);
+		  userMoved = true;
+	  }
       if (csKeyboardDriver->GetKeyState (CSKEY_DOWN))
+	  {
           chUser->MoveUser(CS_VEC_BACKWARD * 4 * speed, fps, checkVertical);
+		  userMoved = true;
+	  }
+  }
+
+  // If user moved, update map camera's position
+  if (userMoved)
+  {
+	  // set sector
+	  if (chView->GetCamera ()->GetSector () != chMapView->GetCamera ()->GetSector ())
+		  chMapView->GetCamera ()->SetSector (chView->GetCamera ()->GetSector ());
+
+	  // set location (just keep vertical position)
+	  csVector3 map_pos (chView->GetCamera ()->GetTransform ().GetOrigin ());
+	  map_pos.y = chMapView->GetCamera ()->GetTransform ().GetOrigin ().y;
+	  chMapView->GetCamera ()->GetTransform ().SetOrigin (map_pos);
   }
 
   // Tell 3D driver we're going to display 3D things.
@@ -373,14 +403,18 @@ void ChimeSystemDriver::FinishFrame ()
  *****************************************************************/
 bool ChimeSystemDriver::HandleEvent (iEvent& event)
 {
+	// First, let the application handle its events
 	app->HandleEvent (event);
 
-	if (HandleEventFromOtherWindows (event))
-		return true;
+	// If the event refers to window, other than main 3D view,
+	// let them handle it
+	HandleEventFromOtherWindows (event);
 	
+	// Handle the event based on its type
 	switch (event.Type)
 	{
-        case csevBroadcast:
+		// For a system broadcast event...    
+		case csevBroadcast:
 			switch (event.Command.Code)
 			{
 				case cscmdProcess:
@@ -391,28 +425,43 @@ bool ChimeSystemDriver::HandleEvent (iEvent& event)
 					break;
 			}
             break;
+
+		// For a left mouse button double click...
         case csevMouseDoubleClick:
             HandleLeftMouseDoubleClick(event);
             break;
+
+		// For a mouse button click...
         case csevMouseDown:
-            if(event.Mouse.Button == 2)
+            // Right button...
+			if(event.Mouse.Button == 2)
 			{
                 HandleRightMouseClick(event);
 			}
+			// Left button...
             else if(event.Mouse.Button == 1)
 			{
                 HandleLeftMouseClick(event);
 			}
             break;
+
+		// For mouse button release...
         case csevMouseUp:
             if(event.Mouse.Button == 1)
 			{
                 chSelectedEntity = NULL;
 			}
             break;
+
+		// For a mouse move...
         case csevMouseMove:
             HandleMouseMove (event);
             break;
+
+		// For a key event...
+		case csevKeyDown:
+			HandleKeyEvent (event);
+			break;
 	}
 
 	return true;
@@ -432,9 +481,31 @@ bool ChimeSystemDriver::EventHandler (iEvent& ev)
 bool ChimeSystemDriver::ReadInitialSector ()
 {
 
-  // Set up other CHIME windows
-  chHistoryWindow = new ChimeHistoryWindow (app);
-  chChatWindow = new ChimeChatWindow (app);
+  // Set up tabbed window for CHIME windows
+  notebook  = new csNotebook (app, CSNBS_TABPOS_TOP| CSNBS_THINTABS);
+  notebook->SetRect (0, 1, app->bound.Width () / 4, app->bound.Height () - 1);
+  notebook->SetFont (csFontServer->GetFont (chSystemFont));
+
+  // Add one tab to the tabbed window for primary CHIME
+  // controls, i.e. chat, history, etc.
+  csDialog *dialog1  = new csDialog (notebook);
+  dialog1->SetColor (CSPAL_DIALOG_BACKGROUND, cs_Color_Gray_D);
+  notebook->AddPrimaryTab (dialog1, "~CHIME World", "General CHIME world controls");
+
+  // Add second tab to the tabbed window for AI2TV
+  // controls, i.e. player, etc.
+  csDialog *dialog2  = new csDialog (notebook);
+  dialog2->SetColor (CSPAL_DIALOG_BACKGROUND, cs_Color_Gray_D);
+  notebook->AddPrimaryTab (dialog2, "~AI2TV Player", "AI2TV Player controls");
+	
+  // Set up other CHIME windows to first tab
+  chHistoryWindow = new ChimeHistoryWindow (dialog1);
+  chHistoryWindow->SetFont (csFontServer->GetFont (chSystemFont));
+  chChatWindow = new ChimeChatWindow (dialog1);
+  chChatWindow->SetFont (csFontServer->GetFont (chSystemFont));
+
+  // Set up other CHIME windows to second tab
+  chAi2tvWindow = new ChimeAi2tvWindow (dialog2);
 
   // Set up the CHIME sector
   SetCurrentSector (LoadNewSector ("Yahoo! Main", "http://www.yahoo.com", csVector3 (0, 0, -10), csVector3 (0, 0, 0)));
@@ -442,16 +513,20 @@ bool ChimeSystemDriver::ReadInitialSector ()
   //------------------ Set up 3D views of this system --------------------------------//
 
   // Main view
-  csWindow *w = new csWindow (app, "3D View", CSWS_TITLEBAR, cswfsThin);
+  csWindow *w = new csWindow (app, "3D View", 0, cswfsThin);
+  w->SetTitlebarHeight (0);
   w->SetFont (csFontServer->GetFont (chSystemFont));
   w->SetRect (app->bound.Width()/4, 0, app->bound.Width()-1, app->bound.Height()*2/3);
   chView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D);
 
   // Map view
-  w = new csWindow (app, "Map View", CSWS_TITLEBAR, cswfsThin);
+  w = new csWindow (app, "Map View", 0, cswfsThin);
+  w->SetTitlebarHeight (0);
   w->SetFont (csFontServer->GetFont (chSystemFont));
-  w->SetRect (app->bound.Width()*2/3, app->bound.Height()*2/3 + 2, app->bound.Width()-1, app->bound.Height()-1);
+  w->SetRect (app->bound.Width()/4, app->bound.Height()*2/3 + 2, app->bound.Width()-1, app->bound.Height()-1);
   chMapView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D);
+  chMapView->GetCamera ()->GetTransform ().SetOrigin (chMapView->GetCamera ()->GetTransform ().GetOrigin () + csVector3 (0, 5, 0));
+  chMapView->GetCamera ()->GetTransform ().RotateThis (CS_VEC_TILT_DOWN, 1.57);
 
   return true;
 }
@@ -866,6 +941,25 @@ bool ChimeSystemDriver::HandleEventFromOtherWindows (iEvent &Event)
 		return true;
 
 	return false;
+}
+
+
+/************************************************************
+ * Handle a 'key-pressed' event
+ ************************************************************/
+bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
+{
+	switch (Event.Key.Code)
+	{
+        // Key 's'...
+        case ('s'):
+            if (chCurrentSector)
+                chCurrentSector->BuildScreen (chView->GetCamera ()->GetTransform ());
+            break;
+	}
+
+
+	return true;
 }
 
 

@@ -23,8 +23,6 @@ ModularWindow::ModularWindow(csComponent *iParent, const char *iTitle, int iWind
 				iFrameStyle=cswfs3D) {
 
 		driver->Stop3D();
-		//csWindow::csWindow(iParent, iTitle, iWindowStyle, iFrameStyle);
-
 }
 
 //close this window and start animation
