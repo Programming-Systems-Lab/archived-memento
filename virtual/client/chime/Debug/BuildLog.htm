@@ -22,7 +22,7 @@ Environment Space
     INCLUDE=C:\psl\memento\virtual\client\include;C:\Program Files\Microsoft Visual Studio .NET\Vc7\include;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\include;C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include\prerelease;C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\include;C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\include;
     LIB=C:\psl\memento\virtual\client\libs;C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib;C:\Program Files\Microsoft Visual Studio .NET\Vc7\atlmfc\lib;C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\prerelease;C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib;C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\lib;
     LIBPATH=
-    LOGONSERVER=\\BARCLAY
+    LOGONSERVER=\\BANK
     NUMBER_OF_PROCESSORS=1
     OS=Windows_NT
     Path=C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin;C:\Program Files\Microsoft Visual Studio .NET\Common7\Tools\bin\prerelease;C:\Program Files\Microsoft Visual Studio .NET\Common7\Tools\bin;C:\Program Files\Microsoft Visual Studio .NET\Common7\tools;C:\Program Files\Microsoft Visual Studio .NET\Common7\ide;C:\Program Files\HTML Help Workshop\;C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\bin;C:\WINDOWS\Microsoft.NET\Framework\v1.0.3705;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\jdk1.4;C:\jdk1.4\bin;C:\Program Files\SecureCRT 3.0;
@@ -49,39 +49,141 @@ Environment Space
     _ACP_PATH=C:\Program Files\Microsoft Visual Studio .NET\Vc7\bin;C:\Program Files\Microsoft Visual Studio .NET\Common7\Tools\bin\prerelease;C:\Program Files\Microsoft Visual Studio .NET\Common7\Tools\bin;C:\Program Files\Microsoft Visual Studio .NET\Common7\tools;C:\Program Files\Microsoft Visual Studio .NET\Common7\ide;C:\Program Files\HTML Help Workshop\;C:\Program Files\Microsoft Visual Studio .NET\FrameworkSDK\bin;C:\WINDOWS\Microsoft.NET\Framework\v1.0.3705;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\jdk1.4;C:\jdk1.4\bin;C:\Program Files\SecureCRT 3.0;
 </pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
 Command Lines
-</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>Creating temporary file "c:\psl\memento\virtual\client\chime\Debug\RSP000016.rsp" with contents
+</font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>Creating temporary file "c:\psl\memento\virtual\client\chime\Debug\RSP000004.rsp" with contents
 [
 /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "WIN32_VOLATILE" /D "__CRYSTAL_SPACE__" /D "CS_DEBUG" /Gm /EHsc /MDd /Fo"Debug/" /Fd"Debug/vc70.pdb" /W4 /c /Zi /TP
+ChimeAi2tvWindow.cpp
+ChimeUser.cpp
+ChimeSystemDriver.cpp
+ChimeSectorUser.cpp
+ChimeSectorObject.cpp
+ChimeSectorDoor.cpp
+ChimeSectorActiveObject.cpp
 ChimeSector.cpp
+ChimeNeighbors.cpp
+ChimeModularWindow.cpp
+ChimeHistoryWindow.cpp
+ChimeEngineView.cpp
+ChimeCollider.cpp
+ChimeChatWindow.cpp
+ChimeApp.cpp
 ]
-Creating command line "cl.exe @c:\psl\memento\virtual\client\chime\Debug\RSP000016.rsp /nologo"
-Creating temporary file "c:\psl\memento\virtual\client\chime\Debug\RSP000017.rsp" with contents
+Creating command line "cl.exe @c:\psl\memento\virtual\client\chime\Debug\RSP000004.rsp /nologo"
+Creating temporary file "c:\psl\memento\virtual\client\chime\Debug\RSP000005.rsp" with contents
 [
 /VERBOSE:LIB /OUT:"Debug/chime.exe" /INCREMENTAL /NOLOGO /SUBSYSTEM:CONSOLE libcssys_d.lib libcsutil_d.lib libcsgeom_d.lib libcsgfx_d.lib libcstool_d.lib libcsws_d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib \psl\memento\virtual\client\libs\libcssys_d.lib \psl\memento\virtual\client\libs\libcsutil_d.lib \psl\memento\virtual\client\libs\libcsgeom_d.lib \psl\memento\virtual\client\libs\libcsgfx_d.lib \psl\memento\virtual\client\libs\libcstool_d.lib \psl\memento\virtual\client\libs\libcsws_d.lib
 Debug\ChimeApp.obj
+Debug\ChimeChatWindow.obj
 Debug\ChimeCollider.obj
 Debug\ChimeEngineView.obj
+Debug\ChimeHistoryWindow.obj
+Debug\ChimeModularWindow.obj
 Debug\ChimeNeighbors.obj
 Debug\ChimeSector.obj
 Debug\ChimeSectorActiveObject.obj
 Debug\ChimeSectorDoor.obj
 Debug\ChimeSectorObject.obj
+Debug\ChimeSectorUser.obj
 Debug\ChimeSystemDriver.obj
 Debug\ChimeUser.obj
-Debug\ChimeChatWindow.obj
-Debug\ChimeHistoryWindow.obj
-Debug\ChimeModularWindow.obj
-Debug\ChimeSectorUser.obj
+Debug\ChimeAi2tvWindow.obj
 ]
-Creating command line "link.exe @c:\psl\memento\virtual\client\chime\Debug\RSP000017.rsp"
+Creating command line "link.exe @c:\psl\memento\virtual\client\chime\Debug\RSP000005.rsp"
 </pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
 Output Window
 </font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>Compiling...
+ChimeAi2tvWindow.cpp
+ChimeUser.cpp
+ChimeSystemDriver.cpp
+ChimeSystemDriver.cpp(511) : warning C4239: nonstandard extension used : 'argument' : conversion from 'csVector3' to 'csVector3 &'
+        A reference that is not to 'const' cannot be bound to a non-lvalue
+ChimeSystemDriver.cpp(511) : warning C4239: nonstandard extension used : 'argument' : conversion from 'csVector3' to 'csVector3 &'
+        A reference that is not to 'const' cannot be bound to a non-lvalue
+ChimeSectorUser.cpp
+ChimeSectorObject.cpp
+ChimeSectorDoor.cpp
+ChimeSectorDoor.cpp(154) : warning C4239: nonstandard extension used : 'argument' : conversion from 'csVector3' to 'csVector3 &'
+        A reference that is not to 'const' cannot be bound to a non-lvalue
+ChimeSectorActiveObject.cpp
 ChimeSector.cpp
+ChimeNeighbors.cpp
+ChimeModularWindow.cpp
+ChimeHistoryWindow.cpp
+ChimeEngineView.cpp
+ChimeCollider.cpp
+ChimeChatWindow.cpp
+ChimeApp.cpp
+Generating Code...
 Linking...
+Searching libraries
+    Searching C:\psl\memento\virtual\client\libs\libcssys_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsutil_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgeom_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgfx_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcstool_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsws_d.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\kernel32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\user32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\gdi32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\winspool.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\comdlg32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\advapi32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\shell32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\ole32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\oleaut32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\uuid.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\odbc32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\odbccp32.lib:
+    Searching \psl\memento\virtual\client\libs\libcssys_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsutil_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsgeom_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsgfx_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcstool_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsws_d.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\MSVCRTD.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\OLDNAMES.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcssys_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsutil_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgeom_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgfx_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcstool_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsws_d.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\kernel32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\user32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\gdi32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\winspool.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\comdlg32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\advapi32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\shell32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\ole32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\oleaut32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\uuid.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\odbc32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\odbccp32.lib:
+    Searching \psl\memento\virtual\client\libs\libcssys_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsutil_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsgeom_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsgfx_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcstool_d.lib:
+    Searching \psl\memento\virtual\client\libs\libcsws_d.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\MSVCRTD.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\OLDNAMES.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcssys_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsutil_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgeom_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsgfx_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcstool_d.lib:
+    Searching C:\psl\memento\virtual\client\libs\libcsws_d.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\lib\kernel32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\user32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\gdi32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\winspool.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\comdlg32.lib:
+    Searching C:\Program Files\Microsoft Visual Studio .NET\Vc7\PlatformSDK\lib\advapi32.lib:
+Finished searching libraries
 </pre></table><table width=100% bgcolor=#DFDFE5><tr><td><font face=arial size=+2>
 Results
 </font></table><table width=* cellspacing=0 cellpadding=0><tr><td width=0 bgcolor=#EDEDF5>&nbsp;</td><td width=0 bgcolor=#FFFFFF>&nbsp;</td><td width=*><pre>
 Build log was saved at "file://c:\psl\memento\virtual\client\chime\Debug\BuildLog.htm"
-chime - 0 error(s), 0 warning(s)</pre></table><table   width=100% height=20 bgcolor=#CFCFE5><tr><td><font face=arial size=+2>
+chime - 0 error(s), 3 warning(s)</pre></table><table   width=100% height=20 bgcolor=#CFCFE5><tr><td><font face=arial size=+2>
 </font></table></body></html>
