@@ -2,7 +2,14 @@ package psl.memento.server.vem;
 
 import java.util.*;
 import java.io.*;
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.Polygon;
+
+import com.hp.hpl.mesa.rdf.jena.model.*;
+import com.hp.hpl.mesa.rdf.jena.rdb.*;
+import psl.memento.server.frax.*;
+import psl.memento.server.frax.vocabulary.*;
+import java.net.*;
 
 /*
  * DataReader.java
@@ -21,6 +28,7 @@ public class DataReader {
     public Room mRoom;
     public ArrayList mObjs, mFixedObjs, mDoors;
     private String contents;
+    private Frax mFrax;
     
     private StringTokenizer strtok;
     
@@ -29,6 +37,19 @@ public class DataReader {
 	mObjs = new ArrayList();
 	mFixedObjs = new ArrayList();
         mDoors = new ArrayList();
+	
+	mFrax = Frax.getInstance();
+	
+	// load configuration data
+	try {
+	  mFrax.setConfiguration(new XMLFraxConfiguration());
+	} catch (Exception ex) {      
+	  ex.printStackTrace();
+	  System.exit(1);
+	}    
+
+	FraxConfiguration config = mFrax.getConfiguration();
+	config.setExtractContentMetadata(true);	
     }
     
     public void reset() {
@@ -76,6 +97,44 @@ public class DataReader {
             setError("I/O Problem: " + ioe);
 	    return false;
         }
+    }
+    
+    public boolean getDataFromFrax(String uri) 
+    {
+	Property prop;
+	URI link;
+	String path = "";
+	
+        try {
+	    setRoom(300, 300, 300);
+	    
+	    Model m = mFrax.extractMetadata(new URI(uri));
+
+	    prop = HTMLVocab.kLinks.getProperty();
+	    RDFNode n = m.listObjectsOfProperty(prop).next();
+	    Container c = (Container)n;
+	    NodeIterator iter = c.iterator();
+	    while (iter.hasNext()) {
+		RoomObject ro = new RoomObject(15, 15, 15);
+		link = new URI(iter.next().toString());
+		path = link.getPath();
+		
+		if (path.indexOf("@") != -1) ro.type = "email";
+		else if (path.endsWith("/")) ro.type = "directory";
+		else if (path.indexOf(".") != -1)
+		    ro.type = path.substring(path.lastIndexOf("."));
+		else ro.type = path;
+		
+		addRoomObject(ro);
+	    }
+	    
+	    return true;
+	} catch (Exception e) {
+	    System.out.println(e);
+	    e.printStackTrace();
+            setError("Frax Problem: " + e);
+	    return false;	
+	}
     }
     
     private void readData(String filename) throws IOException {
@@ -200,6 +259,7 @@ public class DataReader {
     public void setError(String errorMessage) {
         this.errorMessage = errorMessage;
     }
+    
     
 }
 

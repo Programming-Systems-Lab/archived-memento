@@ -66,5 +66,6 @@ public class LayoutClassManager implements java.awt.event.ActionListener {
 	    rv.updateDrawPanel();
 	}
     }    
-    
+ 
+
 }

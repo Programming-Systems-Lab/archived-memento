@@ -309,15 +309,17 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	}
 	
 	if (lp.highlightFreeSpace()) {
-	    // show free space
+       	    // show free space
 	    g.setColor(Color.yellow);
 	    for (i=0; i<gran_x; i++) {
 		for (j=0; j<gran_y; j++) {
 		    if (!cells[i][j])
 			g.fillRect(i*delta+1, j*delta+1, delta-2, delta-2);
-		}
-	    }
-	}
+                }                
+            }
+            
+        }
+      
     }
     
     public Hashtable getLegend()

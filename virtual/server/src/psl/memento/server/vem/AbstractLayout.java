@@ -1,13 +1,13 @@
 package psl.memento.server.vem;
 
-import java.util.*;
-import java.awt.Polygon;
-
 /*
  * AbstractLayout.java
  *
  * Created on November 11, 2002, 3:16 AM
  */
+
+import java.util.*;
+import java.awt.Polygon;
 
 /**
  *
