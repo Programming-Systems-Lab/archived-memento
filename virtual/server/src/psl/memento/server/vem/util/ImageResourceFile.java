@@ -4,7 +4,7 @@
  * Created on May 26, 2002, 3:41 AM
  */
 
-package psl.chime4.server.vem.util;
+package psl.memento.server.vem.util;
 
 import java.awt.Toolkit;
 import java.awt.Image;

@@ -4,7 +4,7 @@
  * Created on May 26, 2002, 4:37 PM
  */
 
-package psl.chime4.server.vem.util;
+package psl.memento.server.vem.util;
 
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
@@ -16,7 +16,7 @@ import java.io.File;
  *	Stores meta data about a resource file (either a model or image).
  *
  *	@author  Vladislav Shchogolev
- *	@version $Revision: 1.1 $
+ *	@version $Revision: 1.2 $
  */
 public class ResourceFile {
     

@@ -1,4 +1,4 @@
-package psl.chime4.server.vem.util;
+package psl.memento.server.vem.util;
 
 import java.util.Vector;
 import java.io.*;
@@ -9,7 +9,7 @@ import java.io.*;
  *	<code>(http://www.tsrevolution.com/docs/c3ds.zip)</code>
  *
  *	@author Vladislav Shchogolev
- *	@version $Revision: 1.1 $
+ *	@version $Revision: 1.2 $
  */
 
 public class ModelResourceFile extends ResourceFile
