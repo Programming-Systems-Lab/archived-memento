@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="src" path="src"/>
+    <classpathentry kind="src" path="etc"/>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+    <classpathentry kind="lib" path="libs/commons-beanutils.jar"/>
+    <classpathentry kind="lib" path="libs/commons-collections.jar"/>
+    <classpathentry kind="lib" path="libs/commons-digester.jar"/>
+    <classpathentry kind="lib" path="libs/commons-httpclient.jar"/>
+    <classpathentry kind="lib" path="libs/commons-logging.jar"/>
+    <classpathentry kind="lib" path="libs/commons-logging-api.jar"/>
+    <classpathentry kind="lib" path="libs/dom4j.jar"/>
+    <classpathentry kind="lib" path="libs/htmlparser.jar"/>
+    <classpathentry kind="lib" path="libs/icu4j.jar"/>
+    <classpathentry kind="lib" path="libs/jakarta-oro-2.0.6.jar"/>
+    <classpathentry kind="lib" path="libs/jakarta-poi-1.5.1.jar"/>
+    <classpathentry kind="lib" path="libs/jalopy-1.0b10.jar"/>
+    <classpathentry kind="lib" path="libs/jdom.jar"/>
+    <classpathentry kind="lib" path="libs/jena.jar"/>
+    <classpathentry kind="lib" path="libs/jftp-bea.jar"/>
+    <classpathentry kind="lib" path="libs/log4j.jar"/>
+    <classpathentry kind="lib" path="libs/mysql-connector-java-2.0.14-bin.jar"/>
+    <classpathentry kind="lib" path="libs/pgjdbc2.jar"/>
+    <classpathentry kind="lib" path="libs/xerces.jar"/>
+    <classpathentry kind="src" path="/aether2"/>
+    <classpathentry kind="output" path="build/class"/>
+</classpath>
