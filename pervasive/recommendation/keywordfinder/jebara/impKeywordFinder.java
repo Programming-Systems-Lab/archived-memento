@@ -149,7 +149,7 @@ public class impKeywordFinder implements KeywordFinder {
 				}
 			}
 		} else {
-			// System.out.println("Bad initialization parameters.");
+			System.out.println("Bad initialization parameters.");
 			cleanUp();
 			throw new RuntimeException("Bad initialization parameters to jebara.impKeywordFinder.run()");
 		}

@@ -129,14 +129,17 @@ int main(int argc, char **argv)
     ftopics.close();
     if(!count)
        Usage();
-    ftopics.open(topics);
-    if(!ftopics)
+
+    ifstream ftopics2;
+
+    ftopics2.open(topics);
+    if(!ftopics2)
        Usage();
 
     for(int i = 0; i < count; i++)
     {
-       ftopics >> topic;
-       if(ftopics.eof()) break;
+       ftopics2 >> topic;
+       if(ftopics2.eof()) break;
        
        loadtopic(count, i, topic, base);
        fouttopics << topic << endl;

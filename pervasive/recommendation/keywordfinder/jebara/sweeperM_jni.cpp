@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,9 +73,11 @@ loadStats(char *sFile, map<string,double *> &classes,map<string,double> &tab )
   int     c;
   int     totwords = 0;
 
+  printf("WE ARE HERE2\n");
+
   if ((fp = fopen(sFile,"r"))==NULL)
     {
-      fprintf(stderr,"I can't open %s for input.\n",sFile);
+      fprintf(stdout,"I can't open %s for input.\n",sFile);
       exit(0);
     }
    while (fgets(line, MAXLINE, fp) != NULL)
@@ -111,7 +112,7 @@ loadCounts(char *cFile)
   char  line[MAXLINE];
    if ((fp = fopen(cFile,"r"))==NULL)
     {
-      fprintf(stderr,"I can't open %s for input.\n",cFile);
+      fprintf(stdout,"I can't open %s for input.\n",cFile);
       exit(0);
     }
 
@@ -133,7 +134,7 @@ loadTopics(char *tFile)
 
   if ((fp = fopen(tFile,"r"))==NULL)
     {
-      fprintf(stderr,"I can't open %s for input.\n",tFile);
+      fprintf(stdout,"I can't open %s for input.\n",tFile);
       exit(0);
     }
 
@@ -161,7 +162,7 @@ loadQuestions(char *qFile)
 
    if ((fp = fopen(qFile,"r"))==NULL)
      {
-       fprintf(stderr,"I can't open %s for input.\n",qFile);
+       fprintf(stdout,"I can't open %s for input.\n",qFile);
        exit(0);
      }
 
@@ -245,11 +246,15 @@ JNIEXPORT jboolean JNICALL Java_psl_memento_pervasive_recommendation_keywordfind
 {
   // &&& Parse argv  from string to integer
 
+  printf("WE ARE HERE");
+
   // Parse Arguments
   const char *args = env->GetStringUTFChars(str, 0);
   if(!parse_args(args)) {
     return JNI_FALSE;
   }
+
+  printf("WE ARE HERE 1!\n");
   
   // Load the topics
   loadTopics(tFile); //JC(2/26/2003):value of tFile comes from cmd line arg: topic file 
@@ -412,11 +417,13 @@ JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_j
 JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_jebara_impKeywordFinder_cleanUp
   (JNIEnv *, jobject)
 {
+
+  /* This method does not work, we need to fix this - Julia?
   VectorFree(cCounts);
   VectorFree(logWeights);
   VectorFree(probs);
   MatrixFree(graph1);
-  MatrixFree(graph2);
+  MatrixFree(graph2); */
 }
 
 //JC(2/28/2003): Add this file to tokenize incoming string data 
