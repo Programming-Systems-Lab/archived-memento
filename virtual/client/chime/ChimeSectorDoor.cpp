@@ -242,10 +242,12 @@ bool ChimeSectorDoor::SetDoorVisible (bool flag)
  *****************************************************************/
 void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event) 
 {
+	printf("Activating...\n");
 	if (ConnectDoorToTarget (true))
 	{
 		OpenDoor ();
 		driver->Redraw ();
+		printf("Opening door...\n");
 	}
 }
 

@@ -719,8 +719,6 @@ bool ChimeSystemDriver::HandleLeftMouseClick (iEvent &Event)
 {
 	// See if a mesh was selected
 	chSelectedEntity = SelectEntity (Event.Mouse.x, Event.Mouse.y);
-	if (chSelectedEntity)
-		printf("Entity selected.\n");
 
 	// Close csEntityMenu if one was opened before
 	CloseMenu ();
@@ -747,7 +745,7 @@ bool ChimeSystemDriver::HandleLeftMouseDoubleClick(iEvent &Event)
 	// If an entity was selected, perform the appropriate action
 	if (chSelectedEntity)
 	{
-		//chSelectedEntity->HandleLeftMouseDoubleClick(Event);
+		chSelectedEntity->HandleLeftMouseDoubleClick(Event);
 	}
 	return true;
 }
@@ -785,7 +783,7 @@ bool ChimeSystemDriver::HandleRightMouseDoubleClick(iEvent &Event)
 	// If an entity was selected, perform the appropriate action
 	if (chSelectedEntity)
 	{
-		chSelectedEntity->HandleRightMouseDoubleClick(Event);
+		chSelectedEntity->HandleRightMouseDoubleClick (Event);
 	}
 	return true;
 }

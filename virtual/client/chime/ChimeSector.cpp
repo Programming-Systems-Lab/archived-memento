@@ -747,9 +747,6 @@ ChimeSectorEntity* ChimeSector::SelectEntity (const csVector3 &start, const csVe
 	// Prepare pointers for possible active entities
 	ChimeSectorEntity *entity = NULL;
 
-	if (mesh) printf("Mesh selected\n");
-	if (polygons[0]) printf("Polygon selected\n");
-
 	for (int i = 0; i < chActiveEntities->Length (); i++)
 	{
 		entity = (ChimeSectorEntity*) chActiveEntities->Get (i);
@@ -783,7 +780,7 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 	{
 		// we cannot define a top for polgons
 		// with no vertices
-		if (door_polygon->GetVertexCount () == 1)
+		if (door_polygon->GetVertexCount () <= 1)
 		{
 			return NULL;
 		}
@@ -811,7 +808,11 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 
 		// number of polygons that will fit in this width
 		// depends opnly on the width of each polygon
-		int numLabelPolys = width / LETTER_WIDTH;
+		int numLabelPolys = (int) (width / LETTER_WIDTH);
+
+		// calculate coordinate increment for polygons
+		float xincr = (xmax - xmin)/numLabelPolys;
+		float zincr = (zmax - zmin)/numLabelPolys;
 
 		// create an array of polygon pointers of the size
 		// that was just calculated
@@ -823,7 +824,7 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 		// coordinates.
 		// but if the door is oriented such that its top leftmost corner does
 		// not have the minimum z (like a door on a right wall), switch
-		// minz and maxz so that first letter is placed appropriately
+		// zmin and zmax so that first letter is placed appropriately
 		if (door_polygon->GetVertexCount () > 2)
 		{
 			csPlane3 wall_plane (door_polygon->GetVertex (0), door_polygon->GetVertex (1), door_polygon->GetVertex (2));
@@ -834,22 +835,20 @@ iPolygon3D** ChimeSector::AddDoorLabel (iThingState *walls, iPolygon3D *door_pol
 				int temp = zmin;
 				zmin = zmax;
 				zmax = temp;
+				zincr = -zincr;
 			}
 			if (wall_normal.z > 0)
 			{
 				int temp = xmin;
 				xmin = xmax;
 				xmax = temp;
+				xincr = -xincr;
 			}
 
 		}
 
-		// create a holder for one polygon vertices
+		// create a holder for one polygon
 		csPoly3D letter (4);
-
-		// calculate coordinate increment for polygons
-		float xincr = (xmax - xmin)/numLabelPolys;
-		float zincr = (zmax - zmin)/numLabelPolys;
 
 		// get default empty (black) texture to assign to the polygons
 		csRef<iMaterialWrapper> material = driver->csEngine->GetMaterialList ()->FindByName ("letter_a");

@@ -352,7 +352,7 @@ csVector3 ChimeCollider::Collide(iCamera *camera, csVector3 pos, csVector3& vel,
 
 		// find maximum distance of fall per frame
 		// depending on fps
-		int fall = 35 - fps;
+		int fall = 400/fps;
 		
 		// keep trying incremental small falls by 0.1
 		// up to some number of times depending on fps

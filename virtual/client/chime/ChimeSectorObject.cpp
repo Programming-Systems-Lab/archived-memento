@@ -148,3 +148,12 @@ void ChimeSectorObject::HandleRightMouseClick (iEvent &event)
 	(void)new csMenuItem (menu, mText, -1);
 	menu->SetPos (event.Mouse.x - 3, event.Mouse.y + 3);
 }
+
+/*****************************************************************
+ * HandleLeftMouseDoubleClick: 
+ * Object is activated.
+ *****************************************************************/
+void ChimeSectorObject::HandleLeftMouseDoubleClick (iEvent &event) 
+{
+	printf ("Object is activated.\n");
+}

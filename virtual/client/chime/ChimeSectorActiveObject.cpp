@@ -66,12 +66,11 @@ void ChimeSectorActiveObject::HandleMouseMove (csVector2 old_pos, csVector2 new_
  * HandleLeftMouseDoubleClick: 
  * Object is activated.
  *****************************************************************/
-/**
-void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event) 
+void ChimeSectorActiveObject::HandleLeftMouseDoubleClick (iEvent &event) 
 {
-	printf ("Object is activated.\n");
+	printf ("Active object is activated.\n");
 }
-*/
+
 
 
 /*****************************************************************

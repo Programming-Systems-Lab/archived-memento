@@ -69,7 +69,7 @@ public:
 	/*******************************************************
 	 * Handle double left-button mouse click 
 	 *******************************************************/
-	virtual void HandleLeftMouseDClick (iEvent &event)
+	virtual void HandleLeftMouseDoubleClick (iEvent &event)
 	{
 		return;
 	}
