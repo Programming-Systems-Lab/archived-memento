@@ -8,6 +8,8 @@ import net.concedere.dundee.framework.Disposable;
 
 import java.beans.beancontext.BeanContextMembershipListener;
 import java.beans.beancontext.BeanContextMembershipEvent;
+import java.beans.beancontext.BeanContextChild;
+import java.beans.beancontext.BeanContextChildSupport;
 import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.io.*;
 import aether.net.Publisher;
 import aether.net.Monitor;
 import aether.net.Connection;
+import aether.net.DefaultMonitor;
 import aether.server.framework.Advertising;
 import aether.server.framework.Identifiable;
 import aether.event.Notice;
@@ -26,18 +29,18 @@ import org.apache.log4j.Logger;
 /**
  * Represents an agent in the peer-to-peer master server.
  *
- * TODO: test this class!
+ * TODO: this class should retreive Advertisement metadata for a component
+ * --- by using BeanInfo objects
  *
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class DomainAgent extends DefaultComponent implements Initializable,
-		Disposable, Identifiable
+public class DomainAgent extends BeanContextChildSupport
 {
 	private BeanContextMembershipListener bcml;
 	private EventHandler handler;
 	private String domainTopic;
-	private Publisher publisher;
+
 	private Monitor monitor;
 	private Connection connection;
 	private DomainInfo domainInfo;
@@ -47,54 +50,33 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 
 	private static final Logger log = Logger.getLogger(DomainAgent.class);
 
-	public void initialize() throws ComponentException
-	{
-		connection = (Connection)
-				requireService(this, this, Connection.class, null, this);
-		publisher = (Publisher)
-				requireService(this, this, Publisher.class, null, this);
-		monitor = (Monitor)
-				requireService(this, this, Monitor.class, connection, this);
+    /**
+     * Set the Connection to be used by the DomainAgent.
+     *
+     * @param conn Connection used to send events
+     */
+    public void setConnection(Connection conn)
+    {
+        if (conn == null)
+        {
+            String msg = "conn can't be null";
+            throw new IllegalArgumentException(msg);
+        }
 
-		bcml = new DomainListener();
-		getContainer().addBeanContextMembershipListener(bcml);
+        this.connection = conn;
+    }
 
-		handler = new DomainHandler();
-		try
-		{
-			monitor.subscribe(getDomainTopic());
-			monitor.addNoticeListener(handler);
-		}
-		catch (IOException ioe)
-		{
-			String msg = "couldn't subscribe to domain topic "
-					+ getDomainTopic();
-			throw new ComponentException(msg, ioe);
-		}
-	}
+    /**
+     * Get the Connection to be used by the DomainAgent.
+     *
+     * @return Connection used to send/receive events.
+     */
+    public Connection getConnection()
+    {
+        return connection;
+    }
 
-	public void dispose() throws ComponentException
-	{
-		getContainer().releaseService(this, this, connection);
-		getContainer().releaseService(this, this, publisher);
-
-		try
-		{
-			monitor.removeNoticeListener(handler);
-			monitor.unsubscribe(this.getDomainTopic());
-			handler = null;
-		}
-		catch (IOException ioe)
-		{
-			log.warn("failed to unsubscribe from domain topic");
-			throw new ComponentException("bad connection", ioe);
-		}
-		getContainer().releaseService(this, this, monitor);
-
-		getContainer().removeBeanContextMembershipListener(bcml);
-	}
-
-	/**
+    /**
 	 * Get the domain topic on which domain notices are exchanged.
 	 *
 	 * @return domain topic on which domain notices are exchanged
@@ -134,40 +116,53 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 		this.domainInfo = domainInfo;
 	}
 
-	public String getGuid()
+	public void initialize() throws IOException
 	{
-		return guid;
+        connection.open();
+		monitor = new DefaultMonitor(connection, false);
+        monitor.subscribe(getDomainTopic());
+
+		bcml = new DomainListener();
+		getBeanContext().addBeanContextMembershipListener(bcml);
+
+		handler = new DomainHandler();
+
+	    monitor.subscribe(getDomainTopic());
+		monitor.addNoticeListener(handler);
 	}
 
-	public void setGuid(String guid)
+	public void dispose()
 	{
-		this.guid = guid;
+		try
+		{
+			monitor.removeNoticeListener(handler);
+			monitor.unsubscribe(this.getDomainTopic());
+			handler = null;
+		}
+		catch (IOException ioe)
+		{
+			log.warn("failed to unsubscribe from domain topic");
+		}
+
+		getBeanContext().removeBeanContextMembershipListener(bcml);
 	}
 
 	private ComponentInfo createComponentInfo(Identifiable idf)
 	{
 		ComponentInfo ci = new ComponentInfo();
 		ci.setComponentId(idf.getGuid());
+
+        // xxx: can't use the class name as the component type! will need
+        // --- possibly another interface, TypeInfo, that exposes type info
 		ci.setType(idf.getClass().getName());
 
-		if (getContainer().getBeans().isInstanceOf(idf, Advertising.class))
+		if (idf instanceof Advertising)
 		{
-			Advertising adv = (Advertising) getContainer().getBeans()
-					.getInstanceOf(idf, Advertising.class);
+			Advertising adv = (Advertising) idf;
 			ci.setAdvertisement(adv.getAdvertisement());
 		}
 
 		return ci;
-	}
-
-	private void register(Advertising adv)
-	{
-		ComponentInfo ci = createComponentInfo(adv);
-		compMap.put(adv.getGuid(), ci);
-
-		log.info("registered component " + adv + " with info" + ci);
-		// fire the remote event
-		fireRegistered(adv, ci);
 	}
 
 	private void register(Identifiable idf)
@@ -177,13 +172,6 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 
 		log.info("registered component " + idf + " with info" + ci);
 		fireRegistered(idf, ci);
-	}
-
-	private void unregister(Advertising adv)
-	{
-		ComponentInfo ci = (ComponentInfo) compMap.remove(adv.getGuid());
-
-		fireUnregistered(adv, ci);
 	}
 
 	private void unregister(Identifiable idf)
@@ -196,17 +184,16 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 	private void fireRegistered(Identifiable idf, ComponentInfo ci)
 	{
 		Notice notice = new Notice();
-		notice.setSourceId(this.getGuid());
+        // xxx: how does a DomainAgent know its own GUID?
+		//notice.setSourceId(this.getGuid());
 		notice.setTopicId(this.getDomainTopic());
-		notice.setHeader("dae-type", "register");
-		notice.setHeader("re", idf.getGuid());
 
 		try
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(baos);
 			out.writeObject(ci);
-			notice.setBody(baos.toByteArray());
+			//notice.setBody(baos.toByteArray());
 		}
 		catch (IOException ioe)
 		{
@@ -214,11 +201,10 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 			log.error("failed to write advertisement data", ioe);
 		}
 
-
 		// send the notice
 		try
 		{
-			publisher.publish(notice);
+			connection.publish(notice);
 		}
 		catch (IOException ioe)
 		{
@@ -230,17 +216,15 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 	private void fireUnregistered(Identifiable idf, ComponentInfo ci)
 	{
 		Notice notice = new Notice();
-		notice.setSourceId(this.getGuid());
+		//notice.setSourceId(this.getGuid());
 		notice.setTopicId(this.getDomainTopic());
-		notice.setHeader("dae-type", "unregister");
-		notice.setHeader("re", idf.getGuid());
 
 		try
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(baos);
 			out.writeObject(ci);
-			notice.setBody(baos.toByteArray());
+			// notice.setBody(baos.toByteArray());
 		}
 		catch (IOException ioe)
 		{
@@ -251,7 +235,7 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 		// send the notice
 		try
 		{
-			publisher.publish(notice);
+			connection.publish(notice);
 		}
 		catch (IOException ioe)
 		{
@@ -262,45 +246,16 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 
 	private void processRemoteRegister(Notice notice)
 	{
-		String remoteAgentId = notice.getSourceId();
-		String remoteCompId = notice.getHeader("re");
-
-		ComponentInfo ci = null;
-		if (notice.getBody() != null)
-		{
-			try
-			{
-				ObjectInputStream in = new ObjectInputStream(
-						new ByteArrayInputStream(notice.getBody()));
-				ci = (ComponentInfo) in.readObject();
-			}
-			catch (Exception ioe)
-			{
-				// todo: in the future, tell somebody we messed
-				log.warn("failed to read advertisement data", ioe);
-			}
-		}
-
-		remoteMap.put(remoteAgentId + ":" + remoteCompId, ci);
-
-		log.info("remote agent " + remoteAgentId + " registered component "
-			+ remoteCompId + " with info " + ci);
+		; // todo: implement this method
 	}
 
 	private void processRemoteUnregister(Notice notice)
 	{
-		String remoteAgentId = notice.getSourceId();
-		String remoteCompId = notice.getHeader("re");
-
-		ComponentInfo ci = (ComponentInfo)
-				remoteMap.remove(remoteAgentId + ":" + remoteCompId);
-
-		log.info("remote agent " + remoteAgentId + " unregistered component "
-			+ remoteCompId + " with info " + ci);
+		; // todo: implement this method
 	}
 
 	/**
-	 * Listener that watches as containers enter and leave the container and
+	 * Listener that watches as components enter and leave the container and
 	 * notifies the domain agent component.
 	 */
 	private class DomainListener implements BeanContextMembershipListener
@@ -308,42 +263,25 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 		public void childrenAdded(BeanContextMembershipEvent bcme)
 		{
 			Object[] children = bcme.toArray();
-			Beans beans = getContainer().getBeans();
 
 			for (int i = 0; i < children.length; ++i)
 			{
-				if (beans.isInstanceOf(children[i], Advertising.class))
+				if (children[i] instanceof Identifiable)
 				{
-					Advertising adv = (Advertising) beans
-							.getInstanceOf(children[i], Advertising.class);
-					register(adv);
-				}
-				else if (beans.isInstanceOf(children[i], Identifiable.class))
-				{
-					Identifiable idf = (Identifiable) beans
-							.getInstanceOf(children[i], Identifiable.class);
-					register(idf);
+					register((Identifiable) children[i]);
 				}
 			}
 		}
 
 		public void childrenRemoved(BeanContextMembershipEvent bcme)
 		{
-			Beans beans = getContainer().getBeans();
 			Object[] c = bcme.toArray();
 
 			for (int i = 0; i < c.length; ++i)
 			{
-				if (beans.isInstanceOf(c[i], Advertising.class))
+                if (c[i] instanceof Identifiable)
 				{
-					Advertising adv = (Advertising) beans
-							.getInstanceOf(c[i], Advertising.class);
-					unregister(adv);
-				} else if (beans.isInstanceOf(c[i], Identifiable.class))
-				{
-					Identifiable idf = (Identifiable) beans
-							.getInstanceOf(c[i], Identifiable.class);
-					unregister(idf);
+					unregister((Identifiable) c[i]);
 				}
 			}
 		}
@@ -359,19 +297,13 @@ public class DomainAgent extends DefaultComponent implements Initializable,
 		{
 			Notice notice = (Notice) event;
 
-			// ignore events from ourselves
-			if (notice.getSourceId().equals(DomainAgent.this.getGuid()))
-			{
-				return;
-			}
+			// xxx: ignore events from ourselves
+			// if (notice.getSourceId().equals(DomainAgent.this.getGuid()))
+			// {
+			//	return;
+			// }
 
-			if (notice.getHeader("dae-type").equals("register"))
-			{
-				processRemoteRegister(notice);
-			} else if (notice.getHeader("dae-type").equals("unregister"))
-			{
-				processRemoteUnregister(notice);
-			}
+		    // todo: implement this method
 		}
 	}
 }

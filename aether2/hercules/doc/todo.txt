@@ -1,0 +1,37 @@
+
+[ 10.27.03 ]
+
+- Fix up DomainAgent class. A DomainAgent shouldn't need to know its own GUID
+in order to broadcast notices. Instead, introduce another class, Broadcaster,
+which contains the GUID of the source and the topic to broadcast on. Then
+code like:
+    Notice notice = new Notice();
+    notice.setSourceId(this.getGuid());
+	notice.setTopicId(this.getDomainTopic());
+
+    could be replaced with code like:
+
+    broadCaster.broadCast(...notification...);
+
+- DomainAgent shouldn't even need to be aware of the domain topic. It should
+be given a Monitor object which is already connected to the network and
+subscribed to the domain topic. Just give it a fully formed Monitor and
+Broadcaster object and let it do it's work.
+
+- The ComponentRegister and ComponentUnregister Notification formats have to
+abstracted into their own classes that can be transformed into Elvin
+Notification objects.
+
+- Need to abstract how the component registry is stored into a separate
+ComponentRegistry interface/implementation. At first you might simply store
+registered components and component info objects in memory but eventually
+probably a database will be needed.
+
+- Clean up the Advertisement and WorldAdvertisement framework.
+
+- Clean up memento.world.manager package
+
+- implement the AuthenticationDomain component and a special Responder that
+can route requests/responses to the AuthenticationDomain
+
+- implement the basic login schema
