@@ -1,4 +1,4 @@
- /*
+/*
  *
  * Copyright (c) 2002: The Trustees of Columbia University
  *    in the City of New York.  All Rights Reserved.
@@ -100,31 +100,36 @@ LoginWindow::LoginWindow (csComponent *iParent)
 	csStatic *label = new csStatic (d, ilUserName, "Login: ");
 	label->SetRect (10, y, x - 5, y+height);
 	y += height + delta;
+	ilUserName->SetText ("chimeUser");
 
 	ilUserPassword = new csInputLine (d);
 	ilUserPassword->SetRect (x, y, d->bound.Width () - 5, y+height);
 	label = new csStatic (d, ilUserPassword, "Password: ");
 	label->SetRect (10, y, x - 5, y+height);
 	y += height + delta;
+	ilUserPassword->SetText ("FooBArf");
 
 	ilUserSource = new csInputLine (d);
 	ilUserSource->SetRect (x, y, d->bound.Width () - 5, y+height);
 	label = new csStatic (d, ilUserSource, "Server: ");
 	label->SetRect (10, y, x - 5, y+height);
 	y += height + delta;
+	ilUserSource->SetText ("grand.psl.cs.columbia.edu");
 
 	ilUserID = new csInputLine (d);
 	ilUserID->SetRect (x, y, d->bound.Width () - 5, y+height);
-	label = new csStatic (d, ilUserID, "Group ID: ");
+	label = new csStatic (d, ilUserID, "User ID: ");
 	label->SetRect (10, y, x - 5, y+height);
 	y += height + delta;
+	ilUserID->SetText ("chimeUser");
 
 	ilGroupID = new csInputLine (d);
 	ilGroupID->SetRect (x, y, d->bound.Width () - 5, y+height);
-	label = new csStatic (d, ilGroupID, "User ID: ");
+	label = new csStatic (d, ilGroupID, "Group ID: ");
 	label->SetRect (10, y, x - 5, y+height);
 	y += 2*(height + delta);
-
+	ilGroupID->SetText ("psl");
+	
 	////// Create buttons
 	// 'Accept' button
 	ChimeButton *but = new ChimeButton (d, MODULAR_WINDOW_ACCEPT, CSBS_DEFAULTVALUE, csbfsThinRect);

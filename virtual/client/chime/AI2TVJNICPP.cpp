@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.8 $
- *  $Date: 2003-09-22 23:30:06 $
+ *  $Revision: 1.9 $
+ *  $Date: 2003-09-24 22:39:30 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
@@ -336,8 +336,6 @@ char* AI2TVJNICPP::getBaseURL(){
 /**
  * Set the user login information in the AI2TV module.
  * 
- * NOTE!!! Need the rest of the login info to add to the param list
- * 
  * @param info: login information
  */
 void AI2TVJNICPP::setLoginInfo(const char* login,
@@ -459,11 +457,9 @@ Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring n
   jboolean* isCopy = new jboolean(false);
   const char *nameString = env->GetStringUTFChars(name,isCopy);
   const char *sourceString = env->GetStringUTFChars(source,isCopy);
-
-  printf("loadFrame name %s source %s\n", nameString, sourceString);
-  printf("!!! before driver->LoadFrame\n");
+  
+  printf("<AI2TVJNICPP> driver->LoadFrame name %s source %s\n", nameString, sourceString);
   driver->LoadFrame (nameString, sourceString);
-  printf("!!! after driver->LoadFrame\n");
 
   delete isCopy;
   env->ReleaseStringUTFChars(name, nameString);

@@ -551,11 +551,11 @@ bool ChimeSystemDriver::SetupWindows ()
  *****************************************************************/
 void ChimeSystemDriver::CreateUser (const char *strUserName, const char *strUserPassword,
                                     const char *strUserSource, const char *strUserID, 
-									const char *strGroupID)
+				    const char *strGroupID)
 {
 	// Create new user
 	chUser = new ChimeUser (strUserName, strUserPassword, strUserSource,
-		strUserID, strGroupID);
+				strUserID, strGroupID);
 	chUser->PrintUserParameters ();
 
 	// Tell system is ready
@@ -1066,7 +1066,11 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 			    Event.Key.Code == 115 && Event.Key.Char == 19)
 			  {
 			    // Setup Ai2TV interface for this user
-			    chAi2tvInterface = ChimeAi2tvInterface::GetInstance (chUser->GetUserName ());
+			    chAi2tvInterface = ChimeAi2tvInterface::GetInstance (chUser->GetUserName (),
+										 chUser->GetUserPassword (),
+										 chUser->GetUserSource (),
+										 chUser->GetUserID (),
+										 chUser->GetGroupID ());
 			    printf("is chAi2tvInterface->active()? %d\n", chAi2tvInterface->isActive());
 			    if (chAi2tvInterface->isActive() != 0)
 			      {
@@ -1187,13 +1191,14 @@ void ChimeSystemDriver::helloWorld (){
 void ChimeSystemDriver::LoadFrame (const char *name, const char *source)
 {
   // add AI2TV folder location to file name
-  char full_name[100];
-  strcpy (full_name, "/lib/ai2tv/");
-  strcat (full_name, source);
+  int stringLength = strlen(name);
+  if (stringLength > 100)
+    return;
+  char full_source[128];
+  strcpy (full_source, "/lib/ai2tv/");
+  strcat (full_source, source);
   // create texture
-  // iTextureWrapper *texture = csLoader->LoadTexture (source, 
-  // full_name, CS_TEXTURE_3D, csTxtManager, true);
-  iTextureWrapper *texture = csLoader->LoadTexture (name, full_name, CS_TEXTURE_3D, csTxtManager, true);
+  iTextureWrapper *texture = csLoader->LoadTexture (name, full_source, CS_TEXTURE_3D, csTxtManager, true);
 						    
   if (!texture)
     return;

@@ -30,10 +30,11 @@ ChimeAi2tvInterface::ChimeAi2tvInterface ()
  * Creates an instance of the interface and sets
  * necessary parameters
  **********************************************************/
-ChimeAi2tvInterface* ChimeAi2tvInterface::GetInstance (const char *strUserName)
+ChimeAi2tvInterface* ChimeAi2tvInterface::GetInstance (const char *strUserName, const char *passwd,
+						       const char *server, const char *uid, const char *gid)
 {
 	ChimeAi2tvInterface* cai = new ChimeAi2tvInterface ();
- 	cai->SetLoginInfo (strUserName);
+ 	cai->SetLoginInfo (strUserName, passwd, server, uid, gid);
 	return cai;
 }
 
@@ -62,15 +63,9 @@ int ChimeAi2tvInterface::GetAvailableVideos (char videos[10][50])
 /**********************************************************
  * Set login parameters
  **********************************************************/
-void ChimeAi2tvInterface::SetLoginInfo (const char *strUserName)
+void ChimeAi2tvInterface::SetLoginInfo (const char *strUserName, const char *passwd,
+					const char *server, const char *uid, const char *gid)
 {
-	printf("ChimeAi2tvInterface: Login info: %s\n", strUserName);
-	
-	const char* passwd = "iLuvMinnie";
-	const char* server = "disneyworld";
-	const char* uid = "goofy";
-	const char* gid = "disney";
-
 	if (client) client->setLoginInfo (strUserName, passwd, server, uid, gid);
 }
 

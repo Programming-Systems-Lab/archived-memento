@@ -20,10 +20,12 @@ private:
 	
 public:
 
-	static ChimeAi2tvInterface* GetInstance (const char *strUserName);
+	static ChimeAi2tvInterface* GetInstance (const char *strUserName, const char *passwd,
+						 const char *server, const char *uid, const char *gid);
 
 	int GetAvailableVideos (char videos[10][50]);
-	void SetLoginInfo (const char *strUserName);
+	void SetLoginInfo (const char *strUserName, const char *passwd,
+			   const char *server, const char *uid, const char *gid);
 	void SetCacheDir (const char *cacheDir);
 	void SelectVideo (char* strVideoSource, char* strVideoDate);
 
