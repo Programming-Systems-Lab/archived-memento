@@ -803,6 +803,14 @@ public class ContentExtractor implements ProxyFilter {
         
     }
     
+    /**
+     * Extracts content and returns text only without changing settings
+     */
+    public void extractContentAsText() {
+        String lastSetting = getSetting(ContentExtractor.ONLY_TEXT);
+        extractContent();
+        changeSetting(ONLY_TEXT, lastSetting);
+    }
     
     
     /**
