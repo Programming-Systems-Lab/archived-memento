@@ -4,7 +4,7 @@ using System.Threading;
 namespace psl.memento.pervasive.hermes.client.util
 {
 	/// <summary>
-	/// Summary description for Runloop.
+	/// This is a runloop that works on the compact framework.
 	/// </summary>
 	public class Runloop
 	{

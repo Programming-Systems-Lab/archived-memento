@@ -3,7 +3,9 @@ using System;
 namespace psl.memento.pervasive.hermes.client
 {
 	/// <summary>
-	/// Summary description for Constants.
+	/// RuntimeConstants is a file thats stores some
+	/// statics for us. these could be moved to a config
+	/// file if you wanted to do so.
 	/// </summary>
 	public class RuntimeConstants
 	{

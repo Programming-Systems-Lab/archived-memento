@@ -7,7 +7,11 @@ using psl.memento.pervasive.hermes.client;
 namespace psl.memento.pervasive.hermes.client.ClientHandler
 {
 	/// <summary>
-	/// Summary description for XMLSocketParser.
+	/// XMLSocketParser this class is used to pull messages off the socket.
+	/// it is necessary since all XML message are sent with a '|||' at the end to signal
+	/// the end of a message.  so when getXmlMessage is called a loop begins pulling
+	/// off blocks of text from the stream. when it gets a full buffer it checks for the 
+	/// end of xml message '|||' and returns the xml before this signal.
 	/// </summary>
 	public class XMLSocketParser
 	{
@@ -31,13 +35,7 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 			for(int j = 0; j < RuntimeConstants.XML_DECODING_ATTEMPTS; j++)
 			{
 				Logger.getLogger().log(Logger.DEBUG_PRIORITY, "This is the current pull attempt: " + j);
-				
-				/*
-				if(this._client.Available == 0 && j != 0)
-				{
-					return false;
-				}
-				*/
+
 				rcount = this._client.Receive(_recs,_recs.Length,0);
 				if(rcount <= 0)
 				{

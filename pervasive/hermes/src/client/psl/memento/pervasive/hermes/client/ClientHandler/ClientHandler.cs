@@ -15,7 +15,11 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 	
 
 	/// <summary>
-	/// Summary description for ClientHandler.
+	/// Client Handler is used to handle the client.
+	/// IE request are sent from the main form to the client request
+	/// handler through this class.
+	/// it is a point of contact between the user interface and the other
+	/// classes that handle communication.
 	/// </summary>
 	///
 

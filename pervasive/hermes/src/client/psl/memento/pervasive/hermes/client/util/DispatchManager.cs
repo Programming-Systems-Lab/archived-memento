@@ -4,7 +4,9 @@ using System.Threading;
 namespace psl.memento.pervasive.hermes.client.util
 {
 	/// <summary>
-	/// Summary description for DispatchManager.
+	/// This handles the runloop thread.
+	/// this class is really only useful for the logger
+	/// to rewrite this a threapool would be much better.
 	/// </summary>
 	public class DispatchManager : WaitHandle
 	{

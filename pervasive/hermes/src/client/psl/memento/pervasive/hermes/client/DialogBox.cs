@@ -10,7 +10,10 @@ using System.Runtime.InteropServices;
 namespace psl.memento.pervasive.hermes.client
 {
 	/// <summary>
-	/// Summary description for Form1.
+	/// This form is used to get the desired client chat name 
+	/// and the server ip address. 
+	/// after the user selects connect the parent is informed and
+	/// the server is connected to.
 	/// </summary>
 	public class DialogBox : System.Windows.Forms.Form
 	{
@@ -131,6 +134,8 @@ namespace psl.memento.pervasive.hermes.client
 		}
 		#endregion
 
+			// ##############  if you edit this form the following line needs to be pased at the end of the
+			//initialize form method above this line.
 			//	this.Closed += new System.EventHandler(this.mom.connecting);
 
 		private void button1_Click(object sender, System.EventArgs e)

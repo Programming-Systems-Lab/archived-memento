@@ -13,6 +13,7 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 {
 	/// <summary>
 	/// This Class is used to handle the incoming messages from the server.
+	/// 
 	/// </summary>
 	public class ServerResponseHandler
 	{
@@ -28,9 +29,6 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 			this._server = server;
 			this._xmlReader = null;
 			this._xsp = new XMLSocketParser(server);
-			//
-			// TODO: Add constructor logic here
-			//
 		}
 
 		//Start listening to incoming messages
@@ -63,21 +61,19 @@ namespace psl.memento.pervasive.hermes.client.ClientHandler
 							
 							Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here is the current node:" + this._xmlReader.Name);
 
+
+							//we read off the type of message and go through the if else to find out what message
+							//we are getting from the client
 							if(this._xmlReader.Name == RuntimeConstants.XML_MESSAGE_CONFIRM_CONNECT)
 							{
-								//here we need to get the list of chat buddies and send update the server list as well as
-
-								//Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Yipee we all gonna be famous.");
+								
 								this._ch.updateStatusBar("Connected.");
 								this._ch._client.setClientID(this._xmlReader.ReadElementString());
-								//this._xmlReader.ReadStartElement();
+								
 								Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here is the current element with attribute:" + this._xmlReader.Name);
-								//this._ch._client.setClientID(this._xmlReader.ReadElementString());
-								//move to chatBuddies
-								//this._xmlReader.ReadStartElement();
-								//Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here is the current element with attribute:" + this._xmlReader.Name);
+								
 								int chatBuddiesCount = System.Int16.Parse(this._xmlReader.GetAttribute(0));
-								//we get the number of chat buddies
+								
 								Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here is what we got for our chatBuddiesCount:" + chatBuddiesCount);
 								
 								ChatBuddy[] buddies = new ChatBuddy[chatBuddiesCount];

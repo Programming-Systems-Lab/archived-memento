@@ -3,7 +3,8 @@ using System;
 namespace psl.memento.pervasive.hermes.client
 {
 	/// <summary>
-	/// Summary description for Client.
+	/// Client is the representation of the client as it is seen by user
+	/// that is it stores information about itself.
 	/// </summary>
 	public class Client
 	{

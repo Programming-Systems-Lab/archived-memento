@@ -166,6 +166,10 @@
                     BuildAction = "EmbeddedResource"
                 />
                 <File
+                    RelPath = "README.txt"
+                    BuildAction = "Content"
+                />
+                <File
                     RelPath = "RuntimeConstants.cs"
                     SubType = "Code"
                     BuildAction = "Compile"

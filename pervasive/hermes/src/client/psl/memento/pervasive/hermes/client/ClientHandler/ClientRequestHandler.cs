@@ -11,7 +11,10 @@ using psl.memento.pervasive.hermes.client.util;
 namespace psl.memento.pervasive.hermes.client.ClientHandler
 {
 	/// <summary>
-	/// Summary description for ClientRequestHandler.
+	/// ClientRequestHandler is used to send out client requests.
+	/// there should be methods for each request the client may have.
+	/// 
+	/// you can see how the base methods for connection and disconnecting have been added.
 	/// </summary>
 	public class ClientRequestHandler
 	{

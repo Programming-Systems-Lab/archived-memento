@@ -15,7 +15,12 @@ using psl.memento.pervasive.hermes.client.util;
 namespace psl.memento.pervasive.hermes.client
 {
 	/// <summary>
-	/// Summary description for Form1.
+	/// This is the main form and handles the user input.
+	/// There is the main screen that shows current chats
+	/// chat buddies and a few buttons.
+	/// 
+	/// there are panels for connecting and for prompting for
+	/// an incoming chat.
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
@@ -246,9 +251,9 @@ namespace psl.memento.pervasive.hermes.client
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.listBox1);
-			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.panel2);
 			this.Controls.Add(this.panel3);
+			this.Controls.Add(this.panel1);
 			this.Text = "Hermes";
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.Closed += new System.EventHandler(this.MainForm_Close);
@@ -338,6 +343,11 @@ namespace psl.memento.pervasive.hermes.client
 
 		}
 
+
+		/// <summary>
+		/// Called when the chat buddy rejects a chat
+		/// </summary>
+		/// <param name="reason"></param>
 		public void chatInviteReject(object reason)
 		{
 			Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Here we should be changing things now.");
