@@ -124,7 +124,7 @@ public class impKeywordFinder implements KeywordFinder {
 		boolean testReset = _config.getTestReset();
 		String initArgs = _config.getInitString();
 		// System.out.println("JAVA INVOKING sweeperM with " + initArgs);
-		boolean success = true;//init(initArgs);
+		boolean success = init(initArgs);
 
 		if (success) {
 			// Continously pass data to sweeperM.  If the Converstaion Iterator is empty,
