@@ -23,11 +23,6 @@ public class DefaultServerSocket implements ServerSocket
     protected String destination;
 
     /**
-     * ID of the component generating responses.
-     */
-    protected String sourceID;
-
-    /**
      * EventHandler to be notified of incoming requests.
      */
     protected EventHandler eventHandler;
@@ -43,12 +38,11 @@ public class DefaultServerSocket implements ServerSocket
      * Construct a new DefaultServerSocket.
      *
      * @param dest  URI of the destination
-     * @param srcID ID of the component generating responses
      * @param conn  Connection to the event network
      */
-    public DefaultServerSocket(String dest, String srcID, Connection conn)
+    public DefaultServerSocket(String dest, Connection conn)
     {
-        if ((dest == null) || (srcID == null) || (conn == null))
+        if ((dest == null) || (conn == null))
         {
             String msg = "no parameter can be null";
             throw new IllegalArgumentException(msg);
@@ -61,18 +55,12 @@ public class DefaultServerSocket implements ServerSocket
         }
 
         this.destination = dest;
-        this.sourceID = srcID;
         this.connection = conn;
     }
 
     public String getDestination()
     {
         return destination;
-    }
-
-    public String getSourceId()
-    {
-        return sourceID;
     }
 
     public void setEventHandler(EventHandler handler)
@@ -90,7 +78,7 @@ public class DefaultServerSocket implements ServerSocket
         // construct the subscription to receive requests sent to the
         // destination
         this.subscription =
-                Message.createSubscriptionForDestination(destination);
+                Response.createSubscriptionToReceiveRequests(destination);
 
         // when a request comes in, just hand it off to the EventHandler
         NotificationListener n = new NotificationListener()
@@ -146,12 +134,6 @@ public class DefaultServerSocket implements ServerSocket
 
         // preserve the link ID from the request
         response.setLink(request.getLink());
-
-        // destination of the response is the source of the request
-        response.setDestination(request.getSourceId());
-
-        // set the source ID for the response
-        response.setSourceId(sourceID);
 
         // now send the response over the network
         connection.publish(response);

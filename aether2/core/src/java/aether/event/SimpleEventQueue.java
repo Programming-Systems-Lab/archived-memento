@@ -6,7 +6,7 @@ import java.util.LinkedList;
  * A simple EventQueue using the LinkedList class. All Messages are simply
  * stored in memory until receieved. This class is threadsafe.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class SimpleEventQueue implements EventQueue

@@ -6,7 +6,7 @@ import java.util.EventListener;
  * Implemented by objects which can asynchronously process messages.
  * Implementations of this class are assumed to be threadsafe.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface EventHandler extends EventListener

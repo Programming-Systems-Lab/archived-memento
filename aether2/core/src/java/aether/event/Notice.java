@@ -6,7 +6,7 @@ import org.elvin.je4.Subscription;
 /**
  * Indicates that an Aether Resource has changed it's state.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class Notice extends Event implements Attribute.Notice

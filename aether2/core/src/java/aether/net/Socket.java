@@ -9,7 +9,7 @@ import java.io.IOException;
  * A Socket represents a stateful, synchronous communication channel between
  * two components.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface Socket

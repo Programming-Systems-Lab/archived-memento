@@ -3,7 +3,7 @@ package aether.event;
 /**
  * Implements a generic exception within the Aether framework.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class EventException extends Exception

@@ -10,7 +10,7 @@ import java.io.IOException;
  * channels) within the event network. Using a MulticastSocket it's possible to
  * subscribe to topics and broadcast Notice objects over a topic.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface MulticastSocket

@@ -36,75 +36,31 @@ public class DomainAgent extends BeanContextChildSupport
 {
 	private BeanContextMembershipListener bcml;
 	private EventHandler handler;
-
-    private Broadcaster broadcaster;
-	private Monitor monitor;
-
+    private MulticastSocket multicastSocket;
 	private DomainInfo domainInfo;
-	private Map compMap = Collections.synchronizedMap(new HashMap());
-	private Map remoteMap = Collections.synchronizedMap(new HashMap());
+    private ComponentRegistry localRegistry;
+    private ComponentRegistry globalRegistry;
 
 	private static final Logger log = Logger.getLogger(DomainAgent.class);
 
     /**
-     * Set the Monitor this DomainAgent may use to monitor component
-     * registrations on the network.
-     * <p />
-     * Note that this Monitor should already be open and subscribed to the
-     * domain topic.
+     * Get the MulticastSocket to be used by the DomainAgent.
      *
-     * @param monitor monitor used to receive events from the domain topic
+     * @return MulticastSocket used by the DomainAgent
      */
-    public void setMonitor(Monitor monitor)
+    public MulticastSocket getMulticastSocket()
     {
-        if (monitor == null)
-        {
-            String msg = "monitor can't be null";
-            throw new IllegalArgumentException(msg);
-        }
-
-        if (!monitor.isOpen())
-        {
-            String msg = "monitor must be open";
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.monitor = monitor;
+        return multicastSocket;
     }
 
     /**
-     * Get the Monitor used to receive events from the domain topic.
+     * Set the MulticastSocket used by the DomainAgent
      *
-     * @return Monitor used to receive events from the domain topic
+     * @param multicastSocket MulticastSocket used by the DomainAgent
      */
-    public Monitor getMonitor()
+    public void setMulticastSocket(MulticastSocket multicastSocket)
     {
-        return monitor;
-    }
-
-    /**
-     * Set the Broadcaster used to announce new
-     * @param bcast
-     */
-    public void setBroadcaster(Broadcaster bcast)
-    {
-        if (bcast == null)
-        {
-            String msg = "bcast can't be null";
-            throw new IllegalArgumentException(msg);
-        }
-
-        this.broadcaster = bcast;
-    }
-
-    /**
-     * Get the Broadcaster used to announce component registrations.
-     *
-     * @return Broadcaster used to announce component registrations
-     */
-    public Broadcaster getBroadcaster()
-    {
-        return broadcaster;
+        this.multicastSocket = multicastSocket;
     }
 
 	/**
@@ -132,18 +88,65 @@ public class DomainAgent extends BeanContextChildSupport
         return domainInfo;
     }
 
-	public void initialize()
+    /**
+     * Get the ComponentRegistry for components in the local container.
+     *
+     * @return registry for components in the local container
+     */
+    public ComponentRegistry getLocalRegistry()
+    {
+        return localRegistry;
+    }
+
+    /**
+     * Set the local ComponentRegistry.
+     *
+     * @param localRegistry local ComponentRegistry
+     */
+    public void setLocalRegistry(ComponentRegistry localRegistry)
+    {
+        this.localRegistry = localRegistry;
+    }
+
+    /**
+     * Get the global ComponentRegistry for tracking information about all
+     * Components everywhere.
+     *
+     * @return global ComponentRegistry
+     */
+    public ComponentRegistry getGlobalRegistry()
+    {
+        return globalRegistry;
+    }
+
+    /**
+     * Set the global ComponentRegistry.
+     *
+     * @param globalRegistry global ComponentRegistry
+     */
+    public void setGlobalRegistry(ComponentRegistry globalRegistry)
+    {
+        this.globalRegistry = globalRegistry;
+    }
+
+	public void start() throws IOException
 	{
 		bcml = new DomainListener();
 		getBeanContext().addBeanContextMembershipListener(bcml);
 
 		handler = new DomainHandler();
-		monitor.addNoticeListener(handler);
+
+        multicastSocket.open();
+        multicastSocket.subscribe(domainInfo.getDomainTopic());
+		multicastSocket.addEventHandler(handler);
 	}
 
-	public void dispose()
+	public void stop() throws IOException
 	{
-	    monitor.removeNoticeListener(handler);
+        multicastSocket.unsubscribe(domainInfo.getDomainTopic());
+	    multicastSocket.removeEventHandler(handler);
+        multicastSocket.close();
+
 		handler = null;
 		getBeanContext().removeBeanContextMembershipListener(bcml);
         bcml = null;
@@ -167,83 +170,81 @@ public class DomainAgent extends BeanContextChildSupport
 		return ci;
 	}
 
-	private void register(Identifiable idf)
-	{
-		ComponentInfo ci = createComponentInfo(idf);
-		compMap.put(idf.getGuid(), ci);
+    private void doLocalRegister(String guid, ComponentInfo ci)
+            throws RegistryException
+    {
+        try
+        {
+            fireRegistered(guid, ci);
+        }
+        catch (IOException ioe)
+        {
+            String msg = "failed to broadcast registration guid=" + guid +
+                ", component-info=" + ci;
+            log.warn(msg, ioe);
 
-		log.info("registered component " + idf + " with info" + ci);
-		fireRegistered(idf, ci);
+            // if the remote broadcast fails then don't attempt the local
+            // registration
+            // xxx: what to do instead here? if registration fails perhaps the
+            // --- component shouldn't be allowed to enter the container? or
+            // --- should be removed from the container?
+            return;
+        }
+        localRegistry.register(guid, ci);
+    }
+
+    private void doLocalUnregister(String guid)
+        throws RegistryException
+    {
+        // todo: fix this method!
+
+        try
+        {
+            fireUnregistered(guid);
+        }
+        catch (IOException ioe)
+        {
+            String msg = "failed to broadcast unregistration guid=" + guid;
+            log.warn(msg, ioe);
+
+            // if the remote broadcast fails then don't do the local
+            // unregistration? but this is risky, if the component has left
+            // the container it's no longer registered!
+        }
+        localRegistry.unregister(guid);
+    }
+
+	private void doRegisterGlobal(String guid, ComponentInfo ci)
+            throws RegistryException
+	{
+		globalRegistry.register(guid, ci);
 	}
 
-	private void unregister(Identifiable idf)
+	private void doUnregisterGlobal(String guid)
+        throws RegistryException
 	{
-		ComponentInfo ci = (ComponentInfo) compMap.remove(idf.getGuid());
-
-		fireUnregistered(idf, ci);
+        globalRegistry.unregister(guid);
 	}
 
-	private void fireRegistered(Identifiable idf, ComponentInfo ci)
+	private void fireRegistered(String guid, ComponentInfo ci)
+            throws IOException
 	{
 		Notice notice = new Notice();
         // xxx: how does a DomainAgent know its own GUID?
 		//notice.setSourceId(this.getGuid());
-		notice.setTopicId(this.getDomainTopic());
 
-		try
-		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(baos);
-			out.writeObject(ci);
-			//notice.setBody(baos.toByteArray());
-		}
-		catch (IOException ioe)
-		{
-			// todo: in the future tell someobdy we fucked up
-			log.error("failed to write advertisement data", ioe);
-		}
-
-		// send the notice
-		try
-		{
-			connection.publish(notice);
-		}
-		catch (IOException ioe)
-		{
-			// todo: in the future tell somebody we fucked up
-			log.error("failed to send component register event", ioe);
-		}
+        // broadcast the registry over the domain topic
+        multicastSocket.broadcast(notice, domainInfo.getDomainTopic());
 	}
 
-	private void fireUnregistered(Identifiable idf, ComponentInfo ci)
+	private void fireUnregistered(String guid) throws IOException
 	{
 		Notice notice = new Notice();
 		//notice.setSourceId(this.getGuid());
-		notice.setTopicId(this.getDomainTopic());
+		notice.setTopicId(domainInfo.getDomainTopic());
 
-		try
-		{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(baos);
-			out.writeObject(ci);
-			// notice.setBody(baos.toByteArray());
-		}
-		catch (IOException ioe)
-		{
-			// todo: in the future tell someobdy we fucked up
-			log.error("failed to write advertisement data", ioe);
-		}
-
-		// send the notice
-		try
-		{
-			connection.publish(notice);
-		}
-		catch (IOException ioe)
-		{
-			// todo: in the future tell somebody we fucked up
-			log.error("failed to send component register event", ioe);
-		}
+        // broadcast the unregistry over the domain topic
+        multicastSocket.broadcast(notice, domainInfo.getDomainTopic());
 	}
 
 	private void processRemoteRegister(Notice notice)
@@ -264,26 +265,31 @@ public class DomainAgent extends BeanContextChildSupport
 	{
 		public void childrenAdded(BeanContextMembershipEvent bcme)
 		{
+            // todo: implement this method
+
 			Object[] children = bcme.toArray();
 
 			for (int i = 0; i < children.length; ++i)
 			{
 				if (children[i] instanceof Identifiable)
 				{
-					register((Identifiable) children[i]);
+                    String guid = ((Identifiable) children[i]).getGuid();
+					// doLocalRegister(guid, children[i]);
 				}
 			}
 		}
 
 		public void childrenRemoved(BeanContextMembershipEvent bcme)
 		{
+            // todo: implement this method
+
 			Object[] c = bcme.toArray();
 
 			for (int i = 0; i < c.length; ++i)
 			{
                 if (c[i] instanceof Identifiable)
 				{
-					unregister((Identifiable) c[i]);
+					// doLocalUnregister((Identifiable) c[i]);
 				}
 			}
 		}

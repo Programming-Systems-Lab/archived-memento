@@ -3,7 +3,7 @@ package aether.event;
 /**
  * Defines the fundamental attributes that can be set on events.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface Attribute
@@ -16,7 +16,6 @@ public interface Attribute
 		public static final String EVENT_ID = "aether.event.id";
 		public static final String TIME = "aether.event.time";
 		public static final String EVENT_TYPE = "aether.event.type";
-		public static final String SOURCE_ID = "aether.event.source.id";
 	}
 
     /**
@@ -33,20 +32,21 @@ public interface Attribute
 	public interface Message
 	{
 		public static final String LINK_ID = "aether.message.link.id";
-		public static final String DESTINATION = "aether.message.dest";
-	}
+    }
 
     /**
      * Attributes unique to REQUEST events.
      */
 	public interface Request extends Message
 	{
-	}
+        String DESTINATION = "aether.message.dest";
+    }
 
     /**
      * Attributes unique to RESPONSE events.
      */
 	public interface Response extends Message
 	{
+        public static final String RESPONSE_TO = "aether.response.response-to";
 	}
 }

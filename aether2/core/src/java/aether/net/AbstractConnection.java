@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * Partial implementation of the Connection interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class AbstractConnection implements Connection

@@ -12,6 +12,7 @@ public class DomainInfo implements Serializable
 {
     private String domainName;
 	private String authority;
+    private String domainTopic;
 
 	/**
 	 * Set the authority for the domain.
@@ -52,4 +53,24 @@ public class DomainInfo implements Serializable
 	{
 		this.domainName = domainName;
 	}
+
+    /**
+     * Get the topic on which domain control notices are broadcast.
+     *
+     * @return topic on which domain control notices are broadcast
+     */
+    public String getDomainTopic()
+    {
+        return domainTopic;
+    }
+
+    /**
+     * Set the topic on which domain control notices are broadcast.
+     *
+     * @param domainTopic topic for domain control notices
+     */
+    public void setDomainTopic(String domainTopic)
+    {
+        this.domainTopic = domainTopic;
+    }
 }

@@ -3,7 +3,7 @@ package aether.event;
 /**
  * Interface that defines the different event type constants.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface EventType

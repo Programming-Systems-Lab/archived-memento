@@ -22,13 +22,6 @@ public interface ServerSocket
     public String getDestination();
 
     /**
-     * Get the ID of the component generating the responses.
-     *
-     * @return ID of the component generating the responses
-     */
-    public String getSourceId();
-
-    /**
      * Set the EventHandler that will be notified of incoming requests.
      *
      * @param handler handler to be notified of incoming requests

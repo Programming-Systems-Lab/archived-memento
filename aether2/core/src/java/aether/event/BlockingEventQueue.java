@@ -6,7 +6,7 @@ import java.util.LinkedList;
  * A BlockingEventQueue that can be used to synchronize event processing
  * between threads.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class BlockingEventQueue implements EventQueue

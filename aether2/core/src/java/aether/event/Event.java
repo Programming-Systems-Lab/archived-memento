@@ -3,13 +3,12 @@ package aether.event;
 import aether.util.GuidFactory;
 import org.elvin.je4.Notification;
 
-import java.util.*;
 
 /**
  * Fundamental Event class that represents all events published in the Aether
  * network.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public abstract class Event implements Attribute.Event
@@ -94,26 +93,6 @@ public abstract class Event implements Attribute.Event
 	private void setTime(long time)
 	{
 		notification.put(TIME, time);
-	}
-
-	/**
-	 * Get the GUID of the component that generated this notice.
-	 *
-	 * @return guid of the component that generated this notice
-	 */
-	public String getSourceId()
-	{
-		return notification.getString(SOURCE_ID);
-	}
-
-	/**
-	 * Set the GUID of the component that generated this notice.
-	 *
-	 * @param guid GUID of the component that generated this notice
-	 */
-	public void setSourceId(String guid)
-	{
-		notification.put(SOURCE_ID, guid);
 	}
 
     /**

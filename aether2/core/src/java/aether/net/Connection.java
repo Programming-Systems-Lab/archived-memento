@@ -6,7 +6,7 @@ import java.io.IOException;
  * Defines an object that allows components in the network to publish
  * messages.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface Connection extends Publisher

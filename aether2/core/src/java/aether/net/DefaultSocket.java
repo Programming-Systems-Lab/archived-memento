@@ -16,14 +16,13 @@ import java.io.IOException;
 /**
  * Represents a conversation with a specific resource on an Aether host.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultSocket implements Socket
 {
 	/**
-	 * GUID of the last component to send a response or the end point of this
-	 * link. This could also be a URL.
+	 * URI that represents the destination of the socket.
 	 */
 	protected String destination;
 
@@ -45,7 +44,8 @@ public class DefaultSocket implements Socket
 	private Connection connection;
 	private Consumer consumer;
 	private Subscription subscription;
-	private Response response;
+	private Response mostRecentResponse;
+    private Request lastRequestSent;
 	private NotificationListener notifListener;
 
 	private static final Logger logger = Logger.getLogger(DefaultSocket.class);
@@ -87,7 +87,7 @@ public class DefaultSocket implements Socket
 
         // construct the subscription needed to listen for responses sent over
 		// this link
-		this.subscription = Response.createSubscriptionToReceive(linkId);
+		this.subscription = Request.createSubscriptionToReceiveResponses(linkId);
         this.notifListener = new LinkNotificationListener();
 		this.subscription.addNotificationListener(notifListener);
 
@@ -112,7 +112,7 @@ public class DefaultSocket implements Socket
         this.consumer = null;
 		this.subscription = null;
         this.notifListener = null;
-		this.response = null;
+		this.mostRecentResponse = null;
 		disconnected = true;
 	}
 
@@ -162,7 +162,8 @@ public class DefaultSocket implements Socket
 		// now send the request!!
 		connection.publish(request);
 
-		// now send the request and block until the response comes
+		// now send the request and block until the mostRecentResponse comes
+        lastRequestSent = request;
 		return blockUntilResponse();
 	}
 
@@ -182,7 +183,7 @@ public class DefaultSocket implements Socket
 		// or the request is timed out
         try
 		{
-			while (response == null)
+			while (mostRecentResponse == null)
 			{
                 this.wait(timeOut);
 			}
@@ -195,16 +196,17 @@ public class DefaultSocket implements Socket
 		}
 
         // ok we've woken up! did we wake up because we timed out?
-		if (response == null)
+		if (mostRecentResponse == null)
 		{
             String msg = "request timed out";
 			throw new IOException(msg);
 		}
 
-        // otherwise, let's save the given response and send it while resetting
+        // otherwise, let's save the given mostRecentResponse and send it while resetting
 		// te state of the connection
-        Response lastResponse = response;
-        this.response = null;
+        Response lastResponse = mostRecentResponse;
+        this.mostRecentResponse = null;
+        this.lastRequestSent = null;
         return lastResponse;
 	}
 
@@ -212,13 +214,13 @@ public class DefaultSocket implements Socket
 	 * A special NotificationListener that will allow us to process all
 	 * events sent to this DefaultSocket.
 	 *
-	 * @version $Revision: 1.1 $
+	 * @version $Revision: 1.2 $
 	 */
 	private class LinkNotificationListener implements NotificationListener
 	{
 		public void notificationAction(Notification notification)
 		{
-			// if this getNotification is a response  let's process it
+			// if this getNotification is a mostRecentResponse  let's process it
         	if (Event.isResponse(notification))
 			{
 				try
@@ -226,29 +228,42 @@ public class DefaultSocket implements Socket
 					// obtain the lock on the outer object first!
 					synchronized (DefaultSocket.this)
 					{
-            			response = new Response();
+            			Response response = new Response();
                         response.parse(notification);
 
-                        // xxx: how do you know if the response received
-                        // --- corresponds to the last request sent? there
-                        // --- must be a way to match up responses to requests!
+                        // make sure that the response is a response to the
+                        // last request sent -- note that the entire point is
+                        // that it's possible to send out a single request and
+                        // get multiple responses so the response should only
+                        // be processed if it's the first response to the
+                        // request and no response has been handled yet
+                        if ((lastRequestSent == null) ||
+                                (!lastRequestSent.getEventId().
+                                equals(response.getResponseTo())))
+                        {
+                            logger.debug("Received Response " + response
+                                         + " which wasn't a response to last" +
+                                         " request sent");
+                            return;
+                        }
 
 						// wake up any threads sleeping on this object, waiting
-						// for a response
+						// for a mostRecentResponse
+                        DefaultSocket.this.mostRecentResponse = response;
 						DefaultSocket.this.notify();
 					}
 				}
 				catch (EventException me)
 				{
-                	// bad response data, let's log it and ignore it
-                    String msg = "receieved badly formed response";
+                	// bad mostRecentResponse data, let's log it and ignore it
+                    String msg = "receieved badly formed mostRecentResponse";
 					logger.warn(msg, me);
 				}
 			}
             else
             {
                 logger.warn("received notification " + notification
-                            + " which isn't a response");
+                            + " which isn't a mostRecentResponse");
             }
 		}
 	}

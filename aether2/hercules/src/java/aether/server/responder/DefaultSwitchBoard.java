@@ -115,8 +115,7 @@ public class DefaultSwitchBoard implements SwitchBoard
             throw new IllegalArgumentException(msg);
         }
 
-        // make sure that there isn't already a responder bound to dest
-        if (destMap.containsKey(dest))
+        if (isBound(dest))
         {
             String msg = "responder already bound to dest " + dest;
             throw new ResponderException(msg);
@@ -150,6 +149,11 @@ public class DefaultSwitchBoard implements SwitchBoard
 
         // now fire the event
         fireResponderBound(responder, dest);
+    }
+
+    private boolean isBound(String destination)
+    {
+        return destMap.containsKey(destination);
     }
 
     public void unbind(Responder responder, String dest) throws ResponderException,

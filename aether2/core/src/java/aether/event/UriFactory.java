@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 /**
  * Used to construct URIs.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class UriFactory

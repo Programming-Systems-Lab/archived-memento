@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Provides the basic implementation of the MulticastSocket interface.
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultMulticastSocket implements MulticastSocket
@@ -203,7 +203,7 @@ public class DefaultMulticastSocket implements MulticastSocket
     /**
      * NotificationListener that enqueues all incoming NOTICE objects.
      *
-     * @author Buko O. (buko@concedere.net)
+     * @author Buko O. (aso22@columbia.edu)
      * @version 0.1
      */
     private class QueueNotificationListener implements NotificationListener

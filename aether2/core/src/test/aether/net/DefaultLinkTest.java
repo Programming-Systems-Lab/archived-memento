@@ -12,7 +12,7 @@ import org.elvin.je4.Notification;
 
 /**
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultLinkTest extends AetherTestCase
@@ -56,7 +56,7 @@ public class DefaultLinkTest extends AetherTestCase
 			// subscribe to all requests
             this.consumer = new Consumer(conn.elvinConnection());
 			Subscription sub =
-					new Subscription("regex(" + Attribute.Message.DESTINATION +
+					new Subscription("regex(" + Attribute.Request.DESTINATION +
 									 ", \"*\")");
 			sub.addNotificationListener(new NotificationListener()
 			{

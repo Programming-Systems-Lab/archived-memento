@@ -5,7 +5,7 @@ package aether.event;
  *
  * // TODO: add a close() method to enforce idea of closing queue
  *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public interface EventQueue

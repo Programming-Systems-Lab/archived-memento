@@ -9,9 +9,7 @@ import java.io.IOException;
 /**
  * Basic ability to connect to the event network and publish messages.
  *
- * // TODO: consider firing javabean event everytime a event published
- *
- * @author Buko O. (buko@concedere.net)
+ * @author Buko O. (aso22@columbia.edu)
  * @version 0.1
  **/
 public class DefaultConnection extends AbstractConnection

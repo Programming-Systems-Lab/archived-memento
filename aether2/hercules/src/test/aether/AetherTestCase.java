@@ -15,7 +15,7 @@ public abstract class AetherTestCase extends TestCase
 {
 	static
 	{
-		// initialize log4j
+		// start log4j
 		BasicConfigurator.configure();
 	}
 
