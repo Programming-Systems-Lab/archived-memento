@@ -58,6 +58,7 @@ public class KAONInterfacer {
 
 	//final variables
 	private final String PROPERTIES_FILE = "kaon_manager_settings.txt";
+	private final boolean PERFORMANCE_ON = false;
 
 	public KAONInterfacer() {
 		//Load Properties
@@ -325,6 +326,16 @@ public class KAONInterfacer {
 	}
 
 	public void addToOIModel() {
+		//Timers to measure performance:
+		long time_createStem = 0;
+		long time_getConcept = 0;
+		long time_addLexicalReference = 0;
+		long time_getLexicalEntry = 0;
+		long time_createLexicalEntry = 0;
+		long time_getUnstemmedTerms = 0;
+		long time_applyChanges = 0;
+		long time_temp = 0;
+
 		List list=new LinkedList();
 		try {
 			System.out.println("Adding to OIModel...");
@@ -337,28 +348,49 @@ public class KAONInterfacer {
 				for (int i=0;i<entries.length;i++) {
 					DictionaryEntry entry = entries[i];
 					String stemValue=entry.getTermStem();
+
 					LexicalEntry stem=getStem(mapOfStems,stemValue);
 					if (stem==null) {
+						time_temp = System.currentTimeMillis();
 						stem=createStem(mapOfStems,oimodel,languageURI,stemValue,list);
+						time_createStem += System.currentTimeMillis() - time_temp;
+
+						time_temp = System.currentTimeMillis();
 						Concept concept=oimodel.getConcept(oimodel.createNewURI());
+						time_getConcept += System.currentTimeMillis() - time_temp;
+
 						list.add(new AddEntity(oimodel,null,concept));
 						list.add(new AddSubConcept(oimodel,null,oimodel.getRootConcept(),concept));
+
+						time_temp = System.currentTimeMillis();
 						LexiconUtil.addLexicalReference(stem,concept,list);
+						time_addLexicalReference += System.currentTimeMillis() - time_temp;
+
+						time_temp = System.currentTimeMillis();
 						LexicalEntry label=oimodel.getLexicalEntry(oimodel.createNewURI());
+						time_getLexicalEntry += System.currentTimeMillis() - time_temp;
+
+						time_temp = System.currentTimeMillis();
 						LexiconUtil.createLexicalEntry(label,KAONVocabularyAdaptor.INSTANCE.getKAONLabel(),stemValue,languageURI,concept,list);
+						time_createLexicalEntry += System.currentTimeMillis() - time_temp;
+
+						time_temp = System.currentTimeMillis();
 						Iterator iterator=entry.getUnstemmedTerms().iterator();
 						while (iterator.hasNext()) {
 							String synonymValue=(String)iterator.next();
 							LexicalEntry synonym=createSynonym(mapOfSynonyms,oimodel,languageURI,synonymValue,list);
 							LexiconUtil.addLexicalReference(synonym,concept,list);
 						}
+						time_getUnstemmedTerms += System.currentTimeMillis() - time_temp;
 					}
 				}
-				mapOfStems.clear();
-				mapOfSynonyms.clear();
+				//mapOfStems.clear();
+				//mapOfSynonyms.clear();
 
 				//Perform changes to OIModel
+				time_temp = System.currentTimeMillis();
 				oimodel.applyChanges(list);
+				time_applyChanges += System.currentTimeMillis() - time_temp;
 			}
 			finally {
 				System.out.println("Done.");
@@ -367,12 +399,23 @@ public class KAONInterfacer {
 		catch (KAONException error) {
 			error.printStackTrace();
         }
+
+        //If performance measurement is on
+       	if (PERFORMANCE_ON) {
+			System.out.println("PERFORMANCE MEASUREMENT ON");
+			System.out.println("\ttime_createStem = " + time_createStem);
+			System.out.println("\ttime_addLexicalReference = " + time_addLexicalReference);
+			System.out.println("\ttime_getLexicalEntry = " + time_getLexicalEntry);
+			System.out.println("\ttime_createLexicalEntry = " + time_createLexicalEntry);
+			System.out.println("\ttime_getUnstemmedTerms = " + time_getUnstemmedTerms);
+			System.out.println("\ttime_applyChanges = " + time_applyChanges);
+		}
 	}
 
 	protected void loadStems(Map mapOfStems,String languageURI,OIModel oimodel) throws KAONException {
 		Concept stemConcept=oimodel.getConcept(KAONVocabularyAdaptor.INSTANCE.getStem());
 		Set stems=stemConcept.getInstances();
-		//oimodel.loadObjects(stems,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
+		oimodel.loadObjects(stems,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
 		Iterator iterator=stems.iterator();
 		while (iterator.hasNext()) {
 			LexicalEntry stem=(LexicalEntry)iterator.next();
@@ -385,7 +428,7 @@ public class KAONInterfacer {
 	protected void loadSynonyms(Map mapOfSynonyms,String languageURI,OIModel oimodel) throws KAONException {
 		Concept synonymConcept=oimodel.getConcept(KAONVocabularyAdaptor.INSTANCE.getSynonym());
 		Set syonyms=synonymConcept.getInstances();
-		//oimodel.loadObjects(syonyms,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
+		oimodel.loadObjects(syonyms,OIModel.LOAD_INSTANCE_FROM_PROPERTY_VALUES);
 		Iterator iterator=syonyms.iterator();
 		while (iterator.hasNext()) {
 			LexicalEntry synonym=(LexicalEntry)iterator.next();
@@ -395,6 +438,15 @@ public class KAONInterfacer {
 			}
 		}
 	}
+
+	protected void checkForStems(String languageURI,OIModel oimodel) throws KAONException {
+
+	}
+
+	protected void checkForSynonyms(String languageURI,OIModel oimodel) throws KAONException {
+
+	}
+
 	protected LexicalEntry getStem(Map mapOfStems,String stemValue) throws KAONException {
 		return (LexicalEntry)mapOfStems.get(stemValue);
 	}
@@ -468,14 +520,27 @@ public class KAONInterfacer {
 		final RelationsExtractionPreprocessor preprocessor=new RelationsExtractionPreprocessor(language);
 
 		try {
+			System.out.print("\tFilling Concept Map...");
 			preprocessor.fillConceptMap(oimodel);
-			if (associationRulesExtractor!=null || patternBasedRelationsExtractor!=null)
+			System.out.println("done.");
+
+			if (associationRulesExtractor!=null || patternBasedRelationsExtractor!=null) {
+				System.out.print("\tAdding Corpus Texts...");
 				preprocessor.addCorpusTexts(patternBasedRelationsExtractor,associationRulesExtractor,corpus);
-			if (associationRulesExtractor!=null)
+				System.out.println("done.");
+			}
+
+			if (associationRulesExtractor!=null) {
+				System.out.print("\tComputing Association Rules...");
 				associationRulesExtractor.computeAssociationRules();
+				System.out.println("done.");
+			}
+
 			if (hierarchyReuseExtractor!=null) {
+				System.out.print("\tReusing Hierarchy...");
 				hierarchyReuseExtractor.initialize(preprocessor.getConceptMap());
 				hierarchyReuseExtractor.reuseHierarchy(oimodel);
+				System.out.println("done.");
 			}
 		}
 		catch (InterruptedException error) {
