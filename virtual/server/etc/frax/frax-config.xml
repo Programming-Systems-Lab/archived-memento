@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Frax configuration file.
+  (Mark Ayzenshtat [ma810@columbia.edu])
+-->
+
+<frax-config>
+  <!-- The IP and port number of the oracle server. -->
+  <oracle ip="oracle.psl.cs.columbia.edu" port="7395"/>  
+  
+  <!-- Metadata extractors. -->
+  <extractors>
+    <extractor scheme="http" class="psl.chime4.server.frax.HTTPExtractor"/>
+    <extractor scheme="file" class="psl.chime4.server.frax.FileExtractor"/>
+    <extractor scheme="ftp" class="psl.chime4.server.frax.FTPExtractor"/>
+    <extractor scheme="cvs" class="psl.chime4.server.frax.CVSExtractor"/>
+    <extractor scheme="ldap" class="psl.chime4.server.frax.LDAPExtractor"/>
+    <extractor scheme="bscw" class="psl.chime4.server.frax.BSCWExtractor"/>
+  </extractors>
+  
+  <!-- Content plugs. -->
+  <plugs>
+    <plug mimetype="image/jpeg" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/gif" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/bmp" class="psl.chime4.server.frax.ImagePlug"/>    
+    <plug mimetype="image/x-pcx" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/png" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/x-cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="application/x-cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="image/x-portable-bitmap" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="application/x-shockwave-flash" class="psl.chime4.server.frax.ImagePlug"/>
+    <plug mimetype="application/msword" class="psl.chime4.server.frax.OLEPlug"/>
+    <plug mimetype="application/excel" class="psl.chime4.server.frax.OLEPlug"/>
+    <plug mimetype="application/x-excel" class="psl.chime4.server.frax.OLEPlug"/>
+    <plug mimetype="application/x-msexcel" class="psl.chime4.server.frax.OLEPlug"/>
+    <plug mimetype="text/html" class="psl.chime4.server.frax.HTMLPlug"/>
+  </plugs>
+  
+  <!-- A mapping of extensions to MIME types. -->
+  <extension-map>
+    <map-entry ext="gif" mimetype="image/gif"/>
+    <map-entry ext="jpg" mimetype="image/jpeg"/>
+    <map-entry ext="jpeg" mimetype="image/jpeg"/>
+    <map-entry ext="jpe" mimetype="image/jpeg"/>
+    <map-entry ext="jfif" mimetype="image/jpeg"/>
+    <map-entry ext="bmp" mimetype="image/bmp"/>
+    <map-entry ext="bm" mimetype="image/bmp"/>
+    <map-entry ext="pcx" mimetype="image/x-pcx"/>
+    <map-entry ext="png" mimetype="image/png"/>
+    <map-entry ext="ras" mimetype="image/cmu-raster"/>
+    <map-entry ext="pbm" mimetype="image/x-portable-bitmap"/>
+    <map-entry ext="swf" mimetype="application/x-shockwave-flash"/>
+    <map-entry ext="html" mimetype="text/html"/>
+    <map-entry ext="htm" mimetype="text/html"/>
+    <map-entry ext="html" mimetype="text/htmls"/>
+    <map-entry ext="htx" mimetype="text/html"/>
+    <map-entry ext="shtml" mimetype="text/html"/>
+    <map-entry ext="acgi" mimetype="text/html"/>
+    <map-entry ext="txt" mimetype="text/plain"/>
+    <map-entry ext="doc" mimetype="application/msword"/>
+    <map-entry ext="dot" mimetype="application/msword"/>
+    <map-entry ext="xls" mimetype="application/excel"/>
+    <map-entry ext="xla" mimetype="application/excel"/>
+    <map-entry ext="xlt" mimetype="application/excel"/>
+    <map-entry ext="xlm" mimetype="application/excel"/>
+    <map-entry ext="xlc" mimetype="application/excel"/>
+    <map-entry ext="xlw" mimetype="application/excel"/>
+    <map-entry ext="zip" mimetype="application/zip"/>
+    <map-entry ext="tar" mimetype="application/x-tar"/>
+  </extension-map>
+</frax-config>
