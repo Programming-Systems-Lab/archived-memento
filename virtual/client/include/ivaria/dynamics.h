@@ -17,8 +17,8 @@
 */
 
 
-#ifndef __GAME_DYNAMICS_H__
-#define __GAME_DYNAMICS_H__
+#ifndef __CS_IVARIA_DYNAMICS_H__
+#define __CS_IVARIA_DYNAMICS_H__
 
 #include "csutil/scf.h"
 #include "csutil/ref.h"
@@ -26,6 +26,7 @@
 class csVector3;
 class csOrthoTransform;
 class csMatrix3;
+class csPlane3;
 struct iMeshWrapper;
 struct iSkeletonBone;
 
@@ -47,15 +48,18 @@ struct iDynamics : public iBase
 {
   /// Create a rigid body and add it to the simulation
   virtual csPtr<iDynamicSystem> CreateSystem () = 0;
-
+  
   /// Create a rigid body and add it to the simulation
   virtual void RemoveSystem (iDynamicSystem* system) = 0;
+
+  /// Finds a system by name
+  virtual iDynamicSystem* FindSystem (const char *name) = 0;
 
   /// Step the simulation forward by stepsize.
   virtual void Step (float stepsize) = 0;
 };
 
-SCF_VERSION (iDynamicSystem, 0, 0, 1);
+SCF_VERSION (iDynamicSystem, 0, 0, 2);
 
 /**
  * This is the interface for the dynamics core.
@@ -65,6 +69,8 @@ SCF_VERSION (iDynamicSystem, 0, 0, 1);
  */
 struct iDynamicSystem : public iBase
 {
+  /// returns the underlying object
+  virtual iObject *QueryObject (void) = 0;
   /// Set the global gravity.
   virtual void SetGravity (const csVector3& v) = 0;
   /// Get the global gravity.
@@ -78,6 +84,9 @@ struct iDynamicSystem : public iBase
 
   /// Create a rigid body and add it to the simulation
   virtual void RemoveBody( iRigidBody* body ) = 0;
+
+  /// Finds a body within a system
+  virtual iRigidBody *FindBody (const char *name) = 0;
 
   /// Create a body group.  Bodies in a group don't collide with each other
   virtual csPtr<iBodyGroup> CreateGroup () = 0;
@@ -136,7 +145,7 @@ struct iBodyGroup : public iBase
    virtual bool BodyInGroup (iRigidBody *body) = 0;
 };
 
-SCF_VERSION (iRigidBody, 0, 0, 1);
+SCF_VERSION (iRigidBody, 0, 0, 2);
 
 /**
  * This is the interface for a rigid body.
@@ -146,6 +155,8 @@ SCF_VERSION (iRigidBody, 0, 0, 1);
  */
 struct iRigidBody : public iBase
 {
+  /// returns the underlying object
+  virtual iObject *QueryObject (void) = 0;
   /** 
    * Makes a body stop reacting dynamically.  This is especially useful
    * for environmental objects.  It will also increase speed in some cases
@@ -173,6 +184,8 @@ struct iRigidBody : public iBase
 	float elasticity) = 0;
   virtual bool AttachColliderSphere (float radius, const csVector3 &offset,
   	float friction, float density, float elasticity) = 0;
+  virtual bool AttachColliderPlane (const csPlane3 &plane, float friction,
+    float density, float elasticity) = 0;
 
   /// Set the position
   virtual void SetPosition (const csVector3& trans) = 0;
@@ -195,7 +208,7 @@ struct iRigidBody : public iBase
   /// Get the angular velocity (rotation)
   virtual const csVector3 GetAngularVelocity () const = 0;
 
-  /// Set the bodies physic properties
+  /// Set the physic properties
   virtual void SetProperties (float mass, const csVector3& center,
   	const csMatrix3& inertia) = 0;
   /// Get the physic properties. NULL parameters are ignored
@@ -311,15 +324,19 @@ struct iJoint : public iBase
    * if set.
    */
   virtual void SetTransConstraints (bool X, bool Y, bool Z) = 0;
-  /// The following functions return the current axis trans constraints
+  /// True if this axis' translation is constrained
   virtual bool IsXTransConstrained () = 0;
+  /// True if this axis' translation is constrained
   virtual bool IsYTransConstrained () = 0;
+  /// True if this axis' translation is constrained
   virtual bool IsZTransConstrained () = 0;
-  /// Sets/Gets the minimum constrained distance between bodies
+  /// Sets the minimum constrained distance between bodies
   virtual void SetMinimumDistance (const csVector3 &min) = 0;
+  /// Gets the minimum constrained distance between bodies
   virtual csVector3 GetMinimumDistance () = 0;
-  /// Sets/Gets the maximum constrained distance between bodies
+  /// Sets the maximum constrained distance between bodies
   virtual void SetMaximumDistance (const csVector3 &max) = 0;
+  /// Gets the maximum constrained distance between bodies
   virtual csVector3 GetMaximumDistance () = 0;
   /**
    * Sets the rotational constraints on the 3 axes.  Works like
@@ -327,17 +344,21 @@ struct iJoint : public iBase
    * the respective axes.
    */
   virtual void SetRotConstraints (bool X, bool Y, bool Z) = 0;
-  /// The following functions return the current axis rot constraints
+  /// True if this axis' rotation is constrained
   virtual bool IsXRotConstrained () = 0;
+  /// True if this axis' rotation is constrained
   virtual bool IsYRotConstrained () = 0;
+  /// True if this axis' rotation is constrained
   virtual bool IsZRotConstrained () = 0;
-  /// Sets/Gets the minimum constrained angle between bodies
+  /// Sets the minimum constrained angle between bodies
   virtual void SetMinimumAngle (const csVector3 &min) = 0;
+  /// Gets the minimum constrained angle between bodies
   virtual csVector3 GetMinimumAngle () = 0;
-  /// Sets/Gets the maxium constrained angle between bodies
+  /// Sets the maximum constrained angle between bodies
   virtual void SetMaximumAngle (const csVector3 &max) = 0;
+  /// Gets the maximum constrained angle between bodies
   virtual csVector3 GetMaximumAngle () = 0;
 };
 
-#endif // __GAME_DYNAMICS_H__
+#endif // __CS_IVARIA_DYNAMICS_H__
 

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_TEXTURE_H__
-#define __IENGINE_TEXTURE_H__
+#ifndef __CS_IENGINE_TEXTURE_H__
+#define __CS_IENGINE_TEXTURE_H__
 
 /**\file
  */
@@ -45,7 +45,7 @@ struct iTextureCallback : public iBase
   virtual void UseTexture (iTextureWrapper* wrap) = 0;
 };
 
-SCF_VERSION (iTextureWrapper, 0, 0, 4);
+SCF_VERSION (iTextureWrapper, 0, 0, 5);
 
 /**
  * A texture wrapper is an engine-level object that wraps around an actual
@@ -110,6 +110,18 @@ struct iTextureWrapper : public iBase
    * callback if there is one.
    */
   virtual void Visit () = 0;
+
+  /**
+   * Set the keep image flag. See KeepImage() function for explanation.
+   */
+  virtual void SetKeepImage (bool k) = 0;
+
+  /**
+   * If this flag is true then the image will be kept even after
+   * calling Register. If this flag is false then Register() will
+   * remove the image pointer from this texture wrapper. False by default.
+   */
+  virtual bool KeepImage () const = 0;
 };
 
 
@@ -156,4 +168,4 @@ struct iTextureList : public iBase
 
 /** @} */
 
-#endif // __IENGINE_TEXTURE_H__
+#endif // __CS_IENGINE_TEXTURE_H__

@@ -32,8 +32,8 @@
  * \addtogroup event_handling
  * @{ */
 
-#ifndef __IUTIL_EVDEFS_H__
-#define __IUTIL_EVDEFS_H__
+#ifndef __CS_IUTIL_EVDEFS_H__
+#define __CS_IUTIL_EVDEFS_H__
 
 /// System Events
 // take care not to define more than 32 event types
@@ -381,15 +381,6 @@ enum
   cscmdCommandLineHelp,
 
   /**
-   * This event is broadcasted by the texture manager when the SetPalette
-   * method is called.
-   *<pre>
-   * IN: (iTextureManager *) the texture manager object
-   *</pre>
-   */
-  cscmdPaletteChanged,
-
-  /**
    * Broadcasted before cscmdProcess -- on every frame --
    * as Event.Command.Code of a broadcast event.
    */
@@ -427,4 +418,4 @@ enum
 
 /** @} */
 
-#endif // __IUTIL_EVDEFS_H__
+#endif // __CS_IUTIL_EVDEFS_H__

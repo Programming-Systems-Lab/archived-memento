@@ -17,11 +17,21 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __FASTSQRT_H__
-#define __FASTSQRT_H__
+#ifndef __CS_FASTSQRT_H__
+#define __CS_FASTSQRT_H__
 
+/**\file 
+ */
+/**
+ * \addtogroup geom_utils
+ * @{ */
+
+/// declare table of square roots
 extern void BuildSqrtTable ();
+/// fast square root, looks up table build by BuildSqrtTable().
 extern float FastSqrt (float n);
 
-#endif // __FASTSQRT_H__
+/** @} */
+
+#endif // __CS_FASTSQRT_H__
 

@@ -16,15 +16,20 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_FONTSERV_H__
-#define __IVIDEO_FONTSERV_H__
+#ifndef __CS_IVIDEO_FONTSERV_H__
+#define __CS_IVIDEO_FONTSERV_H__
 
 #include "csutil/scf.h"
 #include "csutil/ref.h"
 
 /**\file
+ * Font server interface
  */
 
+/**
+ * \addtogroup gfx2d
+ * @{ */
+ 
 /**\name Basic fonts alias names
  * Any font server should provide these fonts, since most
  * programs expect they to be available. Other fonts may or
@@ -216,4 +221,6 @@ struct iFontServer : public iBase
   virtual iFont *GetFont (int iIndex) = 0;
 };
 
-#endif // __IVIDEO_FONTSERV_H__
+/** @} */
+
+#endif // __CS_IVIDEO_FONTSERV_H__

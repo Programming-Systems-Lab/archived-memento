@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSMOUSE_H__
-#define __CSMOUSE_H__
+#ifndef __CS_CSMOUSE_H__
+#define __CS_CSMOUSE_H__
 
 /**\file
  * Crystal Space Windowing System: mouse support
@@ -30,7 +30,7 @@
  
 #include "ivideo/texture.h"
 #include "iengine/texture.h"
-#include "csutil/typedvec.h"
+#include "csutil/ptrarr.h"
 #include "csws/csgfxppl.h"
 
 class csMouse;
@@ -86,7 +86,7 @@ private:
   /// The application object
   csApp *app;
   /// The array of pointers
-  CS_DECLARE_TYPED_VECTOR (csPointerArray, csMousePointer) Pointers;
+  csPDelArray<csMousePointer> Pointers;
   /// Current active mouse cursor (system cursor if NULL)
   csMousePointer *ActiveCursor;
   /// Cursor texture
@@ -146,4 +146,4 @@ private:
 
 /** @} */
 
-#endif // __CSMOUSE_H__
+#endif // __CS_CSMOUSE_H__

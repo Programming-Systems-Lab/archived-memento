@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSWSGRID_H__
-#define __CSWSGRID_H__
+#ifndef __CS_CSGRID_H__
+#define __CS_CSGRID_H__
 
 /**\file
  * Crystal Space Windowing System: grid class
@@ -146,7 +146,10 @@ class csSparseGrid
     // Free a particular grid row object
     virtual bool FreeItem (csSome Item)
     {
-      delete (csGridRow *)((csGridRowEntry *)Item)->data;
+      // XXX: Don't free the data here. It seems we're missing a good policy
+      // here on who should delete the data in the rows... Sometimes it's
+      // freed sometimes not.
+      //delete (csGridRow *)((csGridRowEntry *)Item)->data;
       delete (csGridRowEntry *)Item;
       return true;
     }
@@ -466,4 +469,4 @@ public:
 
 /** @} */
 
-#endif
+#endif // __CS_CSGRID_H__

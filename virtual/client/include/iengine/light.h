@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_LIGHT_H__
-#define __IENGINE_LIGHT_H__
+#ifndef __CS_IENGINE_LIGHT_H__
+#define __CS_IENGINE_LIGHT_H__
 
 /**\file
  */
@@ -32,6 +32,7 @@
 class csLight;
 class csColor;
 class csFlags;
+struct iLight;
 struct iSector;
 struct iObject;
 struct iCrossHalo;
@@ -80,7 +81,48 @@ struct iFlareHalo;
 #define CS_ATTN_REALISTIC 3
 /** @} */
 
-SCF_VERSION (iLight, 0, 0, 7);
+SCF_VERSION (iLightCallback, 0, 2, 0);
+
+/**
+ * Set a callback which is called when this light color is changed.
+ * The given context will be either an instance of iRenderView, iFrustumView,
+ * or else NULL.
+ */
+struct iLightCallback : public iBase
+{
+  /**
+   * Light color will be changed. It is safe to delete this callback
+   * in this function.
+   */
+  virtual void OnColorChange (iLight* light, const csColor& newcolor) = 0;
+
+  /**
+   * Light position will be changed. It is safe to delete this callback
+   * in this function.
+   */
+  virtual void OnPositionChange (iLight* light, const csVector3& newpos) = 0;
+
+  /**
+   * Sector will be changed. It is safe to delete this callback
+   * in this function.
+   */
+  virtual void OnSectorChange (iLight* light, iSector* newsector) = 0;
+
+  /**
+   * Radius will be changed.
+   * It is safe to delete this callback in this function.
+   */
+  virtual void OnRadiusChange (iLight* light, float newradius) = 0;
+
+  /**
+   * Light will be destroyed.
+   * It is safe to delete this callback in this function.
+   */
+  virtual void OnDestroy (iLight* light) = 0;
+};
+
+
+SCF_VERSION (iLight, 0, 0, 9);
 
 /**
  * The iLight interface is the SCF interface for the csLight class.
@@ -111,8 +153,8 @@ struct iLight : public iBase
   /// Get private pointer to light object. UGLY
   virtual csLight* GetPrivateObject () = 0;
 
-  /// Get the id of this light.
-  virtual unsigned long GetLightID () = 0;
+  /// Get the id of this light. This is a 16-byte MD5.
+  virtual const char* GetLightID () = 0;
 
   /// Get the iObject for this light.
   virtual iObject *QueryObject() = 0;
@@ -142,7 +184,7 @@ struct iLight : public iBase
   virtual void SetColor (const csColor& col) = 0;
   
   /// Return true if this light is pseudo-dynamic.
-  virtual bool IsDynamic () = 0;
+  virtual bool IsDynamic () const = 0;
 
   /// Return current attenuation mode.
   virtual int GetAttenuation () = 0;
@@ -178,9 +220,32 @@ struct iLight : public iBase
    * </ul>
    */
   virtual csFlags& GetFlags () = 0;
+
+  /**
+   * Set the light callback. This will call IncRef() on the callback
+   * So make sure you call DecRef() to release your own reference.
+   */
+  virtual void SetLightCallback (iLightCallback* cb) = 0;
+
+  /**
+   * Remove a light callback.
+   */
+  virtual void RemoveLightCallback (iLightCallback* cb) = 0;
+
+  /// Get the number of light callbacks.
+  virtual int GetLightCallbackCount () const = 0;
+  
+  /// Get the specified light callback.
+  virtual iLightCallback* GetLightCallback (int idx) const = 0;
+
+  /**
+   * Return a number that changes when the light changes (color,
+   * or position).
+   */
+  virtual uint32 GetLightNumber () const = 0;
 };
 
-SCF_VERSION (iLightList, 0, 0, 1);
+SCF_VERSION (iLightList, 0, 0, 2);
 
 /**
  * This structure represents a list of lights.
@@ -211,11 +276,27 @@ struct iLightList : public iBase
   /// Find a light by name.
   virtual iLight *FindByName (const char *Name) const = 0;
 
-  /// Find a light by its ID value.
-  virtual iLight *FindByID (unsigned long id) const = 0;
+  /// Find a light by its ID value (16-byte MD5).
+  virtual iLight *FindByID (const char* id) const = 0;
 };
 
-SCF_VERSION (iLightingProcessInfo, 0, 0, 1);
+SCF_VERSION (iLightingProcessData, 0, 0, 1);
+
+/**
+ * The iLightingProcessData interface can be implemented by a mesh
+ * object so that it can attach additional information for the lighting
+ * process.
+ */
+struct iLightingProcessData : public iBase
+{
+  /**
+   * Finalize lighting. This function is called by the lighting
+   * routines after performing CheckFrustum().
+   */
+  virtual void FinalizeLighting () = 0;
+};
+
+SCF_VERSION (iLightingProcessInfo, 0, 0, 2);
 
 /**
  * The iLightingProcessInfo interface holds information for the lighting
@@ -228,9 +309,6 @@ struct iLightingProcessInfo : public iFrustumViewUserdata
   /// Get the light.
   virtual iLight* GetLight () const = 0;
 
-  /// Get gouraud only state.
-  virtual bool GetGouraudOnly () const = 0;
-
   /// Return true if dynamic.
   virtual bool IsDynamic () const = 0;
 
@@ -239,6 +317,26 @@ struct iLightingProcessInfo : public iFrustumViewUserdata
 
   /// Get the current color.
   virtual const csColor& GetColor () const = 0;
+
+  /**
+   * Attach some userdata to the process info. You can later query
+   * for this by doing QueryUserdata() with the correct SCF version
+   * number.
+   */
+  virtual void AttachUserdata (iLightingProcessData* userdata) = 0;
+
+  /**
+   * Query for userdata based on SCF type.
+   */
+  virtual csPtr<iLightingProcessData> QueryUserdata (scfInterfaceID id,
+  	int version) = 0;
+
+  /**
+   * Finalize lighting. This function is called by the lighting
+   * routines after performing CheckFrustum(). It will call
+   * FinalizeLighting() on all user datas.
+   */
+  virtual void FinalizeLighting () = 0;
 };
 
 SCF_VERSION (iLightIterator, 0, 0, 1);
@@ -263,5 +361,5 @@ struct iLightIterator : public iBase
 
 /** @} */
 
-#endif // __IENGINE_LIGHT_H__
+#endif // __CS_IENGINE_LIGHT_H__
 

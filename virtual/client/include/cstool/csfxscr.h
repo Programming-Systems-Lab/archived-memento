@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CS_FXSCR_H__
-#define __CS_FXSCR_H__
+#ifndef __CS_CSFXSCR_H__
+#define __CS_CSFXSCR_H__
 
 #include "ivideo/graph3d.h"
 class csColor;
@@ -100,8 +100,13 @@ void csfxWhiteOut(iGraphics3D *g3d, float fadevalue);
  * also other mixmodes can be used.
  * This routine must only be used between g3d->BeginDraw and FinishDraw calls.
  */
+#ifndef CS_USE_NEW_RENDERER
 void csfxShadeVert(iGraphics3D *g3d, const csColor& topcolor,
   const csColor& bottomcolor, uint mixmode = CS_FX_COPY);
+#else
+void csfxShadeVert(iGraphics3D *g3d, const csColor& topcolor,
+  const csColor& bottomcolor, uint mixmode);
+#endif // CS_USE_NEW_RENDERER
 
 
 /**
@@ -111,5 +116,5 @@ void csfxShadeVert(iGraphics3D *g3d, const csColor& topcolor,
 void csfxScreenDPFX(iGraphics3D *g3d, iMaterialHandle *mat, uint mixmode,
   uint8 r, uint8 g, uint8 b);
 
-#endif // __CS_FXSCR_H__
+#endif // __CS_CSFXSCR_H__
 

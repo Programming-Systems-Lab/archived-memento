@@ -16,17 +16,24 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_TEXTURE_H__
-#define __IVIDEO_TEXTURE_H__
+#ifndef __CS_IVIDEO_TEXTURE_H__
+#define __CS_IVIDEO_TEXTURE_H__
 
 /**\file
+ * Texture handle interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+ 
 #include "csutil/scf.h"
 #include "cstypes.h"
 
+struct iGraphics2D;
 struct iGraphics3D;
 
-SCF_VERSION (iTextureHandle, 2, 1, 1);
+SCF_VERSION (iTextureHandle, 2, 2, 2);
 
 /**
  * A texture handle as returned by iTextureManager.
@@ -85,22 +92,6 @@ struct iTextureHandle : public iBase
   virtual void *GetPrivateObject () = 0;
 
   /**
-   * If the texture handle was created with as a procedural texture, this
-   * function returns an iGraphics3D interface to a texture buffer which
-   * can be used in the  same way as a frame buffer based iGraphics3D.
-   * This interface only becomes available once the texture has been
-   * prepared by the texture manager.
-   */
-  virtual iGraphics3D *GetProcTextureInterface () = 0;
-
-  /**
-   * If this is a procedural texture with mip-mapping on sync enabled, call
-   * this function to update its mip maps when required.  (Currently
-   * unimplemented)
-   */
-  virtual void ProcTextureSync () = 0;
-
-  /**
    * Query if the texture has an alpha channel.<p>
    * This depends both on whenever the original image had an alpha channel
    * and of the fact whenever the renderer supports alpha maps at all.
@@ -113,6 +104,15 @@ struct iTextureHandle : public iBase
    * before using any texture.
    */
   virtual void Prepare () = 0;
+
+  /**
+   * Get a canvas instance which is suitable for rendering on this
+   * texture. Note that it is not allowed to change the palette of
+   * the returned canvas.
+   */
+  virtual iGraphics2D* GetCanvas () = 0;
 };
 
-#endif // __IVIDEO_TEXTURE_H__
+/** @} */
+
+#endif // __CS_IVIDEO_TEXTURE_H__

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVARIA_SEQUENCE_H__
-#define __IVARIA_SEQUENCE_H__
+#ifndef __CS_IVARIA_SEQUENCE_H__
+#define __CS_IVARIA_SEQUENCE_H__
 
 #include "csutil/scf.h"
 
@@ -61,6 +61,18 @@ struct iSequenceCondition : public iBase
   virtual bool Condition (csTicks dt, iBase* params) = 0;
 };
 
+struct csSequenceOp
+{
+  csSequenceOp* next, * prev;
+  csTicks time;
+  csRef<iBase> params;
+  csRef<iSequenceOperation> operation;
+
+  csSequenceOp () { }
+  ~csSequenceOp () { }
+};
+
+
 SCF_VERSION (iSequence, 0, 0, 2);
 
 /**
@@ -71,6 +83,11 @@ SCF_VERSION (iSequence, 0, 0, 2);
  */
 struct iSequence : public iBase
 {
+  /**
+   * Ugly but necessary for sequence to self-modify
+   */
+  virtual csSequenceOp* GetFirstSequence () = 0;
+
   /**
    * Add an operation to this sequence. This function will call IncRef()
    * on the operation.
@@ -112,7 +129,7 @@ struct iSequence : public iBase
   virtual bool IsEmpty () = 0;
 };
 
-SCF_VERSION (iSequenceManager, 0, 0, 3);
+SCF_VERSION (iSequenceManager, 0, 1, 0);
 
 /**
  * The sequence manager. The sequence manager is a plugin that will perform
@@ -173,8 +190,19 @@ struct iSequenceManager : public iBase
    * Get the current time for the sequence manager. This is not
    * directly related to the real current time.
    * Suspending the sequence manager will also freeze this time.
+   * Note that the sequence manager updates the main time AFTER
+   * rendering frames. So if you want to get the real main time
+   * you should add the delta returned by GetDeltaTime() too. However
+   * from within operation callbacks you should just use GetMainTime()
+   * in combination with the supplied delta.
    */
-  virtual csTicks GetMainTime () = 0;
+  virtual csTicks GetMainTime () const = 0;
+
+  /**
+   * Get the delta time to add to the main time to get the real main time.
+   * Do not use GetDeltaTime() from within the operation callback.
+   */
+  virtual csTicks GetDeltaTime () const = 0;
 
   /**
    * Create a new empty sequence. This sequence is not attached to the
@@ -199,5 +227,5 @@ struct iSequenceManager : public iBase
   	iBase* params = NULL) = 0;
 };
 
-#endif // __IVARIA_SEQUENCE_H__
+#endif // __CS_IVARIA_SEQUENCE_H__
 

@@ -17,8 +17,16 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IEFFECTCLIENT_H__
-#define __IEFFECTCLIENT_H__
+#ifndef __CS_IVIDEO_EFFECTCLIENT_H__
+#define __CS_IVIDEO_EFFECTCLIENT_H__
+
+/**\file
+ * Effect client interface
+ */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
 
 #include "csutil/scf.h"
 
@@ -38,4 +46,6 @@ public:
   virtual bool Validate( iEffectDefinition* effect, iEffectTechnique* technique ) = 0;
 };
 
-#endif // __IEFFECTCLIENT_H__
+/** @} */
+
+#endif // __CS_IVIDEO_EFFECTCLIENT_H__

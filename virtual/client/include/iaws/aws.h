@@ -1,5 +1,3 @@
-#ifndef __IAWS_AWS_H__
-#define __IAWS_AWS_H__
 /**************************************************************************
     Copyright (C) 2001 by Christopher Nelson
 
@@ -17,6 +15,8 @@
     License along with this library; if not, write to the Free
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 *****************************************************************************/
+#ifndef __CS_IAWS_AWS_H__
+#define __CS_IAWS_AWS_H__
 
 /**\file 
  * Advanced Windowing System
@@ -191,6 +191,8 @@ struct iAwsKeyContainer : public iAwsKey
   virtual void Remove (const char* name) = 0;
   /// Removes a specific item from the container
   virtual void Remove (iAwsKey *key) = 0;
+  /// Removes all items from the container
+  virtual void RemoveAll () = 0;
 
   /// Consumes an entire list by moving all of it's member's to this one, and removing them from it.
   virtual void Consume (iAwsKeyContainer *c) = 0;
@@ -243,6 +245,9 @@ public:
 
   /// Finds the smallest visible component which contains the point (x,y)
   virtual iAwsComponent* ComponentAt(int x, int y)=0;
+
+  /// Returns true if the mouse is inside any of the top-level components.
+  virtual bool MouseInComponent(int x, int y)=0;
 
   /// Causes the current view of the window system to be drawn to the given graphics device.
   virtual void Print(iGraphics3D *g3d, uint8 Alpha=0)=0;
@@ -411,6 +416,21 @@ public:
   /// Find window definition and return the component node holding it, Null otherwise
   virtual iAwsComponentNode *FindWindowDef(const char* name)=0;
 
+  /// Find skin def and return key container, Null if not found
+  virtual iAwsKeyContainer *FindSkinDef(const char* name)=0;
+
+  /// Completely remove a window definition (return false if not found)
+  virtual bool RemoveWindowDef (const char *name)=0;
+
+  /// Remove all window definitions
+  virtual void RemoveAllWindowDefs ()=0;
+
+  /// Completely remove a skin definition (return false if not found)
+  virtual bool RemoveSkinDef (const char *name)=0;
+
+  /// Remove all skin definitions
+  virtual void RemoveAllSkinDefs ()=0;
+
   /// Sets the value of a color in the global AWS palette.
   virtual void SetColor(int index, int color)=0;
 
@@ -485,7 +505,10 @@ struct iAwsSinkManager : public iBase
   /// Create a new embeddable sink, with parm as the void * passed into the triggers.
   virtual iAwsSink *CreateSink(void *parm)=0;
 
+
+
   /// Create a new embeddable slot
+
   virtual iAwsSlot *CreateSlot ()=0;
 };
 
@@ -911,4 +934,4 @@ struct iAwsConnectionNodeFactory : public iBase
 
 /* @} */
 
-#endif // __IAWS_AWS_H__
+#endif // __CS_IAWS_AWS_H__

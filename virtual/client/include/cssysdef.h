@@ -173,16 +173,19 @@
 #  endif
 #endif
 
-/**\def ALLOC_STACK_ARRAY(var,type,size)
- * Dynamic stack memory allocation
+/**\def CS_ALLOC_STACK_ARRAY(type, var, size)
+ * Dynamic stack memory allocation.
+ * \param type Type of the array elements.
+ * \param var Name of the array to be allocated.
+ * \param size Number of elements to be allocated.
  */
 #ifdef COMP_GCC
 // In GCC we are able to declare stack vars of dynamic size directly
-#  define ALLOC_STACK_ARRAY(var,type,size) \
+#  define CS_ALLOC_STACK_ARRAY(type, var, size) \
 	    type var [size]
 #else
 #  include <malloc.h>
-#  define ALLOC_STACK_ARRAY(var,type,size) \
+#  define CS_ALLOC_STACK_ARRAY(type, var, size) \
 	    type *var = (type *)alloca ((size) * sizeof (type))
 #endif
 
@@ -640,6 +643,17 @@ extern void* operator new[] (size_t s, void* filename, int line);
 #else
 #  define CS_GNUC_PRINTF( format_idx, arg_idx )
 #  define CS_GNUC_SCANF( format_idx, arg_idx )
+#endif
+
+// Support for alignment and packing of structures.
+#if !defined(CS_STRUCT_ALIGN_4BYTE_BEGIN)
+#  if defined(__GNUC__) && defined(CS_STRICT_ALIGNMENT)
+#    define CS_STRUCT_ALIGN_4BYTE_BEGIN
+#    define CS_STRUCT_ALIGN_4BYTE_END __attribute__ ((aligned(4)))
+#  else
+#    define CS_STRUCT_ALIGN_4BYTE_BEGIN
+#    define CS_STRUCT_ALIGN_4BYTE_END
+#  endif
 #endif
 
 /// Fatal exit routine (which can be replaced if neccessary)

@@ -23,23 +23,27 @@
 #include "csutil/nobjvec.h"
 #include "csutil/csobject.h"
 #include "csutil/garray.h"
+#include "csutil/ptrarr.h"
+#include "csutil/refarr.h"
+#include "csutil/hashmap.h"
 #include "iutil/eventh.h"
 #include "iutil/comp.h"
 #include "iutil/config.h"
 #include "csgeom/math3d.h"
-#include "csengine/arrays.h"
 #include "csengine/rview.h"
-#include "csengine/thing.h"
 #include "csengine/meshobj.h"
 #include "csengine/region.h"
+#include "csengine/sharevar.h"
 #include "iengine/engine.h"
 #include "iengine/collectn.h"
 #include "iengine/campos.h"
-#include "ivideo/graph3d.h"
 #include "iutil/dbghelp.h"
+#include "ivideo/graph3d.h"
 
+
+class csPoly2DPool;
+//class csRadiosity;
 class csRegion;
-class csRadiosity;
 class csSector;
 class csMeshWrapper;
 class csTextureList;
@@ -48,12 +52,8 @@ class csPolygon3D;
 class csCamera;
 class csStatLight;
 class csDynLight;
-class csCBufferCube;
 class csEngine;
 class csLight;
-class csCBuffer;
-class csXORBuffer;
-class csPoly2DPool;
 class csLightPatchPool;
 class csLightHalo;
 class csRenderView;
@@ -110,18 +110,17 @@ public:
   virtual iSector* GetLastSector ();
 };
 
-CS_DECLARE_OBJECT_VECTOR (csCollectionListHelper, iCollection);
-
 /**
  * List of collections for the engine. This class implements iCollectionList.
  */
-class csCollectionList : public csCollectionListHelper
+class csCollectionList : public csRefArrayObject<iCollection>
 {
 public:
   SCF_DECLARE_IBASE;
 
   /// constructor
   csCollectionList ();
+  virtual ~csCollectionList () { }
   /// Create a new collection.
   virtual iCollection* NewCollection (const char* name);
 
@@ -142,19 +141,18 @@ public:
   } scfiCollectionList;
 };
 
-CS_DECLARE_OBJECT_VECTOR (csCameraPositionListHelper, iCameraPosition);
-
 /**
  * List of camera positions for the engine. This class implements
  * iCameraPositionList.
  */
-class csCameraPositionList : public csCameraPositionListHelper
+class csCameraPositionList : public csRefArrayObject<iCameraPosition>
 {
 public:
   SCF_DECLARE_IBASE;
 
   /// constructor
   csCameraPositionList ();
+  virtual ~csCameraPositionList () { }
   /// New camera position.
   virtual iCameraPosition* NewCameraPosition (const char* name);
 
@@ -180,8 +178,8 @@ public:
 class csEngineMeshList : public csMeshList
 {
 public:
-  virtual ~csEngineMeshList ();
-  virtual bool FreeItem (csSome Item);
+  virtual ~csEngineMeshList () { RemoveAll (); }
+  virtual void FreeItem (iMeshWrapper*);
 };
 
 /**
@@ -243,7 +241,7 @@ public:
    * encapsulating that memory to this array will ensure that the
    * memory is removed once the engine is destroyed.
    */
-  csObjVector cleanup;
+  csRefArray<iBase> cleanup;
 
   /**
    * List of sectors in the engine. This vector contains
@@ -288,10 +286,6 @@ public:
   static iEngine* current_iengine;
   /// Need to render using newradiosity?
   static bool use_new_radiosity;
-  /// An object pool for 2D polygons used by the rendering process.
-  csPoly2DPool* render_pol2d_pool;
-  /// An object pool for lightpatches.
-  csLightPatchPool* lightpatch_pool;
   /// The 3D driver
   csRef<iGraphics3D> G3D;
   /// The 2D driver
@@ -304,8 +298,10 @@ public:
    * for cleaning this up.
    */
   csRef<iCacheManager> cache_mgr;
+#ifndef CS_USE_NEW_RENDERER
   /// The fog mode this G3D implements
   G3D_FOGMETHOD fogmethod;
+#endif // CS_USE_NEW_RENDERER
   /// Does the 3D driver require power-of-two lightmaps?
   bool NeedPO2Maps;
   /// Maximum texture aspect ratio
@@ -318,7 +314,9 @@ public:
   /// The list of all named render priorities.
   csVector render_priorities;
   /// Sorting flags for the render priorities.
-  CS_DECLARE_GROWING_ARRAY (render_priority_sortflags, int);
+  csGrowingArray<int> render_priority_sortflags;
+  /// Do_camera flags for the render priorities.
+  csGrowingArray<bool> render_priority_cameraflags;
   /**
    * The engine knows about the following render priorities and keeps
    * them here:
@@ -353,46 +351,30 @@ private:
   csMaterialList* materials;
   /// Linked list of dynamic lights.
   csDynLight* first_dyn_lights;
+  /// The list of all shared variables in the engine.
+  csSharedVariableList* shared_variables;
   /// List of halos (csHaloInformation).
-  csHaloArray halos;
+  csPDelArray<csLightHalo> halos;
+  /// Thing mesh object type for conveniance.
+  csRef<iMeshObjectType> thing_type;
   /// Debugging: maximum number of polygons to process in one frame.
   static int max_process_polygons;
   /// Current number of processed polygons.
   static int cur_process_polygons;
 
-  /// Current engine mode (one of CS_ENGINE_... flags).
-  int engine_mode;
+  /// Current render context (proc texture) or NULL if global.
+  iTextureHandle* render_context;
+
+  /// Array of objects that want to die next frame (iMeshWrapper*).
+  csHashSet want_to_die;
 
   /// Pointer to radiosity system if we are in step-by-step radiosity mode.
-  csRadiosity* rad_debug;
+  //csRadiosity* rad_debug;
 
-  /// Optional c-buffer used for rendering.
-  csCBuffer* c_buffer;
-  /// Optional XOR-buffer used for rendering.
-  csXORBuffer* xor_buffer;
-  bool use_xorbuf;
-
-  /// C-buffer cube used for lighting.
-  csCBufferCube* cbufcube;
-
-  /// Use PVS.
-  bool use_pvs;
-
-  /**
-   * Use PVS only. If this flag is true (and use_pvs == true)
-   * then no other culling mechanisms will be used.
-   */
-  bool use_pvs_only;
-
-  /**
-   * Freeze the PVS.
-   * If this flag is true then the PVS will be 'frozen'.
-   * The freeze_pvs_pos will be used as the fixed position
-   * to calculate the PVS from.
-   */
-  bool freeze_pvs;
-  /// Frozen PVS position.
-  csVector3 freeze_pvs_pos;
+  /// Default fastmesh thresshold.
+  int default_fastmesh_thresshold;
+  /// Fastmesh thresshold.
+  int fastmesh_thresshold;
 
   /// Clear the Z-buffer every frame.
   bool clear_zbuf;
@@ -405,9 +387,6 @@ private:
 
   /// default buffer clear flag.
   bool default_clear_screen;
-
-  /// default lightmap cell size
-  int default_lightmap_cell_size;
 
   /// default maximum lightmap width/height
   int default_max_lightmap_w, default_max_lightmap_h;
@@ -429,11 +408,6 @@ private:
   csRef<iVirtualClock> virtual_clock;
 
 private:
-  /**
-   * Resolve the engine mode if it is CS_ENGINE_AUTODETECT.
-   */
-  void ResolveEngineMode ();
-
   /**
    * Setup for starting a Draw or DrawFunc.
    */
@@ -461,14 +435,8 @@ private:
    * Get a list of all objects in the given sphere.
    */
   void GetNearbyObjectList (iSector* sector,
-    const csVector3& pos, float radius, iObject**& list, int& num_objects,
-    int& max_objects);
-
-  /**
-   * Get a list of all objects in the given sphere.
-   */
-  iObject** GetNearbyObjectList (iSector* sector,
-    const csVector3& pos, float radius, int& num_objects);
+    const csVector3& pos, float radius, csPArray<iObject>& list,
+    csPArray<iSector>& visited_sectors);
 
   /**
    * Get/create the engine sequence manager.
@@ -600,7 +568,7 @@ public:
    * Get the pointer to the radiosity object (used with step-by-step
    * debugging).
    */
-  csRadiosity* GetRadiosity () const { return rad_debug; }
+  //csRadiosity* GetRadiosity () const { return rad_debug; }
 
   /**
    * Invalidate all lightmaps. This can be called after doing
@@ -608,25 +576,6 @@ public:
    * a radiosity debug function).
    */
   void InvalidateLightmaps ();
-
-  /**
-   * Set the desired engine mode.
-   * One of the CS_ENGINE_... flags. Default is CS_ENGINE_AUTODETECT.
-   * If you select CS_ENGINE_AUTODETECT then the mode will be
-   * auto-detected (depending on level and/or hardware capabilities)
-   * the first time csEngine::Draw() is called.
-   */
-  virtual void SetEngineMode (int mode)
-  {
-    engine_mode = mode;
-  }
-
-  /**
-   * Get the current engine mode.
-   * If called between SetEngineMode() and the first Draw() it is
-   * possible that this mode will still be CS_ENGINE_AUTODETECT.
-   */
-  virtual int GetEngineMode () const { return engine_mode; }
 
   /**
    * Get the required flags for 3D->BeginDraw() which should be called
@@ -637,7 +586,7 @@ public:
   {
     int flag = 0;
     if (clear_screen) flag |= CSDRAW_CLEARSCREEN;
-    if (clear_zbuf || engine_mode == CS_ENGINE_ZBUFFER)
+    if (clear_zbuf)
       return flag | CSDRAW_CLEARZBUFFER;
     else
       return flag;
@@ -648,92 +597,15 @@ public:
    */
   csTicks GetLastAnimationTime () const { return nextframe_pending; }
 
-  /**
-   * Initialize the culler.
-   */
-  void InitCuller ();
-
-  /**
-   * Return c-buffer (or NULL if not used).
-   */
-  csCBuffer* GetCBuffer () const { return c_buffer; }
-
-  /**
-   * Return xor-buffer (or NULL if not used).
-   */
-  csXORBuffer* GetXORBuffer () const { return xor_buffer; }
-
-  /**
-   * Return cbuffer cube.
-   */
-  csCBufferCube* GetCBufCube () const { return cbufcube; }
-
-  /**
-   * Enable PVS.
-   */
-  void EnablePVS () { use_pvs = true; use_pvs_only = false; }
-
-  /**
-   * Disable PVS.
-   */
-  void DisablePVS () { use_pvs = false; }
-
-  /**
-   * Is PVS enabled?
-   */
-  virtual bool IsPVS () const { return use_pvs; }
-
-  /**
-   * Use only PVS for culling. This flag only makes sense when
-   * PVS is enabled.
-   */
-  void EnablePVSOnly () { use_pvs_only = true; }
-
-  /**
-   * Don't use only PVS for culling.
-   */
-  void DisablePVSOnly () { use_pvs_only = false; }
-
-  /**
-   * Is PVS only enabled?
-   */
-  bool IsPVSOnly () { return use_pvs_only; }
-
-  /**
-   * Freeze the PVS for some position.
-   */
-  void FreezePVS (const csVector3& pos) { freeze_pvs = true; freeze_pvs_pos = pos; }
-
-  /**
-   * Unfreeze the PVS.
-   */
-  void UnfreezePVS () { freeze_pvs = false; }
-
-  /**
-   * Is the PVS frozen?
-   */
-  bool IsPVSFrozen () { return freeze_pvs; }
-
-  /**
-   * Return the frozen position for the PVS.
-   */
-  const csVector3& GetFrozenPosition () const { return freeze_pvs_pos; }
-
-  /**
-   * Set the mode for the lighting cache (combination of CS_ENGINE_CACHE_???).
-   * Default is CS_ENGINE_CACHE_READ.
-   */
+  /// Set the mode for the lighting cache.
   virtual void SetLightingCacheMode (int mode) { lightcache_mode = mode; }
   /// Get the mode for the lighting cache.
   virtual int GetLightingCacheMode () { return lightcache_mode; }
 
-  /// Return current lightmap cell size
-  virtual int GetLightmapCellSize () const;
-  /// Set lightmap cell size
-  virtual void SetLightmapCellSize (int Size);
-  /// Return default lightmap cell size
-  virtual int GetDefaultLightmapCellSize () const
-  { return default_lightmap_cell_size; }
+  /// Set the fastmesh thresshold.
+  virtual void SetFastMeshThresshold (int th) { fastmesh_thresshold = th; }
+  /// Get the fastmesh thresshold.
+  virtual int GetFastMeshThresshold () const { return fastmesh_thresshold; }
 
   /// Set clear z buffer flag
   virtual void SetClearZBuf (bool yesno)
@@ -773,7 +645,14 @@ public:
   { w = default_max_lightmap_w; h = default_max_lightmap_h; }
   /// Return the default amount of ambient light
   virtual void GetDefaultAmbientLight (csColor &c) const;
+
+  virtual bool GetLightmapsRequirePO2 () const { return NeedPO2Maps; }
+  virtual int GetMaxLightmapAspectRatio () const { return MaxAspectRatio; }
   
+  virtual csPtr<iFrustumView> CreateFrustumView ();
+  virtual csPtr<iObjectWatcher> CreateObjectWatcher ();
+  virtual void WantToDie (iMeshWrapper* mesh);
+
   /**
    * Reset a subset of flags/settings (which may differ from one world/map to 
    * another) to its defaults. This currently includes:
@@ -809,12 +688,18 @@ public:
   csMaterialList* GetMaterials () const { return materials; }
 
   /**
+   * Return the object managing all shared variables.
+   */
+  csSharedVariableList* GetVariables () const { return shared_variables; }
+
+  /**
    * Create a base material.
    */
   virtual csPtr<iMaterial> CreateBaseMaterial (iTextureWrapper* txt);
   virtual csPtr<iMaterial> CreateBaseMaterial (iTextureWrapper* txt,
   	int num_layers, iTextureWrapper** wrappers, csTextureLayer* layers);
 
+  virtual iSharedVariableList* GetVariableList () const;
   virtual iMaterialList* GetMaterialList () const;
   virtual iTextureList* GetTextureList () const;
   virtual iRegionList* GetRegions ();
@@ -894,16 +779,6 @@ public:
   virtual void Draw (iCamera* c, iClipper2D* clipper);
 
   /**
-   * This function is similar to Draw. It will do all the stuff
-   * that Draw would do except for one important thing: it will
-   * not draw anything. Instead it will call a callback function for
-   * every entity that it was planning to draw. This allows you to show
-   * or draw debugging information (2D egdes for example).
-   */
-  virtual void DrawFunc (iCamera* c, iClipper2D* clipper,
-    iDrawFuncCallback* callback);
-
-  /**
    * Create an iterator to iterate over all static lights of the engine.
    */
   virtual csPtr<iLightIterator> GetLightIterator (iRegion* region = NULL)
@@ -916,13 +791,19 @@ public:
   /**
    * Add an object to the current region.
    */
-  void AddToCurrentRegion (csObject* obj);
+  virtual void AddToCurrentRegion (iObject* obj);
 
   /// Register a new render priority.
   virtual void RegisterRenderPriority (const char* name, long priority,
-  	int rendsort = CS_RENDPRI_NONE);
+  	int rendsort = CS_RENDPRI_NONE, bool do_camera = false);
   /// Get a render priority by name.
   virtual long GetRenderPriority (const char* name) const;
+  /// Set the render priority camera flag.
+  virtual void SetRenderPriorityCamera (long priority, bool do_camera);
+  /// Get the render priority camera flag.
+  virtual bool GetRenderPriorityCamera (const char* name) const;
+  /// Get the render priority camera flag.
+  virtual bool GetRenderPriorityCamera (long priority) const;
   /// Get the render priority sorting flag.
   virtual int GetRenderPrioritySorting (const char* name) const;
   /// Get the render priority sorting flag.
@@ -937,13 +818,12 @@ public:
   virtual long GetAlphaRenderPriority () const { return render_priority_alpha; }
   /// Clear all render priorities.
   virtual void ClearRenderPriorities ();
+  /// Get the number of render priorities.
+  virtual int GetRenderPriorityCount () const;
+  /// Get the name of the render priority.
+  virtual const char* GetRenderPriorityName (long priority) const;
 
-  /// @@@ Temporary until things move to their own mesh plugin system.
-  csRef<csThingObjectType> thing_type;
-  virtual iMeshObjectType* GetThingType () const
-  {
-    return (iMeshObjectType*)thing_type;
-  }
+  iMeshObjectType* GetThingType ();
 
   SCF_DECLARE_IBASE;
 
@@ -1012,23 +892,26 @@ public:
   virtual void DeleteAll ();
 
   /// Register a texture to be loaded during Prepare()
-  virtual iTextureWrapper* CreateTexture (const char *iName, const char *iFileName,
-    csColor *iTransp, int iFlags);
+  virtual iTextureWrapper* CreateTexture (const char *iName,
+  	const char *iFileName, csColor *iTransp, int iFlags);
+  virtual iTextureWrapper* CreateBlackTexture (const char *name,
+	int w, int h, csColor *iTransp, int iFlags);
   /// Register a material to be loaded during Prepare()
-  virtual iMaterialWrapper* CreateMaterial (const char *iName, iTextureWrapper* texture);
+  virtual iMaterialWrapper* CreateMaterial (const char *iName,
+  	iTextureWrapper* texture);
 
   /// Create a empty sector with given name.
   virtual iSector *CreateSector (const char *iName);
 
   /// Return the list of sectors
   virtual iSectorList *GetSectors ()
-    { return &sectors.scfiSectorList; }
+    { return &sectors; }
   /// Return the list of mesh factories
   virtual iMeshFactoryList *GetMeshFactories ()
-    { return &mesh_factories.scfiMeshFactoryList; }
+    { return &mesh_factories; }
   /// Return the list of meshes
   virtual iMeshList *GetMeshes ()
-    { return &meshes.scfiMeshList; }
+    { return &meshes; }
   /// Return the list of collections
   virtual iCollectionList *GetCollections ()
     { return &collections.scfiCollectionList; }
@@ -1044,7 +927,7 @@ public:
   	const csVector3& pos, float radius,
   	const csColor& color, bool pseudoDyn);
   /// Find a static/pseudo-dynamic light by ID.
-  virtual iStatLight* FindLight (unsigned long light_id) const;
+  virtual iStatLight* FindLightID (const char* light_id) const;
   /// Find a static/pseudo-dynamic light by name.
   virtual iStatLight* FindLight (const char *Name, bool RegionOnly = false)
     const;
@@ -1122,70 +1005,16 @@ public:
 
   //----------------Begin-Multi-Context-Support-------------------------------
 
-  /// Point engine to rendering context
-  virtual void SetContext (iGraphics3D* g3d);
-  /// Return the current drawing context
-  virtual iGraphics3D *GetContext () const;
+  /// Point engine to rendering context (for procedural textures).
+  virtual void SetContext (iTextureHandle* txt);
+  /// Return the current drawing context.
+  virtual iTextureHandle *GetContext () const;
 
 private:
   /// Resizes frame width and height dependent data members
   void Resize ();
   /// Flag set when window requires resizing.
   bool resize;
-  /**
-   * Private class which keeps state information about the engine specific to
-   * each context.
-   */
-
-  class csEngineState
-  {
-  public:
-    csEngine *engine;
-    bool resize;
-    iGraphics2D *G2D;
-    iGraphics3D *G3D;
-    csCBuffer* c_buffer;
-    csXORBuffer* xor_buffer;
-    csCBufferCube* cbufcube;
-    /// Creates an engine state by copying the relevant data members
-    csEngineState (csEngine *this_engine);
-
-    /// Destroys buffers and trees
-    virtual ~csEngineState ();
-
-    /// Swaps state into engine and deals with resizing issues.
-    void Activate ();
-  };
-
-  friend class csEngineState;
-
-  class csEngineStateVector : public csVector
-  {
-  public:
-     // Constructor
-    csEngineStateVector () : csVector (8, 8) {}
-    // Destructor
-    virtual ~csEngineStateVector () { DeleteAll (); }
-    // Free an item from array
-    virtual bool FreeItem (csSome Item)
-    { delete (csEngineState *)Item; return true; }
-    // Find a state by referenced g2d
-    virtual int CompareKey (csSome Item, csConstSome Key, int /*Mode*/) const
-    { return ((csEngineState *)Item)->G3D == (iGraphics3D *)Key ? 0 : -1; }
-    // Get engine state according to index
-    inline csEngineState *Get (int n) const
-    { return (csEngineState *)csVector::Get (n); }
-
-    // Mark engine state to be resized
-    void Resize (iGraphics2D *g2d);
-
-    // Dispose of engine state dependent on g2d
-    void Close (iGraphics2D *g2d);
-  };
-
-  csEngineStateVector *engine_states;
-
-  //------------End-Multi-Context-Support-------------------------------------
 
   /**
    * This object is used in the engine as an embedded iObject interface.
@@ -1202,10 +1031,10 @@ private:
     {
       return 0;
     }
-    virtual csPtr<iString> UnitTest () { return NULL; }
-    virtual csPtr<iString> StateTest () { return NULL; }
+    virtual csPtr<iString> UnitTest () { return 0; }
+    virtual csPtr<iString> StateTest () { return 0; }
     virtual csTicks Benchmark (int) { return 0; }
-    virtual csPtr<iString> Dump () { return NULL; }
+    virtual csPtr<iString> Dump () { return 0; }
     virtual void Dump (iGraphics3D*) { }
     virtual bool DebugCommand (const char* cmd)
     {

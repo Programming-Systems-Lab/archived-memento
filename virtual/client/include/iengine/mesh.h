@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_MESH_H__
-#define __IENGINE_MESH_H__
+#ifndef __CS_IENGINE_MESH_H__
+#define __CS_IENGINE_MESH_H__
 
 /**\file
  */
@@ -43,6 +43,8 @@ struct iMeshFactoryWrapper;
 struct iRenderView;
 struct iMovable;
 struct iLight;
+struct iLightingInfo;
+struct iShadowReceiver;
 struct iObject;
 class csFlags;
 
@@ -115,7 +117,7 @@ struct iMeshDrawCallback : public iBase
 };
 
 
-SCF_VERSION (iMeshWrapper, 0, 2, 0);
+SCF_VERSION (iMeshWrapper, 0, 4, 0);
 
 /**
  * A mesh wrapper is an engine-level object that wraps around an actual
@@ -140,6 +142,19 @@ struct iMeshWrapper : public iBase
   virtual iMeshObject* GetMeshObject () const = 0;
   /// Set the iMeshObject.
   virtual void SetMeshObject (iMeshObject*) = 0;
+
+  /**
+   * Get the optional lighting information that is implemented
+   * by this mesh object. If the mesh object doesn't implement it
+   * then this will return NULL.
+   */
+  virtual iLightingInfo* GetLightingInfo () const = 0;
+  /**
+   * Get the optional shadow receiver that is implemented
+   * by this mesh object. If the mesh object doesn't implement it
+   * then this will return NULL.
+   */
+  virtual iShadowReceiver* GetShadowReceiver () const = 0;
 
   /// Get the parent factory.
   virtual iMeshFactoryWrapper *GetFactory () const = 0;
@@ -353,10 +368,22 @@ struct iMeshWrapper : public iBase
    */
   virtual void Draw (iRenderView* rview) = 0;
 
+#ifdef CS_USE_NEW_RENDERER
   /**
-   * Returns true if the object wants to die.
+   * Draws the Z pass which fills the zbuffer for use in shadows.
+   * This pass can also be used to draw objects which don't use lighting
+   * or cast shadows
    */
-  virtual bool WantToDie () = 0;
+  virtual void DrawZ (iRenderView* rview) = 0;
+  /**
+   * Draws the shadow buffer pass.  This sets of the stencil for the lights
+   */
+  virtual void DrawShadow (iRenderView* rview, iLight *light) = 0;
+  /**
+   * Draws the diffuse light mesh object
+   */
+  virtual void DrawLight (iRenderView* rview, iLight *light) = 0;
+#endif
 };
 
 SCF_VERSION (iMeshFactoryWrapper, 0, 1, 6);
@@ -493,5 +520,5 @@ struct iMeshFactoryList : public iBase
 
 /** @} */
 
-#endif // __IENGINE_MESH_H__
+#endif // __CS_IENGINE_MESH_H__
 

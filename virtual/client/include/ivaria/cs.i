@@ -23,6 +23,23 @@
 
 %module cspace
 %{
+
+  #if defined(NO_HANDY_PERL_MACROS)
+    #undef Copy
+    #undef MAXXCOUNT
+    #undef MAXY_SIZE
+    #undef MAXYCOUNT
+    #undef Move
+    #undef New
+    #undef Newc
+    #undef Newz
+    #undef Renew
+    #undef Renewc
+    #undef Safefree
+    #undef StructCopy
+    #undef Zero
+  #endif
+
   #include "css.h"
 //***** SCF Wrappers
   int MakeVersion(int version0, int version1, int version2)
@@ -204,10 +221,8 @@ struct iGraphics2D : public iBase
 //  virtual bool PerformExtension (char const* command, ...) = 0;
 //  virtual bool PerformExtensionV (char const* command, va_list) = 0;
   virtual csPtr<iImage> ScreenShot () = 0;
-  virtual iGraphics2D *CreateOffScreenCanvas (int width, int height,
-     void *buffer, bool alone_hint, csPixelFormat *ipfmt,
-     csRGBpixel *palette = NULL, int pal_size = 0) = 0;
   virtual void AllowResize (bool iAllow) = 0;
+  virtual int FindRGB (int r, int g, int b) = 0;
 };
 
 struct iHalo : public iBase
@@ -347,10 +362,6 @@ struct iTextureManager : public iBase
   csPtr<iTextureHandle> RegisterTexture (iImage *image, int flags);
   void PrepareTextures ();
   void FreeImages ();
-  void ResetPalette ();
-  void ReserveColor (int r, int g, int b);
-  int FindRGB (int r, int g, int b);
-  void SetPalette ();
   void SetVerbose (bool vb);
   int GetTextureFormat ();
 };

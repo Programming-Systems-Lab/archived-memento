@@ -21,6 +21,7 @@
 
 #include "csgeom/math3d.h"
 #include "csgeom/frustum.h"
+#include "csgeom/box.h"
 #include "csutil/csvector.h"
 #include "iengine/shadows.h"
 #include "iengine/fview.h"
@@ -90,7 +91,11 @@ private:
   int i, cur_num;
   bool onlycur;
   int dir;	// 1 or -1 for direction.
+  csBox3 bbox;	// If use_bbox is true only iterate over relevant shadow blocks.
+  bool use_bbox;
   csShadowIterator (csShadowBlock* cur, bool onlycur, int dir);
+  csShadowIterator (const csBox3& bbox, csShadowBlock* cur,
+  	bool onlycur, int dir);
   csShadowFrustum* cur_shad;
 
 public:
@@ -134,6 +139,10 @@ private:
   csShadowBlock* next, * prev;
   csVector shadows;
   uint32 shadow_region;
+  csBox3 bbox;	// The bbox (in light space) for all shadows in this block.
+  bool bbox_valid;	// If true bbox is valid.
+
+  void IntAddShadow (csShadowFrustum* csf);
 
 public:
   /// Create a new empty list.
@@ -154,7 +163,11 @@ public:
       sf->DecRef ();
     }
     shadows.DeleteAll ();
+    bbox_valid = false;
   }
+
+  /// Get the bounding box of this shadow block.
+  virtual const csBox3& GetBoundingBox ();
 
   /**
    * Copy all relevant shadow frustums from another shadow block
@@ -251,6 +264,7 @@ public:
       CS_ASSERT (sf != NULL);
       sf->Transform (trans);
     }
+    bbox_valid = false;
   }
 
   /// Get iterator to iterate over all shadows in this block.
@@ -387,6 +401,12 @@ public:
     return (iShadowIterator*)(new csShadowIterator (first, false,
     	reverse ? -1 : 1));
   }
+  virtual iShadowIterator* GetShadowIterator (
+  	const csBox3& bbox, bool reverse = false)
+  {
+    return (iShadowIterator*)(new csShadowIterator (bbox, first, false,
+    	reverse ? -1 : 1));
+  }
 
   virtual uint32 MarkNewRegion ()
   {
@@ -407,13 +427,6 @@ public:
   SCF_DECLARE_IBASE;
 };
 
-class csFrustumView;
-class csObject;
-class csOctreeNode;
-typedef void (csFrustumViewFunc)(csObject* obj, csFrustumView* lview, bool vis);
-typedef void (csFrustumViewNodeFunc)(csOctreeNode* node, csFrustumView* lview,
-	bool vis);
-
 /**
  * This structure represents all information needed for the frustum
  * visibility calculator.
@@ -422,11 +435,7 @@ class csFrustumView : public iFrustumView
 {
 private:
   /// A function that is called for every node that is visited.
-  csFrustumViewNodeFunc* node_func;
-  /// A function that is called for every polygon that is hit.
-  csFrustumViewFunc* poly_func;
-  /// A function that is called for every curve that is hit.
-  csFrustumViewFunc* curve_func;
+  csFrustumViewObjectFunc* object_func;
   /// User data for the entire process.
   iFrustumViewUserdata* userdata;
 
@@ -476,26 +485,15 @@ public:
   /// Start new shadow list for this frustum.
   virtual void StartNewShadowBlock ();
 
-  /// Set the function that is called for every node.
-  void SetNodeFunction (csFrustumViewNodeFunc* func) { node_func = func; }
-  /// Set the function that is called for every polygon to visit.
-  void SetPolygonFunction (csFrustumViewFunc* func) { poly_func = func; }
-  /// Set the function that is called for every curve to visit.
-  void SetCurveFunction (csFrustumViewFunc* func) { curve_func = func; }
-  /// Call the node function.
-  virtual void CallNodeFunction (csOctreeNode* onode, bool vis)
+  /// Set the function that is called for every object.
+  virtual void SetObjectFunction (csFrustumViewObjectFunc* func)
   {
-    if (node_func) node_func (onode, this, vis);
+    object_func = func;
   }
-  /// Call the polygon function.
-  virtual void CallPolygonFunction (csObject* poly, bool vis)
+  /// Call the object function.
+  virtual void CallObjectFunction (iMeshWrapper* mesh, bool vis)
   {
-    poly_func (poly, this, vis);
-  }
-  /// Call the curve function.
-  virtual void CallCurveFunction (csObject* curve, bool vis)
-  {
-    curve_func (curve, this, vis);
+    if (object_func) object_func (mesh, this, vis);
   }
   /// Set the maximum radius to use for visiting objects.
   void SetRadius (float rad)
@@ -504,9 +502,9 @@ public:
     sq_radius = rad*rad;
   }
   /// Get the radius.
-  virtual float GetRadius () { return radius; }
+  virtual float GetRadius () const { return radius; }
   /// Get the squared radius.
-  float GetSquaredRadius () { return sq_radius; }
+  virtual float GetSquaredRadius () const { return sq_radius; }
   /// Enable shadowing for things (off by default). @@@SUSPECT!!!
   void EnableThingShadows (bool e) { things_shadow = e; }
   /// Return true if shadowing for things is enabled.
@@ -543,6 +541,10 @@ public:
   virtual iFrustumViewUserdata* GetUserdata ()
   {
     return userdata;
+  }
+  virtual csPtr<iShadowBlock> CreateShadowBlock ()
+  {
+    return csPtr<iShadowBlock> (new csShadowBlock ());
   }
   SCF_DECLARE_IBASE;
 };

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IUTIL_CFGMGR_H__
-#define __IUTIL_CFGMGR_H__
+#ifndef __CS_IUTIL_CFGMGR_H__
+#define __CS_IUTIL_CFGMGR_H__
 
 /**\file
  */
@@ -70,9 +70,9 @@ struct iConfigManager : public iConfigFile
     PriorityVeryLow =   -100,
     PriorityLow =       -50,
     PriorityMedium =    0,
-    PriorityHigh =      +50,
-    PriorityVeryHigh =  +100,
-    PriorityMax =       +1000000000
+    PriorityHigh =      50,
+    PriorityVeryHigh =  100,
+    PriorityMax =       1000000000
   };
 
   /// Default priority values (you may use other values if you want)
@@ -129,4 +129,4 @@ struct iConfigManager : public iConfigFile
 };
 /** @} */
 
-#endif // __IUTIL_CFGMGR_H__
+#endif // __CS_IUTIL_CFGMGR_H__

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __PROCDOTSTEX_H__
-#define __PROCDOTSTEX_H__
+#ifndef __CS_PROCDOTSTEX_H__
+#define __CS_PROCDOTSTEX_H__
 
 #include "csutil/cscolor.h"
 #include "cstool/proctex.h"
@@ -32,6 +32,10 @@ private:
   int *palette;
   /// number of colours in palette
   int palsize;
+  /// Accumulated elapsed time.
+  csTicks elapsed;
+  /// State.
+  int state;
 
   /// make my palette, max nr of colours
   void MakePalette (int max);
@@ -48,5 +52,5 @@ public:
   virtual void Animate (csTicks current_time);
 };
 
-#endif // __PROCDOTSTEX_H__
+#endif // __CS_PROCDOTSTEX_H__
 

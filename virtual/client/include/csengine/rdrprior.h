@@ -16,14 +16,16 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSENGINE_RDRPRIOR_H__
-#define __CSENGINE_RDRPRIOR_H__
+#ifndef __CS_ENGINE_RDRPRIOR_H__
+#define __CS_ENGINE_RDRPRIOR_H__
+
+#include "csutil/ptrarr.h"
 
 struct iMeshWrapper;
 struct iRenderView;
 
-CS_DECLARE_TYPED_VECTOR_NODELETE (csMeshVectorNodelete, iMeshWrapper);
-CS_DECLARE_TYPED_VECTOR (csMeshVectorNodeleteVector, csMeshVectorNodelete);
+typedef csPArray<iMeshWrapper> csMeshVectorNodelete;
+typedef csPDelArray<csMeshVectorNodelete> csMeshVectorNodeleteVector;
 
 /**
  * This class contains a list of rendering queues, each of which is a list
@@ -67,13 +69,14 @@ public:
    * later. Returns NULL if there are no visible objects.
    * The number of objects returned in 'tot_num' is the size of the
    * returned array. Note that this function will only add
-   * visible objects to the array (i.e. IsVisible() function)!
+   * visible objects to the array (i.e. iVisibilityObject)!
    */
-  iMeshWrapper** SortAll (iRenderView* rview, int& tot_num);
+  iMeshWrapper** SortAll (iRenderView* rview, int& tot_num,
+	uint32 current_visnr);
 
   /// Sort this queue based on the flags for that queue.
   void Sort (iRenderView* rview, int priority);
 };
 
-#endif // __CSENGINE_RDRPRIOR_H__
+#endif // __CS_ENGINE_RDRPRIOR_H__
 

@@ -17,11 +17,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IEFFECTDEFINITION_H__
-#define __IEFFECTDEFINITION_H__
+#ifndef __CS_IVIDEO_EFFECTDEFINITION_H__
+#define __CS_IVIDEO_EFFECTDEFINITION_H__
 
 /**\file
+ * Effect definition interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+
 #include "csutil/scf.h"
 #include "cstypes.h"
 #include "efvector4.h"
@@ -37,11 +43,11 @@ SCF_VERSION (iEffectDefinition, 0, 0, 1);
 struct iEffectDefinition : public iBase
 {
   /// Create a new technique
-  virtual iEffectTechnique* CreateTechnique() = 0;
+  virtual csPtr<iEffectTechnique> CreateTechnique() = 0;
   /// Get number of techniques
   virtual int GetTechniqueCount() = 0;
   /// Retrieve a technique
-  virtual iEffectTechnique* GetTechnique( int technique ) = 0;
+  virtual iEffectTechnique* GetTechnique (int technique) = 0;
 
   /// Set this Effect's name
   virtual void SetName( const char* name ) = 0;
@@ -66,4 +72,6 @@ struct iEffectDefinition : public iBase
   virtual csBasicVector GetAllVariableNames() = 0; 
 };
 
-#endif // __IEFFECTDEFINITION_H__
+/** @} */
+
+#endif // __CS_IVIDEO_EFFECTDEFINITION_H__

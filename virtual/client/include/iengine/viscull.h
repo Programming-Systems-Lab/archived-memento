@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_VISCULL_H__
-#define __IENGINE_VISCULL_H__
+#ifndef __CS_IENGINE_VISCULL_H__
+#define __CS_IENGINE_VISCULL_H__
 
 /**\file
  */
@@ -40,8 +40,29 @@ struct iObjectModel;
 class csVector3;
 class csBox3;
 class csSphere;
+class csFlags;
 
-SCF_VERSION (iVisibilityCuller, 0, 1, 0);
+SCF_VERSION (iVisibilityObjectIterator, 0, 0, 1);
+
+/**
+ * Iterator to iterate over some visibility objects.
+ */
+struct iVisibilityObjectIterator : public iBase
+{
+  /// Move forward.
+  virtual bool Next () = 0;
+
+  /// Reset the iterator to the beginning.
+  virtual void Reset () = 0;
+
+  /// Get the object we are pointing at.
+  virtual iVisibilityObject* GetObject () const = 0;
+
+  /// Check if we have any more children.
+  virtual bool IsFinished () const = 0;
+};
+
+SCF_VERSION (iVisibilityCuller, 0, 3, 0);
 
 /**
  * This interface represents a visibility culling system.
@@ -79,13 +100,20 @@ struct iVisibilityCuller : public iBase
    * Mark all objects as visible that intersect with the given bounding
    * box.
    */
-  virtual bool VisTest (const csBox3& box) = 0;
+  virtual csPtr<iVisibilityObjectIterator> VisTest (const csBox3& box) = 0;
 
   /**
    * Mark all objects as visible that intersect with the given bounding
    * sphere.
    */
-  virtual bool VisTest (const csSphere& sphere) = 0;
+  virtual csPtr<iVisibilityObjectIterator> VisTest (const csSphere& sphere) = 0;
+
+  /**
+   * Intersect a segment with all objects in the visibility culler and
+   * return them all in an iterator.
+   */
+  virtual csPtr<iVisibilityObjectIterator> IntersectSegment (
+    const csVector3& start, const csVector3& end) = 0;
 
   /**
    * Intersect a beam using this culler and return the intersection
@@ -99,12 +127,64 @@ struct iVisibilityCuller : public iBase
     iMeshWrapper** p_mesh = NULL, iPolygon3D** poly = NULL) = 0;
 
   /**
-   * Start casting shadows from a given point in space.
+   * Start casting shadows from a given point in space. What this will
+   * do is traverse all objects registered to the visibility culler.
+   * If some object implements iShadowCaster then this function will
+   * use the shadows casted by that object and put them in the frustum
+   * view. This function will then also call the object function which
+   * is assigned to iFrustumView. That object function will (for example)
+   * call iShadowReceiver->CastShadows() to cast the collected shadows
+   * on the shadow receiver.
    */
   virtual void CastShadows (iFrustumView* fview) = 0;
+
+  /**
+   * Get the current visibility number. You can compare this number
+   * to the visibility number as returned by
+   * iVisibilityObject->GetVisibilityNumber(). If equal then the object
+   * was visible.
+   */
+  virtual uint32 GetCurrentVisibilityNumber () const = 0;
 };
 
-SCF_VERSION (iVisibilityObject, 0, 0, 6);
+/** \name GetCullerFlags() flags
+ * @{ */
+/**
+ * Object is fully convex. This is a hint for the culler so it
+ * can potentially perform more efficient culling operations
+ * on the object.
+ */
+#define CS_CULLER_HINT_CONVEX 1
+
+/**
+ * Object is closed. This is a hint for the culler which
+ * means that the object is closed (meaning that if you are
+ * outside the object, you can only see the visible side of
+ * all polygons). It is legal to set this hint even if the
+ * object is not really closed. For example, a cube with
+ * five faces (i.e. one face missing) can be set as closed
+ * with this flag because treating this as closed will
+ * not cause culling errors (unless there are objects in
+ * the cube of course).
+ */
+#define CS_CULLER_HINT_CLOSED 2
+
+/**
+ * This is a good occluder. With this hint you say that
+ * this object is a good occluder. The culler can still ignore
+ * this hint of course.
+ */
+#define CS_CULLER_HINT_GOODOCCLUDER 4
+
+/**
+ * This is a bad occluder. With this hint you say that this
+ * object is almost certainly a bad occluder.
+ */
+#define CS_CULLER_HINT_BADOCCLUDER 8
+
+/** @} */
+
+SCF_VERSION (iVisibilityObject, 0, 2, 1);
 
 /**
  * An object that wants to know if it is visible or not
@@ -114,29 +194,41 @@ struct iVisibilityObject : public iBase
 {
   /// Get the reference to the movable from this object.
   virtual iMovable* GetMovable () const = 0;
+  /// Get the reference to the mesh wrapper from this object.
+  virtual iMeshWrapper* GetMeshWrapper () const = 0;
+
   /**
-   * Mark the object as visible. This will be called by the visibility
-   * culler whenever it thinks the object is visible.
+   * Set the visibility number for this object. A visibility culler
+   * will set the visibility number of an object equal to the current
+   * visibility culler number if the object is visible.
    */
-  virtual void MarkVisible () = 0;
+  virtual void SetVisibilityNumber (uint32 visnr) = 0;
   /**
-   * Mark the object as invisible. This will be called by the visibility
-   * culler at initialization time.
+   * Get the visibility number. You can compare this with
+   * iVisibilityCuller->GetCurrentVisibilityNumber(). If equal then
+   * this object is visible.
    */
-  virtual void MarkInvisible () = 0;
-  /**
-   * After running iVisibilityCuller::VisTest() this function can be used
-   * to test if the object is visible or not.
-   */
-  virtual bool IsVisible () const = 0;
+  virtual uint32 GetVisibilityNumber () const = 0;
 
   /**
    * Get the object model corresponding with this object.
    */
   virtual iObjectModel* GetObjectModel () = 0;
+
+  /**
+   * Get flags for this object. This is a combination of zero or more of the
+   * following flags. See the documentation with these flags for more info:
+   * <ul>
+   * <li>#CS_CULLER_HINT_CONVEX
+   * <li>#CS_CULLER_HINT_CLOSED
+   * <li>#CS_CULLER_HINT_GOODOCCLUDER
+   * <li>#CS_CULLER_HINT_BADOCCLUDER
+   * </ul>
+   */
+  virtual csFlags& GetCullerFlags () = 0;
 };
 
 /** @} */
 
-#endif // __IENGINE_VISCULL_H__
+#endif // __CS_IENGINE_VISCULL_H__
 

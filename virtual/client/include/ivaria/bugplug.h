@@ -16,13 +16,14 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IBUGPLUG_H__
-#define __IBUGPLUG_H__
+#ifndef __CS_IVARIA_BUGPLUG_H__
+#define __CS_IVARIA_BUGPLUG_H__
 
 #include "csutil/scf.h"
 
 class csBox3;
 class csVector3;
+class csVector2;
 class csReversibleTransform;
 struct iMeshObject;
 struct iBugPlug;
@@ -166,5 +167,5 @@ struct iBugPlug : public iBase
   //=========================================================================
 };
 
-#endif
+#endif // __CS_IVARIA_BUGPLUG_H__
 

@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IGEOM_POLYMESH_H__
-#define __IGEOM_POLYMESH_H__
+#ifndef __CS_IGEOM_POLYMESH_H__
+#define __CS_IGEOM_POLYMESH_H__
 
 #include "csutil/scf.h"
 
@@ -39,7 +39,7 @@ struct csMeshedPolygon
 
 class csVector3;
 
-SCF_VERSION (iPolygonMesh, 0, 2, 0);
+SCF_VERSION (iPolygonMesh, 0, 2, 1);
 
 /**
  * This interface reprents a mesh of polygons. It is useful to communicate
@@ -67,9 +67,22 @@ struct iPolygonMesh : public iBase
    * This gives the polygon mesh a chance to clean up some stuff.
    */
   virtual void Cleanup () = 0;
+  
+  /**
+   * Is this a deformable mesh? If yes you can use GetChangeNumber()
+   * to detect if a change actually occured.
+   */
+  virtual bool IsDeformable () const = 0;
+  
+  /**
+   * When this number changes you know the polygon mesh has changed
+   * (deformation has occured) since the last time you got another
+   * number from this function.
+   */
+  virtual uint32 GetChangeNumber () const = 0;
 };
 
 /** @} */
 
-#endif // __IGEOM_POLYMESH_H__
+#endif // __CS_IGEOM_POLYMESH_H__
 

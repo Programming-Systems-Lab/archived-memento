@@ -16,13 +16,13 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __MDLDATA_H__
-#define __MDLDATA_H__
+#ifndef __CS_MDLDATA_H__
+#define __CS_MDLDATA_H__
 
 #include "imesh/mdldata.h"
 #include "csutil/garray.h"
 #include "csutil/csobject.h"
-#include "csutil/typedvec.h"
+#include "csutil/refarr.h"
 
 #define CS_DECLARE_ACCESSOR_METHODS(type,name)				\
   type Get##name () const;						\
@@ -65,7 +65,7 @@
     if (o) return o;							\
   SCF_IMPLEMENT_EMBEDDED_IBASE_QUERY_END;
 
-CS_DECLARE_TYPED_IBASE_VECTOR (csObjectVector, iObject);
+typedef csRefArray<iObject> csObjectVector;
 
 class csIntArray;
 
@@ -133,10 +133,10 @@ public:
 class csModelDataVertices : public iModelDataVertices
 {
 private:
-  CS_DECLARE_GROWING_ARRAY (Vertices, csVector3);
-  CS_DECLARE_GROWING_ARRAY (Normals, csVector3);
-  CS_DECLARE_GROWING_ARRAY (Colors, csColor);
-  CS_DECLARE_GROWING_ARRAY (Texels, csVector2);
+  csGrowingArray<csVector3> Vertices;
+  csGrowingArray<csVector3> Normals;
+  csGrowingArray<csColor> Colors;
+  csGrowingArray<csVector2> Texels;
 
 public:
   SCF_DECLARE_IBASE;
@@ -168,7 +168,7 @@ public:
 class csModelDataAction : public iModelDataAction
 {
 private:
-  CS_DECLARE_GROWING_ARRAY (Times, float);
+  csGrowingArray<float> Times;
   csObjectVector States;
 
 public:
@@ -201,10 +201,10 @@ public:
 class csModelDataPolygon : public iModelDataPolygon
 {
 private:
-  CS_DECLARE_GROWING_ARRAY (Vertices, int);
-  CS_DECLARE_GROWING_ARRAY (Normals, int);
-  CS_DECLARE_GROWING_ARRAY (Colors, int);
-  CS_DECLARE_GROWING_ARRAY (Texels, int);
+  csGrowingArray<int> Vertices;
+  csGrowingArray<int> Normals;
+  csGrowingArray<int> Colors;
+  csGrowingArray<int> Texels;
   iModelDataMaterial *Material;
 
 public:
@@ -324,4 +324,4 @@ public:
   void RegisterMaterials (iMaterialList *ml);
 };
 
-#endif // __MDLDATA_H__
+#endif // __CS_MDLDATA_H__

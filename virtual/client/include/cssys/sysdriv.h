@@ -21,16 +21,12 @@
 
 // Include the platform-specific driver classes.
 
-#if defined(OS_NEXT)		/* Must appear before OS_UNIX */
-#  include "cssys/next/NeXTSystemDriver.h"
+#if defined(OS_MACOSX)		/* Must appear before OS_UNIX */
+#  include "cssys/macosx/OSXSystemDriver.h"
 #elif defined(OS_UNIX)
 #  include "cssys/unix/unix.h"
 #elif defined(OS_WIN32)
 #  include "cssys/win32/win32.h"
-#elif defined(OS_OS2)
-#  include "cssys/os2/csos2.h"
-#elif defined(OS_DOS) && defined(COMP_GCC)
-#  include "cssys/djgpp/djgpp.h"
 #else
 #  error Unable to locate platform-specific driver interface.
 #endif

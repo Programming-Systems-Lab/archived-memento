@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_ENGINE_H__
-#define __IENGINE_ENGINE_H__
+#ifndef __CS_IENGINE_ENGINE_H__
+#define __CS_IENGINE_ENGINE_H__
 
 /**\file 
  * Crystal Space 3D Engine Interface
@@ -39,6 +39,7 @@ class csColor;
 struct csTextureLayer;
 
 struct iSector;
+struct iFrustumView;
 struct iSectorIterator;
 struct iObjectIterator;
 struct iLight;
@@ -55,6 +56,7 @@ struct iMaterial;
 struct iMaterialWrapper;
 struct iMaterialList;
 struct iTextureWrapper;
+struct iTextureHandle;
 struct iTextureList;
 struct iCameraPosition;
 struct iCameraPositionList;
@@ -62,6 +64,7 @@ struct iRegion;
 struct iGraphics3D;
 struct iClipper2D;
 struct iObject;
+struct iObjectWatcher;
 struct iCollection;
 struct iCollectionList;
 struct iDataBuffer;
@@ -74,6 +77,7 @@ struct iProgressMeter;
 struct iRegionList;
 struct iLoaderContext;
 struct iCacheManager;
+struct iSharedVariableList;
 
 /** \name GetNearbyLights() flags
  * @{ */
@@ -99,30 +103,6 @@ struct iCacheManager;
 #define CS_NLIGHT_NEARBYSECTORS 8
 /** @} */
 
-/** \name SetEngineMode() settings
- * @{ */
-/**
- * Autodetect the best mode according to the level.
- */
-#define CS_ENGINE_AUTODETECT 0
-
-/**
- * Use back-to-front rendering (using optional BSP/octree) and Z-fill.
- * Don't init Z-buffer at start of render frame.
- */
-#define CS_ENGINE_BACK2FRONT 1
-
-/**
- * Use a 2D/3D culler (c-buffer) and front-to-back sorting.
- */
-#define CS_ENGINE_FRONT2BACK 2
-
-/**
- * Use the Z-buffer for culling.
- */
-#define CS_ENGINE_ZBUFFER 3
-/** @} */
-
 /** \name SetLightingCacheMode() settings
  * @{ */
 /**
@@ -134,6 +114,11 @@ struct iCacheManager;
  * Write the cache.
  */
 #define CS_ENGINE_CACHE_WRITE 2
+
+/**
+ * Do not calculate lighting if not up-to-date. On by default.
+ */
+#define CS_ENGINE_CACHE_NOUPDATE 4
 /** @} */
 
 /** \name RegisterRenderPriority() flags
@@ -154,42 +139,7 @@ struct iCacheManager;
 #define CS_RENDPRI_FRONT2BACK 2
 /** @} */
 
-/** \name Engine Callback flags
- * Flags for the callbacks called via iEngine::DrawFunc().
- * (type iDrawFuncCallback).
- * @{ */
-/// a sector is being drawn
-#define CS_CALLBACK_SECTOR 1
-/// a sector has been drawn completely
-#define CS_CALLBACK_SECTOREXIT 2
-/// a mesh will be drawn if visible
-#define CS_CALLBACK_MESH 3
-/// the mesh is visible and will be drawn
-#define CS_CALLBACK_VISMESH 4
-/** @} */
-
-SCF_VERSION (iDrawFuncCallback, 0, 0, 1);
-
-/**
- * A callback function for csEngine::DrawFunc().
- */
-struct iDrawFuncCallback : public iBase
-{
-  /**
-   * Before drawing.
-   * The 'type' will be one of the following:
-   * <ul>
-   * <li>#CS_CALLBACK_SECTOR: a sector is being drawn.
-   * <li>#CS_CALLBACK_SECTOREXIT: a sector has been drawn completely.
-   * <li>#CS_CALLBACK_MESH: a mesh will be drawn if visible.
-   * <li>#CS_CALLBACK_VISMESH: the mesh is visible and will be drawn.
-   * </ul>
-   */
-  virtual void DrawFunc (iRenderView* rview, int type, void* entity) = 0;
-};
-
-
-SCF_VERSION (iEngine, 0, 7, 12);
+SCF_VERSION (iEngine, 0, 16, 2);
 
 /**
  * This interface is the main interface to the 3D engine.
@@ -243,11 +193,6 @@ struct iEngine : public iBase
   virtual int GetTextureFormat () const = 0;
 
   /**
-   * Return true if engine want to use PVS.
-   */
-  virtual bool IsPVS () const = 0;
-
-  /**
    * Create or select a new region (name can be NULL for the default main
    * region). All new objects will be marked as belonging to this region.
    */
@@ -262,6 +207,11 @@ struct iEngine : public iBase
    * region is selected).
    */
   virtual iRegion* GetCurrentRegion () const = 0;
+  /**
+   * Add an object to the current region. Normally you don't need to
+   * call this function as CS objects already do this automatically.
+   */
+  virtual void AddToCurrentRegion (iObject* obj) = 0;
 
   /// Delete everything in the engine.
   virtual void DeleteAll () = 0;
@@ -276,11 +226,19 @@ struct iEngine : public iBase
    *     camera viewpoint).
    * <li>#CS_RENDPRI_BACK2FRONT: sort objects back to front.
    * </ul>
+   * If 'do_camera' is true then this render priority will be scanned
+   * for objects that have CS_ENTITY_CAMERA flag set.
    */
   virtual void RegisterRenderPriority (const char* name, long priority,
-  	int rendsort = CS_RENDPRI_NONE) = 0;
+  	int rendsort = CS_RENDPRI_NONE, bool do_camera = false) = 0;
   /// Get a render priority by name.
   virtual long GetRenderPriority (const char* name) const = 0;
+  /// Set the render priority camera flag.
+  virtual void SetRenderPriorityCamera (long priority, bool do_camera) = 0;
+  /// Get the render priority camera flag.
+  virtual bool GetRenderPriorityCamera (const char* name) const = 0;
+  /// Get the render priority camera flag.
+  virtual bool GetRenderPriorityCamera (long priority) const = 0;
   /// Get the render priority sorting flag.
   virtual int GetRenderPrioritySorting (const char* name) const = 0;
   /// Get the render priority sorting flag.
@@ -295,6 +253,10 @@ struct iEngine : public iBase
   virtual long GetAlphaRenderPriority () const = 0;
   /// Clear all render priorities.
   virtual void ClearRenderPriorities () = 0;
+  /// Get the number of render priorities.
+  virtual int GetRenderPriorityCount () const = 0;
+  /// Get the name of the render priority or NULL if none existant.
+  virtual const char* GetRenderPriorityName (long priority) const = 0;
 
   /**
    * Create a base material that can be used to give to the texture
@@ -310,9 +272,13 @@ struct iEngine : public iBase
   virtual csPtr<iMaterial> CreateBaseMaterial (iTextureWrapper* txt,
   	int num_layers, iTextureWrapper** wrappers, csTextureLayer* layers) = 0;
 
-  /// Register a texture to be loaded during Prepare()
+  /// Create a texture from a file.
   virtual iTextureWrapper* CreateTexture (const char *name,
   	const char *fileName, csColor *transp, int flags) = 0;
+  /// Create a black texture. This is mostly useful for procedural textures.
+  virtual iTextureWrapper* CreateBlackTexture (const char *name,
+	int w, int h, csColor *iTransp, int iFlags) = 0;
+
   /// Register a material to be loaded during Prepare()
   virtual iMaterialWrapper* CreateMaterial (const char *name,
   	iTextureWrapper* texture) = 0;
@@ -355,6 +321,8 @@ struct iEngine : public iBase
   virtual iTextureList* GetTextureList () const = 0;
   /// Get the list of all materials.
   virtual iMaterialList* GetMaterialList () const = 0;
+  /// Get the list of all shared variables.
+  virtual iSharedVariableList* GetVariableList () const = 0;
   /// Get the list of all regions
   virtual iRegionList* GetRegions () = 0;
 
@@ -445,22 +413,30 @@ struct iEngine : public iBase
 
   /**
    * Set the mode for the lighting cache (combination of CS_ENGINE_CACHE_???).
-   * Default is #CS_ENGINE_CACHE_READ.
+   * Default is #CS_ENGINE_CACHE_READ | #CS_ENGINE_CACHE_NOUPDATE.
    * <ul>
    * <li>#CS_ENGINE_CACHE_READ: Read the cache.
    * <li>#CS_ENGINE_CACHE_WRITE: Write the cache.
+   * <li>#CS_ENGINE_CACHE_NOUPDATE: Don't update lighting automatically
+   *     if it is not up-to-date. This is on by default. If you disable
+   *     this then lighting will be calculated even if CS_ENGINE_CACHE_WRITE
+   *     is not set which means that the resulting calculation is not
+   *     written to the cache.
    * </ul>
    */
   virtual void SetLightingCacheMode (int mode) = 0;
   /// Get the mode for the lighting cache.
   virtual int GetLightingCacheMode () = 0;
 
-  /// Return the current lightmap cell size
-  virtual int GetLightmapCellSize () const = 0;
-  /// Set lightmap cell size
-  virtual void SetLightmapCellSize (int Size) = 0;
-  /// Return default lightmap cell size
-  virtual int GetDefaultLightmapCellSize () const = 0;
+  /**
+   * Set the thresshold (in number of polygons) after which the thing
+   * mesh plugin will automatically switch to FASTMESH mode. If the number
+   * of polygons is greater or equal compared to this thresshold then
+   * CS_THING_FASTMESH will be made default. 500 is the default.
+   */
+  virtual void SetFastMeshThresshold (int th) = 0;
+  /// Get the fastmesh thresshold.
+  virtual int GetFastMeshThresshold () const = 0;
 
   /**
    * Require that the Z-buffer is cleared every frame. The engine
@@ -509,6 +485,10 @@ struct iEngine : public iBase
   virtual void GetMaxLightmapSize(int& w, int& h) = 0;
   /// Retrieve default maximum lightmap size
   virtual void GetDefaultMaxLightmapSize(int& w, int& h) = 0;
+  /// Get a boolean which indicates if power of two lightmaps are required.
+  virtual bool GetLightmapsRequirePO2 () const = 0;
+  /// Get the maximum aspect ratio for lightmaps.
+  virtual int GetMaxLightmapAspectRatio () const = 0;
   
   /**
    * Reset a subset of flags/settings (which may differ from one world/map to 
@@ -534,11 +514,24 @@ struct iEngine : public iBase
   virtual iStatLight* FindLight (const char *Name, bool RegionOnly = false)
     const = 0;
   /**
+   * Find a static/pseudo-dynamic light by id. An ID is a 16-byte MD5
+   * checksum for the light.
+   */
+  virtual iStatLight* FindLightID (const char* light_id) const = 0;
+  /**
    * Create an iterator to iterate over all static lights of the engine.
    * Assign to a csRef or use DecRef().
    */
   virtual csPtr<iLightIterator> GetLightIterator (iRegion* region = NULL) = 0;
-  /// Create a dynamic light.
+
+  /**
+   * Create a dynamic light. After creating a dynamic light you have to
+   * call SetSector() on it. Do NOT add the light to the list of lights
+   * in a sector. That list is only for static or pseudo-dynamic lights.
+   * You also have to call Setup() on the dynamic light to actually calculate
+   * the lighting. This must be redone everytime the radius or the position
+   * changes (but not the color).
+   */
   virtual csPtr<iDynLight> CreateDynLight (const csVector3& pos, float radius,
   	const csColor& color) = 0;
   /// Remove a dynamic light.
@@ -553,29 +546,6 @@ struct iEngine : public iBase
    * to let this function return that the Z-buffer must be cleared.
    */
   virtual int GetBeginDrawFlags () const = 0;
-
-  /**
-   * Set the desired engine mode.
-   * One of the CS_ENGINE_... flags. Default is CS_ENGINE_AUTODETECT.
-   * <ul>
-   * <li>#CS_ENGINE_AUTODETECT: try to auto-detect the best mode to use
-   *     for rendering this level (also depends on hardware capabilities).
-   *     This is calculated the first time iEngine->Draw() is called.
-   * <li>#CS_ENGINE_BACK2FRONT: Render polygons back to front (optionally
-   *     using octree/bsp for this).
-   * <li>#CS_ENGINE_FRONT2BACK: Use the c-buffer for culling polygons and
-   *     render front to back (only if octree/bsp tree is available).
-   * <li>#CS_ENGINE_ZBUFFER: Use the Z-buffer for rendering.
-   * </ul>
-   */
-  virtual void SetEngineMode (int mode) = 0;
-
-  /**
-   * Get the current engine mode.
-   * If called between SetEngineMode() and the first Draw() it is
-   * possible that this mode will still be CS_ENGINE_AUTODETECT.
-   */
-  virtual int GetEngineMode () const = 0;
 
   /**
    * Get the top-level clipper.
@@ -674,12 +644,6 @@ struct iEngine : public iBase
 	iDataBuffer* input, iSector* sector, const csVector3& pos) = 0;
 
   /**
-   * @@@ This function is deprecated! Please don't use it!
-   * Only the engine and thing mesh objects should use this now.
-   */
-  virtual iMeshObjectType* GetThingType () const = 0;
-
-  /**
    * Draw the 3D world given a camera and a clipper. Note that
    * in order to be able to draw using the given 3D driver
    * all textures must have been registered to that driver (using
@@ -689,19 +653,13 @@ struct iEngine : public iBase
   virtual void Draw (iCamera* c, iClipper2D* clipper) = 0;
 
   /**
-   * This function is similar to Draw. It will do all the stuff
-   * that Draw would do except for one important thing: it will
-   * not draw anything. Instead it will call a callback function for
-   * every entity that it was planning to draw. This allows you to show
-   * or draw debugging information (2D edges for example).
+   * Set the drawing context. This is a texture handle that is used
+   * as the procedural texture to render on. If this is NULL then the
+   * screen is assumed.
    */
-  virtual void DrawFunc (iCamera* c, iClipper2D* clipper,
-    iDrawFuncCallback* callback) = 0;
-
-  /// Set the drawing context
-  virtual void SetContext (iGraphics3D*) = 0;
-  /// Return the current drawing context
-  virtual iGraphics3D *GetContext () const = 0;
+  virtual void SetContext (iTextureHandle* ctxt) = 0;
+  /// Return the current drawing context.
+  virtual iTextureHandle *GetContext () const = 0;
 
   /**
    * Set the amount of ambient light. This has no effect until you
@@ -808,8 +766,30 @@ struct iEngine : public iBase
 
   /// Return the default amount of ambient light
   virtual void GetDefaultAmbientLight (csColor &c) const = 0;
+
+  /**
+   * Create a iFrustumView instance that you can give to
+   * iVisibilityCuller->CastShadows(). You can initialize that
+   * instance so that your own function is called for every object
+   * that is being visited.
+   */
+  virtual csPtr<iFrustumView> CreateFrustumView () = 0;
+
+  /**
+   * Create an object watcher instance that you can use to watch
+   * other objects. The engine will not keep a reference to this object.
+   */
+  virtual csPtr<iObjectWatcher> CreateObjectWatcher () = 0;
+
+  /**
+   * Sometimes a mesh wants to destruct itself (for example
+   * a particle system that has only limited lifetime). It can do that
+   * by calling this function on itself. The engine will then remove
+   * the object before the next frame.
+   */
+  virtual void WantToDie (iMeshWrapper* mesh) = 0;
 };
 
 /** @} */
 
-#endif // __IENGINE_ENGINE_H__
+#endif // __CS_IENGINE_ENGINE_H__

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __SPRBUILD_H__
-#define __SPRBUILD_H__
+#ifndef __CS_SPRBUILD_H__
+#define __CS_SPRBUILD_H__
 
 #include "csutil/csstring.h"
 
@@ -66,7 +66,7 @@ public:
   // finish an action
   virtual void FinishAction () = 0;
   // store an action frame
-  virtual void StoreActionFrame (int Frame, csTicks Delay) = 0;
+  virtual void StoreActionFrame (int Frame, csTicks Delay, float displacement) = 0;
 
   // Build a sprite
   bool Build (iModelDataObject *Input);
@@ -90,7 +90,7 @@ private:
 	const csVector2 &tex);
   virtual void BeginAction (const char *Name);
   virtual void FinishAction ();
-  virtual void StoreActionFrame (int Frame, csTicks Delay);
+  virtual void StoreActionFrame (int Frame, csTicks Delay, float displacement);
 public:
 
   csPtr<iDataBuffer> Build (iModelDataObject *Input);
@@ -117,10 +117,10 @@ private:
 	const csVector2 &tex);
   virtual void BeginAction (const char *Name);
   virtual void FinishAction ();
-  virtual void StoreActionFrame (int Frame, csTicks Delay);
+  virtual void StoreActionFrame (int Frame, csTicks Delay, float displacement);
 public:
 
   bool Build (iModelDataObject *Input, iSprite3DFactoryState *Output);
 };
 
-#endif // __SPRBUILD_H__
+#endif // __CS_SPRBUILD_H__

@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSNOTEBK_H__
-#define __CSNOTEBK_H__
+#ifndef __CS_CSNOTEBK_H__
+#define __CS_CSNOTEBK_H__
 
 /**\file
  * Crystal Space Windowing System: notebook class
@@ -30,6 +30,7 @@
  
 #include "cscomp.h"
 #include "csbutton.h"
+#include "csutil/ptrarr.h"
 
 /**
  * \name Notebook styles
@@ -123,7 +124,7 @@ enum
 class cspNotebookButton;
 
 /**
- * A notebook (OS/2 term, Windows term "property shit") is a collection
+ * A notebook (also called "property sheet") is a collection
  * of dialogs enclosed in a single window. The dialogs are divided into
  * several groups, each group gets its own "tab" on one of the sides
  * of the notebook. By clicking the "tab" you switch to that group of
@@ -172,7 +173,7 @@ class csNotebook : public csComponent
   /// The first visible tab and the active tab
   int firsttab, activetab;
   /// This array contains the per-page information
-  CS_DECLARE_TYPED_VECTOR (cspPageDataVector, cspPageData) pages;
+  csPDelArray<cspPageData> pages;
 
 public:
   /// Create a notebook component with given parent and style
@@ -236,4 +237,4 @@ protected:
 
 /** @} */
 
-#endif // __CSNOTEBK_H__
+#endif // __CS_CSNOTEBK_H__

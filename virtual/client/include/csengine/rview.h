@@ -84,12 +84,6 @@ private:
   csRenderContextFrustum* top_frustum;
 
   /**
-   * A callback function. If this is set then no drawing is done.
-   * Instead the callback function is called.
-   */
-  iDrawFuncCallback* callback;
-
-  /**
    * Delete all data on the given render context.
    */
   void DeleteRenderContextData (csRenderContext* rc);
@@ -126,25 +120,6 @@ public:
   void SetOriginalCamera (iCamera* camera);
   /// Get the original camera.
   virtual iCamera* GetOriginalCamera () const { return original_camera; }
-
-  ///
-  virtual void SetCallback (iDrawFuncCallback* cb)
-  {
-    if (cb) cb->IncRef ();
-    if (callback) callback->DecRef ();
-    callback = cb;
-  }
-  ///
-  virtual iDrawFuncCallback* GetCallback ()
-  {
-    return callback;
-  }
-
-  /// Call callback.
-  virtual void CallCallback (int type, void* data)
-  {
-    callback->DrawFunc (this, type, data);
-  }
 
   SCF_DECLARE_IBASE;
 
@@ -236,6 +211,7 @@ public:
   virtual void UseClipFrustum (bool u) { ctxt->do_clip_frustum = u; }
 
 
+#ifndef CS_USE_NEW_RENDERER
   /**
    * Every fogged sector we encountered results in an extra structure in the
    * following list. This is only used if we are doing vertex based fog.
@@ -259,6 +235,7 @@ public:
    */
   virtual void ResetFogInfo () { ctxt->added_fog_info = false; }
 
+#endif // CS_USE_NEW_RENDERER
   /**
    * Get the current camera.
    */
@@ -266,6 +243,7 @@ public:
   /**
    * Calculate the fog information in the given G3DPolygonDP structure.
    */
+#ifndef CS_USE_NEW_RENDERER
   virtual void CalculateFogPolygon (G3DPolygonDP& poly);
   /**
    * Calculate the fog information in the given G3DPolygonDPFX structure.
@@ -289,6 +267,7 @@ public:
 
   virtual void CalculateFogMesh (const csTransform &tr_o2c, 
     G3DPolygonMesh &mesh);
+#endif // CS_USE_NEW_RENDERER
 
 
 

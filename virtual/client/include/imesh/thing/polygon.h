@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_POLYGON_H__
-#define __IENGINE_POLYGON_H__
+#ifndef __CS_THING_POLYGON_H__
+#define __CS_THING_POLYGON_H__
 
 #include "csutil/scf.h"
 #include "csgeom/plane3.h"
@@ -52,6 +52,11 @@ class csColor;
  * If this flag is set then this polygon is used for collision detection.
  */
 #define CS_POLY_COLLDET	0x00000002
+
+/**
+ * If this flag is set then this polygon is used for visibility culling.
+ */
+#define CS_POLY_VISCULL	0x00000004
 
 
 SCF_VERSION (iPolygon3D, 0, 1, 14);
@@ -351,4 +356,4 @@ struct iPolygonTexture : public iBase
   virtual void SetCacheData (int idx, void *d) = 0;
 };
 
-#endif // __IENGINE_POLYGON_H__
+#endif // __CS_THING_POLYGON_H__

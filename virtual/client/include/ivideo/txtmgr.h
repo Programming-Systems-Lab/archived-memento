@@ -17,11 +17,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_TXTMGR_H__
-#define __IVIDEO_TXTMGR_H__
+#ifndef __CS_IVIDEO_TXTMGR_H__
+#define __CS_IVIDEO_TXTMGR_H__
 
 /**\file
+ * Texture manager interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+
 #include "csutil/scf.h"
 
 class Vector2;
@@ -63,41 +69,9 @@ struct iMaterialHandle;
  * is not set) this flag does not matter - 2D textures do not use mipmaps.
  */
 #define CS_TEXTURE_NOMIPMAPS		0x00000008
-/**
- * Create a procedural texture.
- * After the texture is prepared call
- * iTextureHangle->GetDynamicTextureInterface to retrieve an iGraphics3D
- * interface to the texture. Render as usual.
- */
-#define CS_TEXTURE_PROC  		0x00000010
-/**
- * Set this flag if you want mip-mapping but wish to control when the
- * mip-mapping actually occurs by calling iTextureHandle->ProcTextureSync ()
- */
-#define CS_TEXTURE_PROC_MIPMAP_ON_SYNC  0x00000020
-/**
- * By setting this flag it guarantess that the procedural texture buffers
- * contents persists between frames. There is a small performance penalty
- * on the OpenGL implementations with this flag.
- */
-#define CS_TEXTURE_PROC_PERSISTENT  	0x00000040
-/**
- * Currently this flag is acted upon by the 16/32bit software renderer and the
- * opengl software texture implementation only.
- * It has no performance penalty for the other drivers, so set it when you can,
- * which practically speaking will be most of the time.
- * Set this flag when you can safely allocate the procedural textures their
- * own set of textures which will not be referred to when calling the main
- * renderer. This means that the engine for example will not be able to render
- * to these procedural textures as well as the main renderer.
- * This flag allows for a big optimisation by setting up an 8bit texture
- * manager for the software procedural textures so that all rendering is done
- * within the software texture managers' native format.
- */
-#define CS_TEXTURE_PROC_ALONE_HINT      0x00000080
 /** @} */
 
-SCF_VERSION (iTextureManager, 2, 0, 0);
+SCF_VERSION (iTextureManager, 2, 1, 0);
 
 /**
  * This is the standard texture manager interface.
@@ -189,37 +163,6 @@ struct iTextureManager : public iBase
   virtual void FreeMaterials () = 0;
 
   /**
-   * Reset all reserved colors in palette. This function should be called
-   * if you want to reverse the effect of all ReserveColor() calls.
-   * The function will have effect on next call to PrepareTextures ().
-   */
-  virtual void ResetPalette () = 0;
-
-  /**
-   * Reserve RGB. Call this function to reserve a color
-   * from the palette (if any). This function only takes effect after
-   * the next call to Prepare (). Note that black (0) and white (255)
-   * are already preallocated colors.
-   */
-  virtual void ReserveColor (int r, int g, int b) = 0;
-
-  /**
-   * Return a color. Find the color in palette and return the palette
-   * index that contains the nearest color. For 15-, 16- and 32-bit modes
-   * this returns a encoded RGB color as needed by both 2D and 3D drivers.
-   */
-  virtual int FindRGB (int r, int g, int b) = 0;
-
-  /**
-   * Switch to the new palette. This function should be called
-   * after you called the PrepareTextures() method which will compute
-   * a optimal palette for all textures. Of course, it is not neccessarily
-   * to call it directly after PrepareTextures() but you should call it before
-   * using any texture, otherwise they will look garbled.
-   */
-  virtual void SetPalette () = 0;
-
-  /**
    * Set verbose mode on/off. In verbose mode, texture manager will
    * Printf() through the system driver during all initialization and
    * preparation operations.
@@ -236,4 +179,6 @@ struct iTextureManager : public iBase
   virtual int GetTextureFormat () = 0;
 };
 
-#endif // __IVIDEO_TXTMGR_H__
+/** @} */
+
+#endif // __CS_IVIDEO_TXTMGR_H__

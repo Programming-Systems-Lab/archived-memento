@@ -23,11 +23,16 @@
 
 */
 
-#ifndef __IVIDEO_CURSOR_H__
-#define __IVIDEO_CURSOR_H__
+#ifndef __CS_IVIDEO_CURSOR_H__
+#define __CS_IVIDEO_CURSOR_H__
 
 /**\file
+ * Mouse cursor IDs
  */
+
+/**
+ * \addtogroup gfx2d
+ * @{ */
  
 /**
  * Standard mouse cursor IDs
@@ -60,4 +65,6 @@ typedef enum _csMouseCursorID
   csmcWait
 } csMouseCursorID;
 
-#endif // __IVIDEO_CURSOR_H__
+/** @} */
+
+#endif // __CS_IVIDEO_CURSOR_H__

@@ -17,11 +17,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_GRAPH2D_H__
-#define __IVIDEO_GRAPH2D_H__
+#ifndef __CS_IVIDEO_GRAPH2D_H__
+#define __CS_IVIDEO_GRAPH2D_H__
 
 /**\file
+ * 2D graphics interface
  */
+
+/**
+ * \addtogroup gfx2d
+ * @{ */
+ 
 #include <stdarg.h>
 #include "csutil/scf.h"
 #include "csgfx/rgbpixel.h"
@@ -34,6 +40,17 @@ struct iImage;
 struct iFontServer;
 struct iFont;
 struct iNativeWindow;
+struct iGraphics2D;
+
+/// Simple 2D pixel coordinate
+struct csPixelCoord
+{
+  /// X component
+  int x;
+  /// Y component
+  int y;
+};
+
 
 /**
  * Structure describing the pixel format.
@@ -42,8 +59,8 @@ struct csPixelFormat
 {
   /**
    * The masks to extract the color information from a pixel (truecolor mode
-   * only).  Currently only masks for 16-bit/15-bit colors are supported.
-   * Ignore the Mask and Shift fields of this structure if PalEntries != 0.
+   * only). Ignore the Mask and Shift fields of this structure if
+   * PalEntries != 0.
    */
   uint32 RedMask, GreenMask, BlueMask;
   /**
@@ -104,7 +121,22 @@ struct csImageArea
   { x = sx; y = sy; w = sw; h = sh; data = NULL; }
 };
 
-SCF_VERSION (iGraphics2D, 2, 0, 2);
+SCF_VERSION (iOffscreenCanvasCallback, 1, 0, 0);
+
+/**
+ * When you create an offscreen canvas (CreateOffscreenCanvas()) then
+ * you can use this callback to get informed when the texture has
+ * been modified (FinishDraw() called) or a palette entry is modified.
+ */
+struct iOffscreenCanvasCallback : public iBase
+{
+  /// FinishDraw has been called.
+  virtual void FinishDraw (iGraphics2D* canvas) = 0;
+  /// Palette entry has been modified.
+  virtual void SetRGB (iGraphics2D* canvas, int idx, int r, int g, int b) = 0;
+};
+
+SCF_VERSION (iGraphics2D, 2, 3, 1);
 
 /**
  * This is the interface for 2D renderer. The 2D renderer is responsible
@@ -158,8 +190,11 @@ struct iGraphics2D : public iBase
 
   /// Set a color index to given R,G,B (0..255) values
   virtual void SetRGB (int i, int r, int g, int b) = 0;
+  /// Find an RGB color.
+  virtual int FindRGB (int r, int g, int b) = 0;
 
-  /** Set clipping rectangle.
+  /**
+   * Set clipping rectangle.
    * The clipping rectangle is inclusive the top and left edges and exclusive
    * for the right and bottom borders.
    */
@@ -206,6 +241,13 @@ struct iGraphics2D : public iBase
   /// Draw a pixel.
   virtual void DrawPixel (int x, int y, int color) = 0;
 
+  /// Draw an array of pixel coordinates with the given color.
+  virtual void DrawPixels (csPixelCoord* pixels, int num_pixels, int color) = 0;
+
+  /// Blit a memory block. The format of the image is RGBA in bytes. Row by row.
+  virtual void Blit (int x, int y, int width, int height,
+  	unsigned char* data) = 0;
+
   /// Returns the address of the pixel at the specified (x, y) coordinates.
   virtual unsigned char *GetPixelAt (int x, int y) = 0;
 
@@ -234,8 +276,8 @@ struct iGraphics2D : public iBase
 
   /**
    * Write a text string into the back buffer. A negative value for bg
-   * color will not draw the background. x and y are the pen position on a baseline.
-   * The actual font baseline is shifted up by the font's descent.
+   * color will not draw the background. x and y are the pen position on
+   * a baseline. The actual font baseline is shifted up by the font's descent.
    */
   virtual void WriteBaseline (iFont *font, int x, int y, int fg, int bg,
     const char *str) = 0;
@@ -268,11 +310,6 @@ struct iGraphics2D : public iBase
   /// Do a screenshot: return a new iImage object
   virtual csPtr<iImage> ScreenShot () = 0;
 
-  /// Create an Off Screen Canvas
-  virtual iGraphics2D *CreateOffScreenCanvas (int width, int height,
-     void *buffer, bool alone_hint, csPixelFormat *ipfmt,
-     csRGBpixel *palette = NULL, int pal_size = 0) = 0;
-
   /**
    * Get the native window corresponding with this canvas.
    * If this is an off-screen canvas then this will return NULL.
@@ -300,7 +337,32 @@ struct iGraphics2D : public iBase
    */
   virtual bool SetMouseCursor (csMouseCursorID iShape) = 0;
 
+  /**
+   * Set gamma value (if supported by canvas). By default this is 1.
+   * Smaller values are darker. If the canvas doesn't support gamma
+   * then this function will return false.
+   */
+  virtual bool SetGamma (float gamma) = 0;
+
+  /**
+   * Get gamma value.
+   */
+  virtual float GetGamma () const = 0;
+
+  /**
+   * Create an off-screen canvas so you can render on a given memory
+   * area. If depth==8 then the canvas will use palette mode. In that
+   * case you can do SetRGB() to initialize the palette.
+   * The callback interface (if given) is used to communicate from the
+   * canvas back to the caller. You can use this to detect when the
+   * texture data has changed for example.
+   */
+  virtual csPtr<iGraphics2D> CreateOffscreenCanvas (
+  	void* memory, int width, int height, int depth,
+	iOffscreenCanvasCallback* ofscb) = 0;
 };
 
-#endif // __IVIDEO_GRAPH2D_H__
+/** @} */
+
+#endif // __CS_IVIDEO_GRAPH2D_H__
 

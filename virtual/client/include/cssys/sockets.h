@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 1998 by Matze Braun
+    Copyright (C) 2002 by Matze Braun
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -15,8 +15,8 @@
     License along with this library; if not, write to the Free
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
-#ifndef __CSSYS_SOCKETS_H__
-#define __CSSYS_SOCKETS_H__
+#ifndef __CS_CSSYS_SOCKETS_H__
+#define __CS_CSSYS_SOCKETS_H__
 
 /** \file
  *      For TCP/IP sockets definitions.  Specifically, should define the
@@ -42,6 +42,9 @@
 #  define CS_NET_SOCKET_INVALID INVALID_SOCKET
 #  define CS_IOCTLSOCKET ioctlsocket
 #  define CS_CLOSESOCKET closesocket
+#  if defined(__CYGWIN__) && defined(EWOULDBLOCK)
+#   undef EWOULDBLOCK
+#  endif
 #  define EWOULDBLOCK WSAEWOULDBLOCK
 #  define CS_GETSOCKETERROR ::WSAGetLastError()
 #  undef CS_SYSDEF_PROVIDE_SOCKETS
@@ -50,10 +53,8 @@
 #  include <unistd.h>
 #  define BSD_COMP 1
 #  include <sys/ioctl.h>
-#  if !defined (OS_SOLARIS) && !defined (OS_BE)
-#    include <arpa/inet.h>
-#    include <sys/time.h>
-#  endif
+#  include <arpa/inet.h>
+#  include <sys/time.h>
 #  include <netinet/in.h>
 #  include <netdb.h>
 #endif
@@ -73,5 +74,5 @@ typedef unsigned int csNetworkSocket;
 #  define CS_NET_SOCKET_INVALID ((csNetworkSocket)~0)
 #endif
 
-#endif
+#endif // __CS_CSSYS_SOCKETS_H__
 

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_MOTION_H__
-#define __IENGINE_MOTION_H__
+#ifndef __CS_IENGINE_MOTION_H__
+#define __CS_IENGINE_MOTION_H__
 
 /**\file
  */
@@ -44,6 +44,12 @@ struct iMotionTemplate : public iBase
 {
   /// Get the name of this motion.
   virtual const char* GetName () = 0;
+  /// Get the duration of this motion.
+  virtual const float GetDuration() = 0;
+  /// Get the number of times to loop the motion
+  virtual const int   GetLoopCount() = 0;
+  /// Returns true if the motion will play backwards after playing forwards
+  virtual const bool  GetLoopFlip() = 0;
   /// Set the length of this motion.
   virtual void SetDuration (float duration) = 0;
   /**
@@ -142,5 +148,5 @@ struct iMotionManager : public iBase
 
 /** @} */
 
-#endif
+#endif // __CS_IENGINE_MOTION_H__
 

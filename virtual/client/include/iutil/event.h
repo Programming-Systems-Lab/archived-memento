@@ -17,19 +17,25 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IUTIL_EVENT_H__
-#define __IUTIL_EVENT_H__
+#ifndef __CS_IUTIL_EVENT_H__
+#define __CS_IUTIL_EVENT_H__
 
 #include "iutil/evdefs.h"
 #include "csutil/scf.h"
 
+/**\file
+ * Event system related interfaces
+ */
 /**
  * \addtogroup event_handling
  * @{ */
 
 struct iEventHandler;
 
-SCF_VERSION (iEvent, 0, 0, 1);
+struct iNetworkSocket2;
+struct iNetworkPacket;
+
+SCF_VERSION (iEvent, 0, 0, 2);
 
 /**
  * This interface describes any system event.<p>
@@ -79,6 +85,11 @@ struct iEvent : public iBase
       uint Code;		// Command code
       void *Info;		// Command info
     } Command;
+    struct
+    {
+      iNetworkSocket2 *From;	// Socket data recieved on
+      iNetworkPacket *Data;	// Packet of data recieved
+    } Network;
   };
 };
 
@@ -264,7 +275,7 @@ struct iEventOutlet : public iBase
   virtual void ImmediateBroadcast (int iCode, void *iInfo) = 0;
 };
 
-SCF_VERSION (iEventCord, 0, 0, 2);
+SCF_VERSION (iEventCord, 0, 0, 3);
 
 /**
  * The iEventCord is an interface provided by an event queue to
@@ -273,7 +284,7 @@ SCF_VERSION (iEventCord, 0, 0, 2);
  * Events may also optionally be sent to the normal event queue itself
  * if none of the event handlers in the cord handle the event.
  */
-struct iEventCord
+struct iEventCord : public iBase
 {
   /**
    * Insert an event handler into the cord.  The priority defines when it
@@ -310,4 +321,4 @@ struct iEventCord
 /** @} */
 
 
-#endif // __IUTIL_EVENT_H__
+#endif // __CS_IUTIL_EVENT_H__

@@ -19,7 +19,8 @@
 #ifndef __CS_MOVABLE_H__
 #define __CS_MOVABLE_H__
 
-#include "csutil/typedvec.h"
+#include "csutil/csvector.h"
+#include "csutil/refarr.h"
 #include "csutil/nobjvec.h"
 #include "iengine/movable.h"
 #include "iengine/sector.h"
@@ -29,11 +30,8 @@ class csMatrix3;
 class csMovable;
 class csMeshWrapper;
 
-CS_DECLARE_TYPED_VECTOR_NODELETE (csMovableListenerVector, iMovableListener);
-CS_DECLARE_RESTRICTED_ACCESS_OBJECT_VECTOR (csSectorVector, iSector);
-
 /// A list of sectors as the movable uses it
-class csMovableSectorList : public csSectorVector
+class csMovableSectorList : public csRefArrayObject<iSector>
 {
 private:
   csMovable* movable;
@@ -42,11 +40,10 @@ public:
   SCF_DECLARE_IBASE;
 
   csMovableSectorList ();
-  ~csMovableSectorList ();
+  virtual ~csMovableSectorList ();
   void SetMovable (csMovable* mov) { movable = mov; }
 
-  virtual bool PrepareItem (csSome item);
-  virtual bool FreeItem (csSome item);
+  bool PrepareItem (iSector* item);
 
   class SectorList : public iSectorList
   {
@@ -76,12 +73,12 @@ class csMovable : public iBase
 private:
   /// World to object transformation.
   csReversibleTransform obj;
+  /// The following flag is true if the transform is still identity.
+  bool is_identity;
   /// List of sectors.
   csMovableSectorList sectors;
   /// List of listeners to this movable.
-  csMovableListenerVector listeners;
-  /// List of user-data for the listeners.
-  csVector listener_userdata;
+  csRefArray<iMovableListener> listeners;
 
   /**
    * Parent (for hierachical transformations).
@@ -234,7 +231,7 @@ public:
    * Add a listener to this movable. This listener will be called whenever
    * the movable changes or right before the movable is destroyed.
    */
-  void AddListener (iMovableListener* listener, void* userdata);
+  void AddListener (iMovableListener* listener);
 
   /**
    * Remove a listener from this movable.
@@ -247,6 +244,22 @@ public:
    * has changed since the last time it was checked.
    */
   long GetUpdateNumber () const { return updatenr; }
+
+  bool IsTransformIdentity () const
+  {
+    return is_identity;
+  }
+  bool IsFullTransformIdentity () const
+  {
+    if (!is_identity) return false;
+    if (parent != NULL)
+      return parent->IsFullTransformIdentity ();
+    return true;
+  }
+  void TransformIdentity ()
+  {
+    obj.Identity ();
+  }
 
   SCF_DECLARE_IBASE;
 
@@ -273,10 +286,22 @@ public:
     virtual csReversibleTransform GetFullTransform () const;
     virtual void MovePosition (const csVector3& v);
     virtual void Transform (const csMatrix3& matrix);
-    virtual void AddListener (iMovableListener* listener, void* userdata);
+    virtual void AddListener (iMovableListener* listener);
     virtual void RemoveListener (iMovableListener* listener);
     virtual void UpdateMove ();
     virtual long GetUpdateNumber () const;
+    virtual bool IsTransformIdentity () const
+    {
+      return scfParent->IsTransformIdentity ();
+    }
+    virtual bool IsFullTransformIdentity () const
+    {
+      return scfParent->IsFullTransformIdentity ();
+    }
+    virtual void TransformIdentity ()
+    {
+      scfParent->TransformIdentity ();
+    }
   } scfiMovable;
   friend struct eiMovable;
 };

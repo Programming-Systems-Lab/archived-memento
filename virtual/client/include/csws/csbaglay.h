@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __GRIDBAGLAYOUT_G__
-#define __GRIDBAGLAYOUT_G__
+#ifndef __CS_CSGRIDBAGLAYOUT_H__
+#define __CS_CSGRIDBAGLAYOUT_H__
 
 /**\file
  */
@@ -28,6 +28,7 @@
  * @{ */
  
 #include "cslayout.h"
+#include "csutil/ptrarr.h"
 
 /**
  * Subclass of csLayoutConstraint for use with csGridBagLayout.
@@ -317,7 +318,7 @@ class csGridBagLayout : public csLayout2
     int x, y;
   };
 
-  CS_DECLARE_TYPED_VECTOR(CellHolderArrayT, CellHolder);
+  typedef csPDelArray<CellHolder> CellHolderArrayT;
 
  public:
   csGridBagLayout (csComponent *pParent);
@@ -356,4 +357,4 @@ protected:
 
 /** @} */
 
-#endif // __GRIDBAGLAYOUT_G__
+#endif // __CS_CSGRIDBAGLAYOUT_H__

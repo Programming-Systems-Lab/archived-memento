@@ -23,8 +23,8 @@
  * utilizing the NO_* macros, while stop a complete build
  */
 
-#ifndef __CSS_H__
-#define __CSS_H__
+#ifndef __CS_CSS_H__
+#define __CS_CSS_H__
 
 #ifndef CS_INCLUDE_NOTHING
 
@@ -174,7 +174,6 @@
 #include "ivaria/conout.h"
 #include "ivaria/iso.h"
 #include "ivaria/keyval.h"
-#include "ivaria/lexan.h"
 #include "ivaria/mapnode.h"
 #include "ivaria/perfstat.h"
 #include "ivaria/pmeter.h"
@@ -191,7 +190,6 @@
 #include "ivideo/halo.h"
 #include "ivideo/material.h"
 #include "ivideo/natwin.h"
-#include "ivideo/sproctxt.h"
 #include "ivideo/texture.h"
 #include "ivideo/txtmgr.h"
 #include "ivideo/vbufmgr.h"
@@ -234,51 +232,7 @@
 #include "csgeom/vector2.h"
 #include "csgeom/vector3.h"
 #include "csgeom/vtpool.h"
-#endif
-
-// CS Engine
-#ifndef NO_CSENGINE
-#include "csengine/arrays.h"
-#include "csengine/bezier.h"
-#include "csengine/bsp.h"
-#include "csengine/bsp2d.h"
-#include "csengine/bspbbox.h"
-#include "csengine/camera.h"
-#include "csengine/campos.h"
-#include "csengine/cbufcube.h"
-#include "csengine/cbuffer.h"
-#include "csengine/crysball.h"
-#include "csengine/cscoll.h"
-#include "csengine/curve.h"
-#include "csengine/engine.h"
-#include "csengine/halo.h"
-#include "csengine/lghtmap.h"
-#include "csengine/light.h"
-#include "csengine/lppool.h"
-#include "csengine/lview.h"
-#include "csengine/material.h"
-#include "csengine/meshobj.h"
-#include "csengine/movable.h"
-#include "csengine/octree.h"
-#include "csengine/pol2d.h"
-#include "csengine/poledges.h"
-#include "csengine/polygon.h"
-#include "csengine/polyint.h"
-#include "csengine/polyplan.h"
-#include "csengine/polytext.h"
-#include "csengine/polytmap.h"
-#include "csengine/polytree.h"
-#include "csengine/portal.h"
-#include "csengine/radiosty.h"
-#include "csengine/rdrprior.h"
-#include "csengine/region.h"
-#include "csengine/rview.h"
-#include "csengine/sector.h"
-#include "csengine/stats.h"
-#include "csengine/texture.h"
-#include "csengine/thing.h"
-#include "csengine/treeobj.h"
-#include "csengine/wirefrm.h"
+#include "csgeom/crysball.h"
 #endif
 
 // CS Tool
@@ -307,7 +261,6 @@
 // CS Util
 #ifndef NO_CSUTIL
 #include "csutil/2bitary.h"
-#include "csutil/archive.h"
 #include "csutil/bitarray.h"
 #include "csutil/bitary2d.h"
 #include "csutil/bitset.h"
@@ -325,7 +278,6 @@
 #include "csutil/csinput.h"
 #include "csutil/csmd5.h"
 #include "csutil/csobject.h"
-#include "csutil/csobjvec.h"
 #include "csutil/cspmeter.h"
 #include "csutil/csppulse.h"
 #include "csutil/csqueue.h"
@@ -363,10 +315,10 @@
 #include "csutil/sparse3d.h"
 #include "csutil/strset.h"
 #include "csutil/token.h"
-#include "csutil/typedvec.h"
+#include "csutil/ptrarr.h"
+#include "csutil/refarr.h"
 #include "csutil/util.h"
 #include "csutil/virtclk.h"
-//#include "csutil/zip.h"
 #endif
 
 // CS Gfx
@@ -387,4 +339,4 @@
 
 #endif // CS_INCLUDE_NOTHING
 
-#endif // __CSS_H__
+#endif // __CS_CSS_H__

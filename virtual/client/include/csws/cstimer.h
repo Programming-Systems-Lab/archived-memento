@@ -18,8 +18,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSTIMER_H__
-#define __CSTIMER_H__
+#ifndef __CS_CSTIMER_H__
+#define __CS_CSTIMER_H__
 
 #include "cscomp.h"
 
@@ -63,7 +63,7 @@ class csTimer : public csComponent
   /// Period start
   unsigned start;
   /// Pause time before counting begins
-  unsigned pause;
+  unsigned pausetime;
   /// Timer is stopped?
   bool Stopped;
 
@@ -100,4 +100,4 @@ public:
 
 /** @} */
 
-#endif // __CSTIMER_H__
+#endif // __CS_CSTIMER_H__

@@ -16,10 +16,14 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IUTIL_CACHE_H__
-#define __IUTIL_CACHE_H__
+#ifndef __CS_IUTIL_CACHE_H__
+#define __CS_IUTIL_CACHE_H__
 
 #include "csutil/scf.h"
+
+/**\file
+ * Cache manager interface
+ */
 
 struct iDataBuffer;
 
@@ -35,7 +39,7 @@ SCF_VERSION (iCacheManager, 0, 0, 1);
  * The 'type' can be something like 'lightmap', 'octree', ...
  * The 'scope' can be something like 'myRegion_mySector', ...
  * The 'id' is a unique ID for the cached item in the given type
- * and scope.
+ * and scope. ~0 can be taken for the cases "no ID" or "ID unused".
  * Avoid using '/' and '\' characters in both type and scope as this
  * may cause conflicts with the given cache (if it caches on a file
  * system for example).
@@ -99,5 +103,5 @@ struct iCacheManager : public iBase
   	const uint32* id = NULL) = 0;
 };
 
-#endif // __IUTIL_CACHE_H__
+#endif // __CS_IUTIL_CACHE_H__
 

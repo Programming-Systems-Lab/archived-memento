@@ -17,17 +17,18 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_SECTOR_H__
-#define __IENGINE_SECTOR_H__
+#ifndef __CS_IENGINE_SECTOR_H__
+#define __CS_IENGINE_SECTOR_H__
 
 /**\file
  */
 /**
  * \addtogroup engine3d
  * @{ */
- 
+
 #include "cstypes.h"
 #include "csutil/scf.h"
+#include "iutil/object.h"
 
 class csVector3;
 class csSector;
@@ -37,6 +38,7 @@ class csReversibleTransform;
 struct iMeshWrapper;
 struct iMeshList;
 struct iLightList;
+struct iLight;
 struct iThing;
 struct iStatLight;
 struct iVisibilityCuller;
@@ -45,6 +47,7 @@ struct csFog;
 struct iGraphics3D;
 struct iPolygon3D;
 struct iRenderView;
+struct iFrustumView;
 struct iSector;
 
 SCF_VERSION (iSectorCallback, 0, 0, 1);
@@ -64,7 +67,7 @@ struct iSectorCallback : public iBase
 };
 
 
-SCF_VERSION (iSector, 0, 4, 5);
+SCF_VERSION (iSector, 0, 5, 1);
 
 /**
  * The iSector interface is used to work with "sectors". A "sector"
@@ -82,6 +85,7 @@ struct iSector : public iBase
   /// Get the iObject for this sector.
   virtual iObject *QueryObject() = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /// Has this sector fog?
   virtual bool HasFog () const = 0;
   /// Return the fog structure (even if fog is disabled)
@@ -90,10 +94,15 @@ struct iSector : public iBase
   virtual void SetFog (float density, const csColor& color) = 0;
   /// Disable fog in this sector
   virtual void DisableFog () = 0;
+#endif // CS_USE_NEW_RENDERER
 
   /// Get the list of meshes in this sector.
   virtual iMeshList* GetMeshes () = 0;
-  /// Get the list of static and pseudo-dynamic lights in this sector.
+  /**
+   * Get the list of static and pseudo-dynamic lights in this sector.
+   * Do NOT add dynamic lights to this list. For a dynamic light
+   * you only have to call SetSector() on those dynamic lights.
+   */
   virtual iLightList* GetLights () = 0;
 
   /// Calculate lighting for all objects in this sector
@@ -104,19 +113,17 @@ struct iSector : public iBase
   /// Sets dynamic ambient light for all things in the sector
   virtual void SetDynamicAmbientLight(const csColor& color) = 0;
 
+  /// Get the last set dynamic ambient light for this sector.
+  virtual csColor GetDynamicAmbientLight() const = 0;
+
   /**
    * Calculate the bounding box of all objects in this sector.
    * This function is not very efficient as it will traverse all objects
    * in the sector one by one and compute a bounding box from that.
    */
   virtual void CalculateSectorBBox (csBox3& bbox,
-  	bool do_meshes) const = 0;
+    bool do_meshes) const = 0;
 
-  /**
-   * Use the specified mesh object as the visibility culler for
-   * this sector.
-   */
-  virtual bool SetVisibilityCuller (const char *Name) = 0;
   /**
    * Use the specified plugin as the visibility culler for
    * this sector. Returns false if the culler could not be
@@ -143,7 +150,7 @@ struct iSector : public iBase
    * if a polygon is returned.
    */
   virtual iPolygon3D* HitBeam (const csVector3& start, const csVector3& end,
-  	csVector3& isect) = 0;
+    csVector3& isect) = 0;
 
   /**
    * Follow a beam from start to end and return the first object
@@ -152,7 +159,7 @@ struct iSector : public iBase
    * If polygonPtr is null then the polygon will not be filled in.
    */
   virtual iMeshWrapper* HitBeam (const csVector3& start, const csVector3& end,
-  	csVector3& intersect, iPolygon3D** polygonPtr) = 0;
+    csVector3& intersect, iPolygon3D** polygonPtr) = 0;
 
   /**
    * Follow a segment starting at this sector. If the segment intersects
@@ -173,10 +180,34 @@ struct iSector : public iBase
    * collision detection system to test with walls.
    */
   virtual iSector* FollowSegment (csReversibleTransform& t,
-  	csVector3& new_position, bool& mirror, bool only_portals = false) = 0;
+    csVector3& new_position, bool& mirror, bool only_portals = false) = 0;
 
   /// Draw the sector with the given render view
   virtual void Draw (iRenderView* rview) = 0;
+#ifdef CS_USE_NEW_RENDERER
+  /**
+   * The following three Draw* calls divide the draw into three passes.
+   * They correspond to similar Draw* calls in the MeshObject.  The 
+   * first fills the zBuffer and draws any meshes into the framebuffer
+   * which do not use the lighting system (i.e., lightmapped meshes)
+   * It will also store all objects drawn for the current scene, so that
+   * on the following passes, occlusions will not need to be redetermined.
+   * The object_list should be deleted by the calling function with
+   * delete [].
+   */
+  virtual void DrawZ (iRenderView* rview) = 0;
+  /**
+   * The second pass draws a shadow volume version of the object which
+   * uses the filled zBuffer to determine how to fill the stencil 
+   * buffer to mask out portions of light which are in shadow.
+   */
+  virtual void DrawShadow (iRenderView* rview, iLight *light) = 0;
+  /**
+   * The third pass draws the diffuse lit mesh using the stencil buffer
+   * to enable the shadows.
+   */
+  virtual void DrawLight (iRenderView* rview, iLight *light) = 0;
+#endif
 
   /**
    * Set the sector callback. This will call IncRef() on the callback
@@ -191,9 +222,12 @@ struct iSector : public iBase
 
   /// Get the number of sector callbacks.
   virtual int GetSectorCallbackCount () const = 0;
-  
+
   /// Get the specified sector callback.
   virtual iSectorCallback* GetSectorCallback (int idx) const = 0;
+
+  /// Used for portal traversal.
+  virtual void CheckFrustum (iFrustumView* lview) = 0;
 };
 
 
@@ -252,5 +286,5 @@ struct iSectorIterator : public iBase
 
 /** @} */
 
-#endif // __IENGINE_SECTOR_H__
+#endif // __CS_IENGINE_SECTOR_H__
 

@@ -17,13 +17,22 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_VBUFMGR_H__
-#define __IVIDEO_VBUFMGR_H__
+#ifndef __CS_IVIDEO_VBUFMGR_H__
+#define __CS_IVIDEO_VBUFMGR_H__
+
+#ifndef CS_USE_NEW_RENDERER
 
 /**\file
+ * Vertex buffer manager interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+ 
 #include "csutil/scf.h"
 
+class csBox3;
 class csMatrix3;
 class csPlane3;
 class csVector3;
@@ -32,7 +41,7 @@ class csColor;
 struct iPolygonTexture;
 struct iMaterialHandle;
 
-SCF_VERSION (iVertexBuffer, 0, 1, 0);
+SCF_VERSION (iVertexBuffer, 0, 1, 1);
 
 /**
  * This interface represents a black-box vertex buffer.
@@ -71,9 +80,13 @@ struct iVertexBuffer : public iBase
    * Get the number of vertices.
    */
   virtual int GetVertexCount () const = 0;
+  /**
+   * Get a bounding box for all the vertices.
+   */
+  virtual const csBox3& GetBoundingBox () const = 0;
 };
 
-SCF_VERSION (iPolygonBuffer, 0, 0, 3);
+SCF_VERSION (iPolygonBuffer, 0, 1, 1);
 
 /**
  * This interface represents a black-box polygon buffer.
@@ -137,12 +150,22 @@ struct iPolygonBuffer : public iBase
   /// Clear all polygons, materials, and vertex array.
   virtual void Clear () = 0;
 
-   /** Sets the polygon buffer as dirty
-  * This means that the mesh is affected by some light 
-  */
-  virtual void MarkLightmapsDirty() = 0;
+  /**
+   * After adding everything and before using this polygon buffer you
+   * should call Prepare().
+   */
+  virtual void Prepare () = 0;
 
+  /**
+   * Sets the polygon buffer as dirty.
+   * This means that the mesh is affected by some light.
+   */
+  virtual void MarkLightmapsDirty () = 0;
 
+  /**
+   * Get a bounding box for all the vertices.
+   */
+  virtual const csBox3& GetBoundingBox () const = 0;
 };
 
 SCF_VERSION (iVertexBufferManagerClient, 0, 0, 1);
@@ -205,11 +228,12 @@ struct iVertexBufferManager : public iBase
   	csVector3* verts,
 	csVector2* texels,
 	csColor* colors,
-	int num_verts, int buf_number) = 0;
+	int num_verts, int buf_number,
+	const csBox3& bbox) = 0;
 
   virtual bool LockUserArray (iVertexBuffer* buf,
-		int index, float* user, 
-		int num_components, int buf_number) = 0;
+	int index, float* user, 
+	int num_components, int buf_number) = 0;
 
   /**
    * Unlock a vertex buffer.
@@ -234,5 +258,9 @@ struct iVertexBufferManager : public iBase
   virtual void RemoveClient (iVertexBufferManagerClient *client) = 0;
 };
 
-#endif // __IVIDEO_VBUFMGR_H__
+#endif // CS_USE_NEW_RENDERER
+
+/** @} */
+
+#endif // __CS_IVIDEO_VBUFMGR_H__
 

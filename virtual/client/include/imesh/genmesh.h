@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IMESH_GENMESH_H__
-#define __IMESH_GENMESH_H__
+#ifndef __CS_IMESH_GENMESH_H__
+#define __CS_IMESH_GENMESH_H__
 
 #include "csutil/scf.h"
 
@@ -29,7 +29,7 @@ struct csTriangle;
 
 struct iMaterialWrapper;
 
-SCF_VERSION (iGeneralMeshState, 0, 0, 1);
+SCF_VERSION (iGeneralMeshState, 0, 0, 3);
 
 /**
  * This interface describes the API for the general mesh object.
@@ -61,6 +61,24 @@ struct iGeneralMeshState : public iBase
   virtual void SetManualColors (bool m) = 0;
   /// Are manual colors enabled?
   virtual bool IsManualColors () const = 0;
+  /**
+   * Set shadowing. By default genmesh objects will cast shadows
+   * (during the static lighting phase). You can disable this here.
+   */
+  virtual void SetShadowCasting (bool m) = 0;
+  /// Is shadow casting enabled?
+  virtual bool IsShadowCasting () const = 0;
+  /**
+   * Set shadow receiving on. By default this is disabled in which
+   * case the genmesh object will receive all lighting information
+   * dynamically but without shadows. If this is enabled then
+   * the lighting system resembles more the lighting system with
+   * things which static and pseudo-dynamic lighting. In this
+   * case there will be shadows on the genmesh instance.
+   */
+  virtual void SetShadowReceiving (bool m) = 0;
+  /// Is shadow receiving enabled?
+  virtual bool IsShadowReceiving () const = 0;
 };
 
 SCF_VERSION (iGeneralFactoryState, 0, 0, 2);
@@ -139,5 +157,5 @@ struct iGeneralFactoryState : public iBase
   virtual void GenerateBox (const csBox3& box) = 0;
 };
 
-#endif
+#endif // __CS_IMESH_GENMESH_H__
 

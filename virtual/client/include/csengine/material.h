@@ -27,6 +27,10 @@
 #include "iengine/material.h"
 #include "ivideo/effects/efdef.h"
 
+#ifdef CS_USE_NEW_RENDERER
+  #include "ivideo/shader/shader.h"
+#endif
+
 struct iTextureWrapper;
 struct iTextureManager;
 
@@ -49,7 +53,7 @@ private:
   /// Optional texture layer.
   csTextureLayer texture_layers[4];
   /// Texture wrappers for texture layers.
-  iTextureWrapper* texture_layer_wrappers[4];
+  csRef<iTextureWrapper> texture_layer_wrappers[4];
 
   /// The diffuse reflection value of the material
   float diffuse;
@@ -60,6 +64,11 @@ private:
   
   /// The effect associated with this material
   iEffectDefinition* effect;
+
+#ifdef CS_USE_NEW_RENDERER
+  /// Shader assoiciated with material
+  csRef<iShader> shader;
+#endif
 
 public:
   /**
@@ -104,6 +113,14 @@ public:
         float uscale, float vscale, float ushift, float vshift);
 
   //--------------------- iMaterial implementation ---------------------
+
+#ifdef CS_USE_NEW_RENDERER
+  /// Set associated shader
+  virtual void SetShader (iShader* shader);
+  /// Get associated shader
+  virtual iShader* GetShader ();
+
+#endif
 
   /// Set effect.
   virtual void SetEffect (iEffectDefinition *ed);
@@ -227,16 +244,15 @@ public:
   friend struct MaterialWrapper;
 };
 
-CS_DECLARE_OBJECT_VECTOR (csMaterialListHelper, iMaterialWrapper);
-
 /**
  * This class is used to hold a list of materials.
  */
-class csMaterialList : public csMaterialListHelper
+class csMaterialList : public csRefArrayObject<iMaterialWrapper>
 {
 public:
   /// Initialize the array
   csMaterialList ();
+  virtual ~csMaterialList () { }
 
   /// Create a new material.
   iMaterialWrapper* NewMaterial (iMaterial* material);

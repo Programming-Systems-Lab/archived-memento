@@ -17,12 +17,15 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSOBJ_H__
-#define __CSOBJ_H__
+#ifndef __CS_CSOBJECT_H__
+#define __CS_CSOBJECT_H__
 
 #include "cstypes.h"
 #include "csutil/util.h"
 #include "iutil/object.h"
+#include "csutil/refarr.h"
+
+typedef csRefArray<iObject> csObjectContainer;
 
 /**
  * A generic csObject class. Any csObject can have any number of iObject
@@ -37,7 +40,7 @@ protected:
   CS_ID csid;
 
   /// The array of child nodes
-  class csObjectContainer *Children;
+  csObjectContainer *Children;
 
   /// Object's name or NULL if unnamed.
   char *Name;
@@ -117,4 +120,4 @@ public:
   virtual void ObjReleaseOld (iObject *obj);
 };
 
-#endif // __CSOBJ_H__
+#endif // __CS_CSOBJECT_H__

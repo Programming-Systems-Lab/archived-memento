@@ -17,12 +17,19 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IEFFECTSERVER_H__
-#define __IEFFECTSERVER_H__
+#ifndef __CS_IVIDEO_EFFECTSERVER_H__
+#define __CS_IVIDEO_EFFECTSERVER_H__
 
 /**\file
+ * Effect server interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+
 #include "csutil/scf.h"
+#include "csutil/ref.h"
 #include "csutil/strset.h"
 #include "cstypes.h"
 
@@ -39,23 +46,25 @@ struct iEffectServer : public iBase
 {
 public:
   /// Create a new effect.
-  virtual iEffectDefinition* CreateEffect() = 0;
+  virtual csPtr<iEffectDefinition> CreateEffect() = 0;
 
   /// Validate an effect.
-  virtual bool Validate( iEffectDefinition* effect ) = 0;
+  virtual bool Validate (iEffectDefinition* effect ) = 0;
 
   /// Select the best technique in an effect, based on validity and quality settings.
-  virtual iEffectTechnique* SelectAppropriateTechnique( iEffectDefinition* effect ) = 0;
+  virtual iEffectTechnique* SelectAppropriateTechnique (iEffectDefinition* effect ) = 0;
 
   /// Get a effect based on it's name
-  virtual iEffectDefinition* GetEffect(const char *s) = 0;
+  virtual iEffectDefinition* GetEffect (const char *s) = 0;
 
   /// Request an ID for a string.
-  virtual csStringID RequestString( const char *s ) = 0;
+  virtual csStringID RequestString (const char *s) = 0;
   /// Request string for an ID.
-  virtual const char* RequestString( csStringID id ) = 0;
+  virtual const char* RequestString (csStringID id) = 0;
   /// Get our csEffectStrings
   virtual inline csEffectStrings* GetStandardStrings() = 0;
 };
 
-#endif // __IEFFECTSERVER_H__
+/** @} */
+
+#endif // __CS_IVIDEO_EFFECTSERVER_H__

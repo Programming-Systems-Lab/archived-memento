@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __PROCTEX_H__
-#define __PROCTEX_H__
+#ifndef __CS_PROCTEX_H__
+#define __CS_PROCTEX_H__
 
 #include <stdarg.h>
 #include "csutil/csobject.h"
@@ -33,10 +33,21 @@ struct iGraphics2D;
 struct iGraphics3D;
 struct iTextureManager;
 struct iTextureWrapper;
+struct iEventHandler;
 
+/**
+ * Generic superclass for procedural textures. This class
+ * takes care of scheduling when a procedural texture needs updating.
+ */
 class csProcTexture : public csObject
 {
   friend struct ProcCallback;
+
+private:
+  // Setup the procedural event handler (used for updating visible
+  // proc textures).
+  static iEventHandler* SetupProcEventHandler (iObjectRegistry* object_reg);
+  csRef<iEventHandler> proceh;
 
 protected:
   // Will be set to true as soon as pt is initialized.
@@ -49,10 +60,8 @@ protected:
   iTextureWrapper* tex;
   // Dimensions of texture.
   int mat_w, mat_h;
-  // Procedural G3D and G2D.
-  iGraphics3D* ptG3D;
-  iGraphics2D* ptG2D;
-  iTextureManager* ptTxtMgr;
+  csRef<iGraphics3D> g3d;
+  csRef<iGraphics2D> g2d;
   iObjectRegistry* object_reg;
   bool anim_prepared;
 
@@ -63,6 +72,8 @@ protected:
   // so that the texture is automatically updated (Animate is called)
   // whenever it is used.
   bool use_cb;
+
+public:
   // The current time the previous time the callback was called.
   // This is used to detect if the callback is called multiple times
   // in one frame.
@@ -74,6 +85,9 @@ private:
 public:
   csProcTexture ();
   virtual ~csProcTexture ();
+
+  iGraphics3D* GetG3D () { return g3d; }
+  iGraphics2D* GetG2D () { return g2d; }
 
   /**
    * Disable auto-update. By default csProcTexture will register
@@ -147,5 +161,5 @@ public:
 };
 
 
-#endif // __PROCTEX_H__
+#endif // __CS_PROCTEX_H__
 

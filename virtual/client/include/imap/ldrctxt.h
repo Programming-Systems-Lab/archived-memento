@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IMAP_LDRCTXT_H__
-#define __IMAP_LDRCTXT_H__
+#ifndef __CS_IMAP_LDRCTXT_H__
+#define __CS_IMAP_LDRCTXT_H__
 
 /**\file
  */
@@ -30,6 +30,7 @@ struct iMeshFactoryWrapper;
 struct iMeshWrapper;
 struct iSector;
 struct iTextureWrapper;
+struct iLight;
 
 SCF_VERSION (iLoaderContext, 0, 0, 3);
 
@@ -58,9 +59,12 @@ struct iLoaderContext : public iBase
   virtual iMeshWrapper* FindMeshObject (const char* name) = 0;
   /// Find a texture. 
   virtual iTextureWrapper* FindTexture (const char* name) = 0;
+  /// Find a light
+  virtual iLight* FindLight (const char* name) = 0;
+
 };
 
 /** @} */
 
-#endif
+#endif // __CS_IMAP_LDRCTXT_H__
 

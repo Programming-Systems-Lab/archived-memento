@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __INETWORK_SOCKETERR__
-#define __INETWORK_SOCKETERR__
+#ifndef __CS_INETWORK_SOCKETERR_H__
+#define __CS_INETWORK_SOCKETERR_H__
 
 enum csNetworkSocketType
 {
@@ -52,12 +52,14 @@ enum csNetworkSocketError
   CS_NET_SOCKET_CANNOT_IOCTL,
   /// Unable to accept incoming connection
   CS_NET_SOCKET_CANNOT_ACCEPT,
-  /// No data was received
-  CS_NET_SOCKET_NODATA,
+  /// Operation would block
+  CS_NET_SOCKET_WOULDBLOCK,
+  /// No data was received (alias for CS_NET_SOCKET_WOULDBLOCK)
+  CS_NET_SOCKET_NODATA = CS_NET_SOCKET_WOULDBLOCK,
   /// Unable to resolve address
   CS_NET_SOCKET_CANNOT_RESOLVE,
   /// Unable to connect
   CS_NET_SOCKET_CANNOT_CONNECT
 };
 
-#endif
+#endif // __CS_INETWORK_SOCKETERR_H__

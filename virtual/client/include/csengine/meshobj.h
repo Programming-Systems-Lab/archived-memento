@@ -22,52 +22,60 @@
 #include "csgeom/transfrm.h"
 #include "csutil/csobject.h"
 #include "csutil/nobjvec.h"
-#include "csutil/csvector.h"
+#include "csutil/refarr.h"
 #include "csutil/flags.h"
 #include "csutil/garray.h"
 #include "csengine/movable.h"
 #include "imesh/object.h"
+#include "imesh/lighting.h"
 #include "iengine/mesh.h"
 #include "iengine/viscull.h"
+#include "iengine/imposter.h"
+#include "iengine/shadcast.h"
 #include "ivideo/graph3d.h"
+#include "csengine/impmesh.h"
 
 struct iMeshWrapper;
 struct iRenderView;
 struct iMovable;
+struct iSharedVariable;
 class csMeshWrapper;
 class csMeshFactoryWrapper;
 class csLight;
-
-CS_DECLARE_OBJECT_VECTOR (csMeshListHelper, iMeshWrapper);
 
 /**
  * General list of meshes. This class implements iMeshList.
  * Subclasses of this class can override FreeItem(), AddMesh(),
  * and RemoveMesh() for more specific functionality.
  */
-class csMeshList : public csMeshListHelper
+class csMeshList : public iMeshList
 {
+private:
+  csRefArrayObject<iMeshWrapper> list;
+
 public:
   SCF_DECLARE_IBASE;
 
   /// constructor
   csMeshList ();
+  virtual ~csMeshList ();
 
   /// Find a mesh in <name>:<childname>:<childname> notation.
   iMeshWrapper *FindByNameWithChild (const char *Name) const;
 
-  class MeshList : public iMeshList
-  {
-    SCF_DECLARE_EMBEDDED_IBASE (csMeshList);
-    virtual int GetCount () const;
-    virtual iMeshWrapper *Get (int n) const;
-    virtual int Add (iMeshWrapper *obj);
-    virtual bool Remove (iMeshWrapper *obj);
-    virtual bool Remove (int n);
-    virtual void RemoveAll ();
-    virtual int Find (iMeshWrapper *obj) const;
-    virtual iMeshWrapper *FindByName (const char *Name) const;
-  } scfiMeshList;
+  /// Override PrepareItem
+  virtual void PrepareItem (iMeshWrapper*) { }
+  /// Override FreeItem
+  virtual void FreeItem (iMeshWrapper*) { }
+
+  virtual int GetCount () const { return list.Length () ; }
+  virtual iMeshWrapper *Get (int n) const { return list.Get (n); }
+  virtual int Add (iMeshWrapper *obj);
+  virtual bool Remove (iMeshWrapper *obj);
+  virtual bool Remove (int n);
+  virtual void RemoveAll ();
+  virtual int Find (iMeshWrapper *obj) const;
+  virtual iMeshWrapper *FindByName (const char *Name) const;
 };
 
 /**
@@ -80,37 +88,37 @@ private:
 
 public:
   csMeshMeshList () : mesh (NULL) { }
-  ~csMeshMeshList () { DeleteAll (); }
+  virtual ~csMeshMeshList () { RemoveAll (); }
   void SetMesh (csMeshWrapper* m) { mesh = m; }
-  virtual bool PrepareItem (csSome Item);
-  virtual bool FreeItem (csSome Item);
+  virtual void PrepareItem (iMeshWrapper* item);
+  virtual void FreeItem (iMeshWrapper* item);
 };
-
-CS_DECLARE_OBJECT_VECTOR (csMeshFactoryListHelper, iMeshFactoryWrapper);
 
 /**
  * A list of mesh factories.
  */
-class csMeshFactoryList : public csMeshFactoryListHelper
+class csMeshFactoryList : public iMeshFactoryList
 {
+private:
+  csRefArrayObject<iMeshFactoryWrapper> list;
+
 public:
   SCF_DECLARE_IBASE;
 
   /// constructor
   csMeshFactoryList ();
+  virtual ~csMeshFactoryList () { RemoveAll (); }
+  virtual void PrepareItem (iMeshFactoryWrapper*) { }
+  virtual void FreeItem (iMeshFactoryWrapper*) { }
 
-  class MeshFactoryList : public iMeshFactoryList
-  {
-    SCF_DECLARE_EMBEDDED_IBASE (csMeshFactoryList);
-    virtual int GetCount () const;
-    virtual iMeshFactoryWrapper *Get (int n) const;
-    virtual int Add (iMeshFactoryWrapper *obj);
-    virtual bool Remove (iMeshFactoryWrapper *obj);
-    virtual bool Remove (int n);
-    virtual void RemoveAll ();
-    virtual int Find (iMeshFactoryWrapper *obj) const;
-    virtual iMeshFactoryWrapper *FindByName (const char *Name) const;
-  } scfiMeshFactoryList;
+  virtual int GetCount () const { return list.Length (); }
+  virtual iMeshFactoryWrapper *Get (int n) const { return list.Get (n); }
+  virtual int Add (iMeshFactoryWrapper *obj);
+  virtual bool Remove (iMeshFactoryWrapper *obj);
+  virtual bool Remove (int n);
+  virtual void RemoveAll ();
+  virtual int Find (iMeshFactoryWrapper *obj) const;
+  virtual iMeshFactoryWrapper *FindByName (const char *Name) const;
 };
 
 /**
@@ -123,10 +131,10 @@ private:
 
 public:
   csMeshFactoryFactoryList () : meshfact (NULL) {}
-  ~csMeshFactoryFactoryList () { DeleteAll (); }
+  virtual ~csMeshFactoryFactoryList () { RemoveAll (); }
   void SetMeshFactory (csMeshFactoryWrapper* m) { meshfact = m; }
-  virtual bool PrepareItem (csSome Item);
-  virtual bool FreeItem (csSome Item);
+  virtual void PrepareItem (iMeshFactoryWrapper* item);
+  virtual void FreeItem (iMeshFactoryWrapper* item);
 };
 
 SCF_VERSION (csMeshWrapper, 0, 0, 1);
@@ -140,7 +148,6 @@ class csMeshWrapper : public csObject
   friend class csMovableSectorList;
 
 protected:
-
   /// The parent mesh object, or NULL
   iMeshWrapper *Parent;
 
@@ -159,21 +166,25 @@ protected:
   /// Flags to use for defered lighting.
   int defered_lighting_flags;
 
+#ifdef CS_USE_NEW_RENDERER
+  /// Cached value from DrawTest
+  bool draw_test;
+  /// Cached light test
+  bool in_light;
+#endif
+
   /**
    * This value indicates the last time that was used to do animation.
    * If 0 then we haven't done animation yet. We compare this value
    * with the value returned by engine->GetLastAnimationTime() to see
    * if we need to call meshobj->NextFrame() again.
-  */
+   */
   csTicks last_anim_time;
 
   /**
-   * Flag which is set to true when the object is visible.
-   * This is used by the c-buffer/bsp routines. The object itself
-   * will not use this flag in any way at all. It is simply intended
-   * for external visibility culling routines.
+   * Current visibility number used by the visibility culler.
    */
-  bool is_visible;
+  uint32 visnr;
 
   /**
    * Position in the world.
@@ -193,7 +204,11 @@ protected:
 
 private:
   /// Mesh object corresponding with this csMeshWrapper.
-  csRef<iMeshObject> mesh;
+  csRef<iMeshObject> meshobj;
+  /// For optimization purposes we keep the iLightingInfo interface here.
+  csRef<iLightingInfo> light_info;
+  /// For optimization purposes we keep the iShadowReceiver interface here.
+  csRef<iShadowReceiver> shadow_receiver;
 
   /// Children of this object (other instances of iMeshWrapper).
   csMeshMeshList children;
@@ -202,7 +217,7 @@ private:
    * The callbacks which are called just before drawing.
    * Type: iMeshDrawCallback.
    */
-  csVector draw_cb_vector;
+  csRefArray<iMeshDrawCallback> draw_cb_vector;
 
   /// Optional reference to the parent csMeshFactoryWrapper.
   iMeshFactoryWrapper* factory;
@@ -210,9 +225,22 @@ private:
   /// Z-buf mode to use for drawing this object.
   csZBufMode zbufMode;
 
+  /// Flag indicating whether this mesh should try to imposter or not
+  bool imposter_active;
+
+  /// Imposter Threshold Range
+  csRef<iSharedVariable> min_imposter_distance;
+
+  /// Imposter Redo Threshold angle change
+  csRef<iSharedVariable> imposter_rotation_tolerance;
+
+  csImposterMesh *imposter_mesh;
+
 public:
   /// Set of flags
   csFlags flags;
+  /// Culler flags.
+  csFlags culler_flags;
 
 protected:
   /// Move this object to the specified sector. Can be called multiple times.
@@ -231,9 +259,8 @@ protected:
   void UpdateMove ();
 
   /**
-   * Draw this mesh object given a camera transformation.
-   * If needed the skeleton state will first be updated.
-   * Optionally update lighting if needed (DeferUpdateLighting()).
+   * This function determines whether to draw the imposter
+   * or the true mesh and calls the appropriate function.
    */
   void DrawInt (iRenderView* rview);
 
@@ -245,7 +272,7 @@ protected:
 
 public:
   /// Constructor.
-  csMeshWrapper (iMeshWrapper* theParent, iMeshObject* mesh);
+  csMeshWrapper (iMeshWrapper* theParent, iMeshObject* meshobj);
   /// Constructor.
   csMeshWrapper (iMeshWrapper* theParent);
 
@@ -266,9 +293,9 @@ public:
   }
 
   /// Set the mesh object.
-  void SetMeshObject (iMeshObject* mesh);
+  void SetMeshObject (iMeshObject* meshobj);
   /// Get the mesh object.
-  iMeshObject* GetMeshObject () const {return mesh;}
+  iMeshObject* GetMeshObject () const { return meshobj; }
 
   /// Set the Z-buf drawing mode to use for this object.
   void SetZBufMode (csZBufMode mode) { zbufMode = mode; }
@@ -286,17 +313,13 @@ public:
   void SetDrawCallback (iMeshDrawCallback* cb)
   {
     draw_cb_vector.Push (cb);
-    cb->IncRef ();
   }
 
   void RemoveDrawCallback (iMeshDrawCallback* cb)
   {
     int idx = draw_cb_vector.Find (cb);
     if (idx != -1)
-    {
       draw_cb_vector.Delete (idx);
-      cb->DecRef ();
-    }
   }
 
   virtual int GetDrawCallbackCount () const
@@ -306,17 +329,22 @@ public:
 
   iMeshDrawCallback* GetDrawCallback (int idx) const
   {
-    return (iMeshDrawCallback*)draw_cb_vector.Get (idx);
+    return draw_cb_vector.Get (idx);
   }
 
   /// Mark this object as visible.
-  void MarkVisible () { is_visible = true; }
-
-  /// Mark this object as invisible.
-  void MarkInvisible () { is_visible = false; }
+  void SetVisibilityNumber (uint32 vis)
+  {
+    visnr = vis;
+    if (Parent)
+    {
+      ((csMeshWrapper::MeshWrapper*)Parent)->scfParent
+      	->SetVisibilityNumber (vis);
+    }
+  }
 
   /// Return if this object is visible.
-  bool IsVisible () const { return is_visible; }
+  uint32 GetVisibilityNumber () const { return visnr; }
 
   /**
    * Light object according to the given array of lights (i.e.
@@ -338,8 +366,17 @@ public:
    */
   void Draw (iRenderView* rview);
 
-  /// Returns true if this object wants to die.
-  bool WantToDie () { return mesh->WantToDie (); }
+#ifdef CS_USE_NEW_RENDERER
+  /**
+   * Draw the zpass for the object.  If this object doesn't use lighting
+   * then it can be drawn fully here.
+   */
+  void DrawZ (iRenderView* rview);
+  /// This pass sets up the shadow stencil buffer
+  void DrawShadow (iRenderView* rview, iLight* light);
+  /// This pass draws the diffuse lit mesh
+  void DrawLight (iRenderView* rview, iLight* light);
+#endif
 
   /**
    * Get the movable instance for this object.
@@ -437,6 +474,65 @@ public:
     return render_priority;
   }
 
+  //---------- iImposter Functions -----------------//
+
+  /// Set true if this Mesh should use Impostering
+  void SetImposterActive(bool flag,iObjectRegistry *objreg);
+
+  /**
+   * Determine if this mesh is using Impostering
+   * (not if Imposter is being drawn, but simply considered).
+   */
+  bool GetImposterActive() const
+  { return imposter_active; }
+
+  /**
+   * Minimum Imposter Distance is the distance from camera 
+   * beyond which imposter is used. Imposter gets a 
+   * ptr here because value is a shared variable 
+   * which can be changed at runtime for many objects.
+   */
+  void SetMinDistance(iSharedVariable* dist)
+  { min_imposter_distance = dist; }
+
+  /** 
+   * Rotation Tolerance is the maximum allowable 
+   * angle difference between when the imposter was 
+   * created and the current position of the camera.
+   * Angle greater than this triggers a re-render of
+   * the imposter.
+   */
+  void SetRotationTolerance(iSharedVariable* angle)
+  { imposter_rotation_tolerance = angle; }
+
+  /**
+   * Tells the object to create its proctex and polygon
+   * for use by main render process later, relative to
+   * the specified Point Of View.
+   */
+  void CreateImposter(csReversibleTransform& /*pov*/)
+  { /* implement later */ }
+
+  /**
+   * Renders the imposter on the screen
+   */
+  bool DrawImposter (iRenderView *rview);
+
+  /// Determine if imposter or true rendering will be used
+  bool WouldUseImposter(csReversibleTransform& /*pov*/)
+  { /* implement later */ return false; }
+
+  /// This is true function to check distances.  Fn above may not be needed.
+  bool CheckImposterRelevant (iRenderView *rview);
+  
+  /**
+   * Draw this mesh object given a camera transformation, non-impostered.
+   * If needed the skeleton state will first be updated.
+   * Optionally update lighting if needed (DeferUpdateLighting()).
+   */
+  void DrawIntFull (iRenderView* rview);
+
+  //--------------------- SCF stuff follows ------------------------------//
   SCF_DECLARE_IBASE_EXT (csObject);
 
   //--------------------- iMeshWrapper implementation --------------------//
@@ -458,6 +554,14 @@ public:
     virtual void SetMeshObject (iMeshObject* m)
     {
       scfParent->SetMeshObject (m);
+    }
+    virtual iLightingInfo* GetLightingInfo () const
+    {
+      return scfParent->light_info;
+    }
+    virtual iShadowReceiver* GetShadowReceiver () const
+    {
+      return scfParent->shadow_receiver;
     }
     virtual iMeshFactoryWrapper* GetFactory () const
     {
@@ -556,7 +660,7 @@ public:
   	csBox3& cbox);
     virtual iMeshList* GetChildren ()
     {
-      return &(scfParent->children.scfiMeshList);
+      return &scfParent->children;
     }
     virtual iMeshWrapper* GetParentContainer ()
     {
@@ -574,10 +678,20 @@ public:
     {
       scfParent->Draw (rview);
     }
-    virtual bool WantToDie ()
-    {
-      return scfParent->WantToDie ();
-    }
+#ifdef CS_USE_NEW_RENDERER
+    virtual void DrawZ (iRenderView* rview) 
+	{
+	  scfParent->DrawZ (rview);
+	}
+	virtual void DrawShadow (iRenderView* rview, iLight* light)
+	{
+	  scfParent->DrawShadow (rview, light);
+	}
+	virtual void DrawLight (iRenderView* rview, iLight* light)
+	{
+	  scfParent->DrawLight (rview, light);
+	}
+#endif
   } scfiMeshWrapper;
   friend struct MeshWrapper;
 
@@ -589,15 +703,46 @@ public:
     {
       return &(scfParent->movable.scfiMovable);
     }
-    virtual void MarkVisible () { scfParent->MarkVisible (); }
-    virtual void MarkInvisible () { scfParent->MarkInvisible (); }
-    virtual bool IsVisible () const { return scfParent->IsVisible (); }
+    virtual iMeshWrapper* GetMeshWrapper () const
+    {
+      return &(scfParent->scfiMeshWrapper);
+    }
+    virtual void SetVisibilityNumber (uint32 vis)
+    {
+      scfParent->SetVisibilityNumber (vis);
+    }
+    virtual uint32 GetVisibilityNumber () const
+    {
+      return scfParent->GetVisibilityNumber ();
+    }
     virtual iObjectModel* GetObjectModel ()
     {
-      return scfParent->mesh->GetObjectModel ();
+      return scfParent->meshobj->GetObjectModel ();
+    }
+    virtual csFlags& GetCullerFlags ()
+    {
+      return scfParent->culler_flags;
     }
   } scfiVisibilityObject;
   friend struct VisObject;
+
+  //-------------------- iImposter interface implementation ----------
+  struct MeshImposter : public iImposter
+  {
+    SCF_DECLARE_EMBEDDED_IBASE (csMeshWrapper);
+    virtual void SetImposterActive(bool flag,iObjectRegistry *objreg)
+    { scfParent->SetImposterActive(flag,objreg); }
+    virtual bool GetImposterActive() const
+    { return scfParent->GetImposterActive(); }
+    virtual void SetMinDistance(iSharedVariable* dist)
+    { scfParent->SetMinDistance(dist); }
+    virtual void SetRotationTolerance(iSharedVariable* angle)
+    { scfParent->SetRotationTolerance(angle); }
+    virtual void CreateImposter(csReversibleTransform& pov)
+    { scfParent->CreateImposter(pov); }
+    virtual bool WouldUseImposter(csReversibleTransform& pov) const 
+    { return scfParent->WouldUseImposter(pov); }
+  } scfiImposter;
 };
 
 SCF_VERSION (csMeshFactoryWrapper, 0, 0, 3);
@@ -691,7 +836,7 @@ public:
     virtual void SetParentContainer (iMeshFactoryWrapper *p)
       { scfParent->parent = p; }
     virtual iMeshFactoryList* GetChildren ()
-      { return &(scfParent->children.scfiMeshFactoryList); }
+      { return &scfParent->children; }
     virtual csReversibleTransform& GetTransform ()
       { return scfParent->GetTransform (); }
     virtual void SetTransform (const csReversibleTransform& tr)

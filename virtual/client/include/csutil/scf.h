@@ -171,19 +171,20 @@ void Class::IncRef ()							\
  * class in a C++ source module.  Typically, this macro is automatically
  * employed by the SCF_IMPLEMENT_IBASE() convenience macro.
  */
+// A note to the implementation: We do the "if" before the "scRefCount--"
+// to make sure that calling Inc/DecRef doesn't result in a 2nd delete
 #define SCF_IMPLEMENT_IBASE_DECREF(Class)				\
 void Class::DecRef ()							\
 {									\
-  scfRefCount--;							\
-  if (scfRefCount <= 0)							\
+  if (scfRefCount == 1)							\
   {									\
-    SCF_TRACE (("  delete (%s *)%p\n", #Class, this));			\
+    SCF_TRACE ((" delete (%s *)%p\n", #Class, this));			\
     if (scfParent)							\
       scfParent->DecRef ();						\
     delete this;							\
+    return;								\
   }									\
-  else									\
-    SCF_TRACE (("  (%s *)%p->DecRef (%d)\n", #Class, this, scfRefCount));\
+  scfRefCount--;							\
 }
 
 /**

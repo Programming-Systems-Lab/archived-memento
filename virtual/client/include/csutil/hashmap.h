@@ -19,7 +19,7 @@
 #ifndef __CS_HASHMAP_H__
 #define __CS_HASHMAP_H__
 
-#include "csutil/typedvec.h"
+#include "csutil/ptrarr.h"
 
 class csHashMapReversible;
 class csHashIteratorReversible;
@@ -46,9 +46,9 @@ struct csHashElement
 };
 
 /// a vector of csHashElements
-CS_DECLARE_TYPED_VECTOR (csHashBucket, csHashElement);
+typedef csPDelArray<csHashElement> csHashBucket;
 /// a vector of csHashBuckets
-CS_DECLARE_TYPED_VECTOR (csHashBucketVector, csHashBucket);
+typedef csPDelArray<csHashBucket> csHashBucketVector;
 
 /**
  * An iterator to iterate over elements in the hashmap.
@@ -162,6 +162,14 @@ public:
   csHashObject Get (csHashKey key) const;
 
   /**
+   * Delete the given key/object from the map.
+   * This function will only delete the object once. If multiple
+   * 'Put''s are done with the same object then this function will
+   * only delete one of them.
+   */
+  void Delete (csHashKey key, csHashObject object);
+
+  /**
    * Delete all objects from this map with a given key.
    */
   void DeleteAll (csHashKey key);
@@ -216,7 +224,6 @@ public:
   /**
    * Delete an object from the set. This function
    * does nothing if the object is not in the set.
-   * @@@ Not implemented yet!
    */
   void Delete (csHashObject object);
 
@@ -224,5 +231,5 @@ public:
   inline csHashMap *GetHashMap () {return &map;}
 };
 
-#endif //__CS_HASHMAP_H__
+#endif // __CS_HASHMAP_H__
 

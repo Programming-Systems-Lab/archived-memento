@@ -1,4 +1,4 @@
-/*
+  /*
     Copyright (C) 1998-2001 by Jorrit Tyberghein
     Written by Jorrit Tyberghein, Dan Ogles, and Gary Clark.
 
@@ -17,12 +17,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_GRAPH3D_H__
-#define __IVIDEO_GRAPH3D_H__
+#ifndef __CS_IVIDEO_GRAPH3D_H__
+#define __CS_IVIDEO_GRAPH3D_H__
 
 /**\file
+ * 3D graphics interface
  */
 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+ 
 #include "csutil/scf.h"
 #include "csgeom/plane3.h"
 #include "csgeom/vector2.h"
@@ -48,6 +53,8 @@ struct iClipper2D;
 struct iHalo;
 struct csRGBpixel;
 struct csPixelFormat;
+
+#ifndef CS_USE_NEW_RENDERER
 
 #define CS_FOG_FRONT  0
 #define CS_FOG_BACK   1
@@ -271,8 +278,6 @@ enum G3D_RENDERSTATEOPTION
   G3DRENDERSTATE_MAXPOLYGONSTODRAW,
   /// Enable/disable Gouraud shading (parameter is a bool)
   G3DRENDERSTATE_GOURAUDENABLE,
-  /// Gamma correction is passed as a fixed 16.16 value
-  G3DRENDERSTATE_GAMMACORRECTION,
   /// Enable/disable edge drawing (debugging) (parameter is a bool)
   G3DRENDERSTATE_EDGES
 };
@@ -496,7 +501,7 @@ struct csFog
   float blue;
 };
 
-SCF_VERSION (iGraphics3D, 5, 0, 2);
+SCF_VERSION (iGraphics3D, 5, 0, 3);
 
 /**
  * This is the standard 3D graphics interface.
@@ -740,7 +745,35 @@ struct iGraphics3D : public iBase
    * Check if renderer can handle a lightmap.
    * Returns true if it can, false if not.
    */
-  virtual bool IsLightmapOK(iPolygonTexture* poly_texture) = 0;
-};
+  virtual bool IsLightmapOK (iPolygonTexture* poly_texture) = 0;
 
-#endif // __IVIDEO_GRAPH3D_H__
+  /**
+   * Set the target of rendering. If this is NULL then the target will
+   * be the main screen. Otherwise it is a texture. After calling
+   * g3d->FinishDraw() the target will automatically be reset to NULL (main
+   * screen). Note that on some implementions rendering on a texture
+   * will overwrite the screen. So you should only do this BEFORE you
+   * start rendering your frame.
+   * <p>
+   * If 'persistent' is true then the current contents of the texture
+   * will be copied on screen before drawing occurs (in the first
+   * call to BeginDraw). Otherwise it is assumed that you fully render
+   * the texture.
+   */
+  virtual void SetRenderTarget (iTextureHandle* handle,
+  	bool persistent = false) = 0;
+
+  /**
+   * Get the current render target (NULL for screen).
+   */
+  virtual iTextureHandle* GetRenderTarget () const = 0;
+};
+#else
+#include "ivideo/render3d.h"
+#define iGraphics3D iRender3D
+#endif // CS_USE_NEW_RENDERER
+
+/** @} */
+
+#endif // __CS_IVIDEO_GRAPH3D_H__
+

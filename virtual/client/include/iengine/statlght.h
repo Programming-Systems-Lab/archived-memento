@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_STATLGHT_H__
-#define __IENGINE_STATLGHT_H__
+#ifndef __CS_IENGINE_STATLGHT_H__
+#define __CS_IENGINE_STATLGHT_H__
 
 /**\file
  */
@@ -30,8 +30,9 @@
 class csStatLight;
 struct iObject;
 struct iLight;
+struct iLightingInfo;
 
-SCF_VERSION (iStatLight, 0, 0, 1);
+SCF_VERSION (iStatLight, 0, 0, 3);
 
 /**
  * The iStatLight interface is the SCF interface
@@ -46,9 +47,15 @@ struct iStatLight : public iBase
   virtual iObject *QueryObject () = 0;
   /// Return the iLight for this light
   virtual iLight *QueryLight () = 0;
+
+  /**
+   * Add a mesh to this static light. This is usually
+   * called during the lighting procedure of a pseudo-dynamic light.
+   */
+  virtual void AddAffectedLightingInfo (iLightingInfo* li) = 0; 
 };
 
 /** @} */
 
-#endif // __IENGINE_STATLGHT_H__
+#endif // __CS_IENGINE_STATLGHT_H__
 

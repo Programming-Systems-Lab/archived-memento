@@ -16,8 +16,8 @@
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IUTIL_DBGHELP_H__
-#define __IUTIL_DBGHELP_H__
+#ifndef __CS_IUTIL_DBGHELP_H__
+#define __CS_IUTIL_DBGHELP_H__
 
 /**\file
  */
@@ -103,10 +103,12 @@ struct iDebugHelper : public iBase
    */
   virtual csPtr<iString> Dump () = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /**
    * Do a graphical dump of the current state of this object.
    */
   virtual void Dump (iGraphics3D* g3d) = 0;
+#endif // CS_USE_NEW_RENDERER
 
   /**
    * Perform a debug command as defined by the module itself.
@@ -116,5 +118,5 @@ struct iDebugHelper : public iBase
 };
 /** @} */
 
-#endif // __IUTIL_DBGHELP_H__
+#endif // __CS_IUTIL_DBGHELP_H__
 

@@ -16,11 +16,16 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_MATERIAL_H__
-#define __IVIDEO_MATERIAL_H__
+#ifndef __CS_IVIDEO_MATERIAL_H__
+#define __CS_IVIDEO_MATERIAL_H__
 
 /**\file
+ * Material interface
  */
+/**
+ * \addtogroup gfx3d
+ * @{ */
+ 
 #include "csutil/scf.h"
 
 /// Default material `diffuse' parameter
@@ -34,6 +39,7 @@ struct iEffectDefinition;
 struct iTextureHandle;
 struct csRGBpixel;
 struct csRGBcolor;
+struct iShader;
 
 /**
  * This structure represents an extra texture
@@ -62,6 +68,19 @@ SCF_VERSION (iMaterial, 0, 0, 6);
  */
 struct iMaterial : public iBase
 {
+#ifdef CS_USE_NEW_RENDERER
+  /**
+   * Set accosiated shader
+   */
+  virtual void SetShader (iShader* shader) = 0;
+
+  /**
+   * Get accosiated shader
+   */
+  virtual iShader* GetShader () = 0;
+
+#endif
+
   /**
    * Set the material's effect.
    */
@@ -144,4 +163,6 @@ struct iMaterialHandle : public iBase
   virtual void Prepare () = 0;
 };
 
-#endif // __IVIDEO_MATERIAL_H__
+/** @} */
+
+#endif // __CS_IVIDEO_MATERIAL_H__

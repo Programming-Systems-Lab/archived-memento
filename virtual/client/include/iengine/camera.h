@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_CAMERA_H__
-#define __IENGINE_CAMERA_H__
+#ifndef __CS_IENGINE_CAMERA_H__
+#define __CS_IENGINE_CAMERA_H__
 
 /** \file
  */
@@ -176,6 +176,7 @@ struct iCamera : public iBase
   /// Set mirrored state.
   virtual void SetMirrored (bool m) = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /**
    * Check if there is a polygon in front of us in the direction
    * defined by 'v' (world space coordinates). Return the nearest polygon.
@@ -183,6 +184,7 @@ struct iCamera : public iBase
    * vector between the current position of the camera and 'v' is checked.
    */
   virtual iPolygon3D* GetHit (csVector3& v) = 0;
+#endif // CS_USE_NEW_RENDERER
 
   /**
    * Get the 3D far plane that should be used to clip all geometry.
@@ -231,5 +233,5 @@ struct iCamera : public iBase
 
 /** @} */
 
-#endif
+#endif // __CS_IENGINE_CAMERA_H__
 

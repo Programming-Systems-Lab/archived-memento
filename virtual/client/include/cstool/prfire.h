@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __PROCFIRETEX_H__
-#define __PROCFIRETEX_H__
+#ifndef __CS_PROCFIRETEX_H__
+#define __CS_PROCFIRETEX_H__
 
 #include "csutil/cscolor.h"
 #include "cstool/proctex.h"
@@ -29,8 +29,9 @@
 class csProcFire : public csProcTexture
 {
 private:
-  /// palette
-  int *palette;
+  /// Palette.
+  unsigned char* palette;
+  int* palette_idx;
   /// number of colours in palette
   int palsize;
 
@@ -79,5 +80,5 @@ public:
   bool GetSingleFlame() const {return single_flame_mode;}
 };
 
-#endif // __PROCFIRETEX_H__
+#endif // __CS_PROCFIRETEX_H__
 

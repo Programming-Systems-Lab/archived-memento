@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_THING_H__
-#define __IENGINE_THING_H__
+#ifndef __CS_IMESH_THING_H__
+#define __CS_IMESH_THING_H__
 
 #include "csutil/scf.h"
 #include "csutil/flags.h"
@@ -41,13 +41,6 @@ struct iCurveTemplate;
 struct csFog;
 
 /**
- * If CS_THING_VISTREE is set then an octree will be calculated for the
- * polygons in this thing. In this case the thing will implement a
- * fully working iVisibilityCuller which the sector can use.
- */
-#define CS_THING_VISTREE 1
-
-/**
  * If CS_THING_FASTMESH is set then this thing will be drawn using
  * the faster DrawPolygonMesh.
  */
@@ -69,7 +62,7 @@ struct csFog;
 #define CS_THING_MOVE_OFTEN 1
 #define CS_THING_MOVE_OCCASIONAL 2
 
-SCF_VERSION (iThingState, 0, 1, 1);
+SCF_VERSION (iThingState, 0, 3, 0);
 
 /**
  * This is the state interface to access the internals of a thing
@@ -121,7 +114,7 @@ struct iThingState : public iBase
   virtual int GetVertexCount () const = 0;
   /// Get the given vertex coordinates in object space
   virtual const csVector3 &GetVertex (int idx) const = 0;
-  /// Get the vertiex coordinates in object space
+  /// Get the vertex coordinates in object space
   virtual const csVector3* GetVertices () const = 0;
   /// Get the given vertex coordinates in world space
   virtual const csVector3 &GetVertexW (int idx) const = 0;
@@ -149,13 +142,6 @@ struct iThingState : public iBase
    * DeleteVertices(0,1000000000).
    */
   virtual void DeleteVertices (int from, int to) = 0;
-
-  /**
-   * Check frustum visibility on this thing.
-   * First initialize the 2D culler cube.
-   * @@@ Does this belong here?
-   */
-  virtual void CheckFrustum (iFrustumView* fview, iMovable* movable) = 0;
 
   /// Set thing flags (see CS_THING_... values above)
   virtual csFlags& GetFlags () = 0;
@@ -266,15 +252,12 @@ struct iThingState : public iBase
   virtual void ReplaceMaterials (iMaterialList* matList,
   	const char* prefix) = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /// Has this thing fog?
   virtual bool HasFog () const = 0;
   /// Return the fog structure (even if fog is disabled).
   virtual csFog* GetFog () const = 0;
-
-  /// Sets dynamic ambient light for this thing
-  virtual void SetDynamicAmbientLight(const csColor& color) = 0;
-  /// Get dynamic ambient light version to test if needs to be recalculated
-  virtual int GetDynamicAmbientVersion() const = 0;
+#endif // CS_USE_NEW_RENDERER
 
   /**
    * Intersect a segment with this thing and return the first
@@ -301,7 +284,7 @@ struct iThingState : public iBase
   virtual csVector3* GetNormals () = 0;
 };
 
-SCF_VERSION (iThingEnvironment, 0, 0, 2);
+SCF_VERSION (iThingEnvironment, 0, 1, 1);
 
 /**
  * This interface is implemented by the iObjectType for things.
@@ -310,6 +293,12 @@ SCF_VERSION (iThingEnvironment, 0, 0, 2);
  */
 struct iThingEnvironment : public iBase
 {
+  /**
+   * Reset the thing environment (clear all curves, polygon planes,
+   * and other stuff related to things).
+   */
+  virtual void Clear () = 0;
+
   /**
    * Create a new texture mapping plane with the given name.
    * If you don't use a name then there is no way to find the plane by name
@@ -331,6 +320,13 @@ struct iThingEnvironment : public iBase
   virtual void ClearPolyTxtPlanes () = 0;
   /// Remove all curve templates.
   virtual void ClearCurveTemplates () = 0;
+
+  /// Return the current lightmap cell size
+  virtual int GetLightmapCellSize () const = 0;
+  /// Set lightmap cell size
+  virtual void SetLightmapCellSize (int Size) = 0;
+  /// Return default lightmap cell size
+  virtual int GetDefaultLightmapCellSize () const = 0;
 };
 
-#endif
+#endif // __CS_IMESH_THING_H__

@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_FVIEW_H__
-#define __IENGINE_FVIEW_H__
+#ifndef __CS_IENGINE_FVIEW_H__
+#define __CS_IENGINE_FVIEW_H__
 
 /**\file
  */
@@ -31,7 +31,9 @@
 #include "csgeom/box.h"
 
 struct iFrustumView;
+struct iShadowBlock;
 struct iShadowBlockList;
+struct iMeshWrapper;
 class csFrustum;
 class csFrustumContext;
 class csObject;
@@ -47,6 +49,12 @@ struct iFrustumViewUserdata : public iBase
 {
 };
 
+/**
+ * Function that will be called for every visited object (during
+ * CastShadows() procedure from the visibility culler).
+ */
+typedef void (csFrustumViewObjectFunc)(iMeshWrapper* mesh,
+	iFrustumView* lview, bool vis);
 
 /**
  * This structure keeps track of the current frustum context.
@@ -69,9 +77,6 @@ private:
    */
   bool shared;
 
-  /// True if this is the first time we visit a thing in this frustum call.
-  bool first_time;
-
   /// True if space is mirrored.
   bool mirror;
 
@@ -86,7 +91,6 @@ public:
   csFrustumContext () :
   	shadows (NULL),
 	shared (false),
-  	first_time (false),
 	mirror (false)
   { }
 
@@ -95,7 +99,6 @@ public:
     shadows = c.shadows;
     shared = c.shared;
     mirror = c.mirror;
-    first_time = c.first_time;
     light_frustum = c.light_frustum;
     return *this;
   }
@@ -123,14 +126,9 @@ public:
   void SetMirrored (bool m) { mirror = m; }
   /// Is mirrored.
   bool IsMirrored () { return mirror; }
-
-  /// Set first time.
-  void SetFirstTime (bool ft) { first_time = ft; }
-  /// Is first time.
-  bool IsFirstTime () { return first_time; }
 };
 
-SCF_VERSION (iFrustumView, 0, 1, 6);
+SCF_VERSION (iFrustumView, 0, 4, 1);
 
 /**
  * This structure represents all information needed for the frustum
@@ -165,15 +163,15 @@ struct iFrustumView : public iBase
    */
   virtual void RestoreFrustumContext (csFrustumContext* original) = 0;
 
-  /// Call the node function.
-  virtual void CallNodeFunction (csOctreeNode* onode, bool vis) = 0;
-  /// Call the polygon function.
-  virtual void CallPolygonFunction (csObject* poly, bool vis) = 0;
-  /// Call the curve function.
-  virtual void CallCurveFunction (csObject* curve, bool vis) = 0;
+  /// Set the object function.
+  virtual void SetObjectFunction (csFrustumViewObjectFunc* func) = 0;
+  /// Call the object function.
+  virtual void CallObjectFunction (iMeshWrapper* mesh, bool vis) = 0;
 
   /// Get the radius.
-  virtual float GetRadius () = 0;
+  virtual float GetRadius () const = 0;
+  /// Get the squared radius.
+  virtual float GetSquaredRadius () const = 0;
   /// Return true if shadowing for things is enabled.
   virtual bool ThingShadowsEnabled () = 0;
   /// Check if a mask corresponds with the shadow mask.
@@ -188,9 +186,12 @@ struct iFrustumView : public iBase
   virtual void SetUserdata (iFrustumViewUserdata* data) = 0;
   /// Get userdata.
   virtual iFrustumViewUserdata* GetUserdata () = 0;
+
+  /// Create a new empty shadow block.
+  virtual csPtr<iShadowBlock> CreateShadowBlock () = 0;
 };
 
 /** @} */
 
-#endif
+#endif // __CS_IENGINE_FVIEW_H__
 

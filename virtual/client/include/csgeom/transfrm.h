@@ -20,6 +20,12 @@
 #ifndef __CS_TRANSFORM_H__
 #define __CS_TRANSFORM_H__
 
+/**\file 
+ */
+/**
+ * \addtogroup geom_utils
+ * @{ */
+
 #include "csgeom/matrix3.h"
 #include "csgeom/plane3.h"
 #include "csgeom/sphere.h"
@@ -55,6 +61,36 @@ public:
    */
   csTransform (const csMatrix3& other2this, const csVector3& origin_pos) :
   	m_o2t (other2this), v_o2t (origin_pos) {}
+
+  /**
+   * Reset this transform to the identity transform.
+   */
+  void Identity ()
+  {
+    SetO2TTranslation (csVector3 (0));
+    SetO2T (csMatrix3 ());
+  }
+
+  /**
+   * Returns true if this transform is an identity transform.
+   * This tests all fields so don't call this before every operation.
+   */
+  bool IsIdentity () const
+  {
+    if (ABS (v_o2t.x) >= SMALL_EPSILON) return false;
+    if (ABS (v_o2t.y) >= SMALL_EPSILON) return false;
+    if (ABS (v_o2t.z) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m11-1) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m12) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m13) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m21) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m22-1) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m23) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m31) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m32) >= SMALL_EPSILON) return false;
+    if (ABS (m_o2t.m33-1) >= SMALL_EPSILON) return false;
+    return true;
+  }
 
   /**
    * Get 'other' to 'this' transformation matrix. This is the 3x3
@@ -574,6 +610,8 @@ public:
   virtual void SetT2O (const csMatrix3& m)
   { m_t2o = m;  m_o2t = m_t2o.GetTranspose (); }
 };
+
+/** @} */
 
 #endif // __CS_TRANSFORM_H__
 

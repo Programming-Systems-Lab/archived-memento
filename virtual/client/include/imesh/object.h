@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IMESH_OBJECT_H__
-#define __IMESH_OBJECT_H__
+#ifndef __CS_IMESH_OBJECT_H__
+#define __CS_IMESH_OBJECT_H__
 
 #include "csutil/scf.h"
 #include "csgeom/box.h"
@@ -87,6 +87,17 @@ struct iMeshObject : public iBase
   virtual bool Draw (iRenderView* rview, iMovable* movable,
   	csZBufMode zbufMode) = 0;
 
+#ifdef CS_USE_NEW_RENDERER
+  virtual bool DrawZ (iRenderView* rview, iMovable* movable,
+  	csZBufMode zbufMode) = 0;
+
+  virtual bool DrawShadow (iRenderView* rview, iMovable* movable,
+  	csZBufMode zbufMode) = 0;
+
+  virtual bool DrawLight (iRenderView* rview, iMovable* movable,
+  	csZBufMode zbufMode) = 0;
+#endif // CS_USE_NEW_RENDERER
+
   /**
    * Register a callback to the mesh object which will be called
    * from within Draw() if the mesh object thinks that the object is
@@ -104,15 +115,7 @@ struct iMeshObject : public iBase
   /**
    * Control animation of this object.
    */
-  virtual void NextFrame (csTicks current_time) = 0;
-
-  /**
-   * If this method returns true this object wants to die. The
-   * user of this object should take care to make it die at the
-   * soonest possible time. This is usally used for things like
-   * particle systems that only have a limited time to live.
-   */
-  virtual bool WantToDie () const = 0;
+  virtual void NextFrame (csTicks current_time,const csVector3& pos) = 0;
 
   /**
    * Do a hard transform of this object.
@@ -261,5 +264,5 @@ struct iMeshObjectType : public iBase
   virtual csPtr<iMeshObjectFactory> NewFactory () = 0;
 };
 
-#endif // __IMESH_OBJECT_H__
+#endif // __CS_IMESH_OBJECT_H__
 

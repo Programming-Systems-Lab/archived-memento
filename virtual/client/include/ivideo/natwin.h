@@ -16,11 +16,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVIDEO_NATWIN_H__
-#define __IVIDEO_NATWIN_H__
+#ifndef __CS_IVIDEO_NATWIN_H__
+#define __CS_IVIDEO_NATWIN_H__
 
 /**\file
+ * Native window manager interface
  */
+
+/**
+ * \addtogroup gfx2d
+ * @{ */
+ 
 #include <stdarg.h>
 #include "csutil/scf.h"
 
@@ -72,5 +78,7 @@ struct iNativeWindow : public iBase
   virtual void SetTitle (const char* title) = 0;
 };
 
-#endif // __IVIDEO_NATWIN_H__
+/** @} */
+
+#endif // __CS_IVIDEO_NATWIN_H__
 

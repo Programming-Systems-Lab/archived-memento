@@ -17,8 +17,8 @@
   Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSREFARR_H__
-#define __CSREFARR_H__
+#ifndef __CS_REFARR_H__
+#define __CS_REFARR_H__
 
 #include "csutil/ref.h"
 
@@ -60,7 +60,7 @@ public:
         root[i] = NULL;	// Clear ref.
       free (root);
       root = NULL;
-      count = 0;
+      limit = count = 0;
     }
   }
 
@@ -155,12 +155,19 @@ public:
     return (count - 1);
   }
 
+  /// Push a element on 'top' of vector if it is not already there.
+  int PushSmart (T* what)
+  {
+    int n = Find (what);
+    return (n == -1) ? Push (what) : n;
+  }
+
   /// Pop an element from vector 'top'.
-  csRef<T> Pop ()
+  csPtr<T> Pop ()
   {
     csRef<T> ret = root [count - 1];
     SetLength (count - 1);
-    return ret;
+    return csPtr<T> (ret);
   }
 
   /// Return the top element but don't remove it.
@@ -209,7 +216,7 @@ public:
       const int nmove = (count - n - 1);
       if (nmove > 0)
       {
-        memmove (&root [n + 1], &root [n], nmove * sizeof (csSome));
+        memmove (&root [n + 1], &root [n], nmove * sizeof (csRef<T>));
 	// The following manual IncRef() is to make sure that
 	// the element will not get deleted later. This element is
 	// currently (temporarily) duplicated in the root array so
@@ -225,5 +232,5 @@ public:
   }
 };
 
-#endif // __CSREFARR_H__
+#endif // __CS_REFARR_H__
 

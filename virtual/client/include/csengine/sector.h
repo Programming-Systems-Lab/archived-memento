@@ -22,21 +22,23 @@
 #include "csgeom/math3d.h"
 #include "csutil/csobject.h"
 #include "csutil/nobjvec.h"
+#include "csutil/refarr.h"
 #include "csutil/cscolor.h"
 #include "csutil/csvector.h"
 #include "iutil/objref.h"
-#include "ivideo/graph3d.h"
 #include "csengine/light.h"
 #include "csengine/meshobj.h"
 #include "csengine/rdrprior.h"
 #include "iengine/sector.h"
+#include "ivideo/graph3d.h"
+
 
 class csEngine;
 class csProgressPulse;
 class csSector;
 class csStatLight;
 class csMeshWrapper;
-class csPolygon3D;
+struct iPolygon3D;
 struct iStatLight;
 struct iVisibilityCuller;
 struct iRenderView;
@@ -53,14 +55,14 @@ public:
   /// constructor
   csSectorLightList ();
   /// destructor
-  ~csSectorLightList ();
+  virtual ~csSectorLightList () { RemoveAll (); }
   /// Set the sector.
   void SetSector (csSector* s) { sector = s; }
 
   /// Override PrepareItem
-  virtual bool PrepareItem (csSome Item);
+  virtual void PrepareItem (iLight* light);
   /// Override FreeItem
-  virtual bool FreeItem (csSome Item);
+  virtual void FreeItem (iLight* item);
 };
 
 /// A list of meshes for a sector.
@@ -73,14 +75,14 @@ public:
   /// constructor
   csSectorMeshList ();
   /// destructor
-  ~csSectorMeshList ();
+  virtual ~csSectorMeshList () { RemoveAll (); }
   /// Set the sector.
   void SetSector (csSector* sec) { sector = sec; }
 
   /// Override PrepareItem
-  virtual bool PrepareItem (csSome item);
+  virtual void PrepareItem (iMeshWrapper* item);
   /// Override FreeItem
-  virtual bool FreeItem (csSome item);
+  virtual void FreeItem (iMeshWrapper* item);
 };
 
 
@@ -100,6 +102,16 @@ private:
    */
   csSectorMeshList meshes;
 
+#ifdef CS_USE_NEW_RENDERER  
+  /// num_objects in this sector
+  int num_objects;
+
+  /// sorted list of MeshObjects, saved for future render passes
+  iMeshWrapper **objects;
+
+  csRef<iRender3D> r3d;
+#endif
+
   /**
    * The same meshes above but each mesh in their own render priority
    * queue. This is a vector of vectors.
@@ -114,7 +126,7 @@ private:
   /**
    * List of sector callbacks.
    */
-  csVector sector_cb_vector;
+  csRefArray<iSectorCallback> sector_cb_vector;
 
   /**
    * All static and pseudo-dynamic lights in this sector.
@@ -122,17 +134,19 @@ private:
    */
   csSectorLightList lights;
 
+  /**
+   * This color stores the most recently set dynamic
+   * ambient color.
+   */
+  csColor dynamic_ambient_color;
+
   /// Engine handle.
   csEngine* engine;
 
+#ifndef CS_USE_NEW_RENDERER
   /// Fog information.
   csFog fog;
-
-  /**
-   * This is a pointer to the csMeshWrapper which implements the visibility
-   * culler.
-   */
-  iMeshWrapper* culler_mesh;
+#endif // CS_USE_NEW_RENDERER
 
   /**
    * The visibility culler for this sector or NULL if none.
@@ -197,7 +211,17 @@ public:
   //----------------------------------------------------------------------
 
   iMeshList* GetMeshes ()
-    { return &(meshes.scfiMeshList); }
+    { return &meshes; }
+
+  /**
+   * Register a mesh and all children to the visibility culler.
+   */
+  void RegisterMeshToCuller (iMeshWrapper* mesh);
+
+  /**
+   * Unregister a mesh and all children from the visibility culler.
+   */
+  void UnregisterMeshToCuller (iMeshWrapper* mesh);
 
   /**
    * Prepare a mesh for rendering. This function is called for all meshes that
@@ -226,7 +250,7 @@ public:
    * Get the list of lights in this sector.
    */
   iLightList* GetLights ()
-    { return &lights.scfiLightList; }
+    { return &lights; }
 
   //----------------------------------------------------------------------
   // Callbacks
@@ -234,17 +258,13 @@ public:
   void SetSectorCallback (iSectorCallback* cb)
   {
     sector_cb_vector.Push (cb);
-    cb->IncRef ();
   }
 
   void RemoveSectorCallback (iSectorCallback* cb)
   {
     int idx = sector_cb_vector.Find (cb);
     if (idx != -1)
-    {
       sector_cb_vector.Delete (idx);
-      cb->DecRef ();
-    }
   }
 
   int GetSectorCallbackCount () const
@@ -254,23 +274,12 @@ public:
   
   iSectorCallback* GetSectorCallback (int idx) const
   {
-    return (iSectorCallback*)sector_cb_vector.Get (idx);
+    return sector_cb_vector.Get (idx);
   }
 
   //----------------------------------------------------------------------
   // Visibility Stuff
   //----------------------------------------------------------------------
-
-  /**
-   * Get the mesh which implements the visibility culler.
-   */
-  iMeshWrapper* GetCullerMesh () const { return culler_mesh; }
-
-  /**
-   * Look for the mesh object and see if it implements iVisibilityCuller.
-   * If so then use it for visibility culling in this sector.
-   */
-  bool UseCuller (const char* meshname);
 
   /**
    * Use the given plugin as a visibility culler (should implement
@@ -290,9 +299,22 @@ public:
   //----------------------------------------------------------------------
 
   /**
+   * Prepare this sector for drawing.
+   */
+  void PrepareDraw (iRenderView* rview);
+
+  /**
    * Draw the sector in the given view and with the given transformation.
    */
   void Draw (iRenderView* rview);
+#ifdef CS_USE_NEW_RENDERER
+  /// First pass of the Draw
+  void DrawZ (iRenderView* rview);
+  /// Second pass
+  void DrawShadow (iRenderView* rview, iLight *light);
+  /// Third pass
+  void DrawLight (iRenderView* rview, iLight *light);
+#endif
 
   //----------------------------------------------------------------------
   // Utility Functions
@@ -305,17 +327,17 @@ public:
    * containing the 'start' point. 'isect' will be the intersection point
    * if a polygon is returned.
    */
-  csPolygon3D* HitBeam (const csVector3& start, const csVector3& end,
+  iPolygon3D* HitBeam (const csVector3& start, const csVector3& end,
   	csVector3& isect);
 
   /**
    * Follow a beam from start to end and return the first object
-   * that is hit. In case it is a thing the csPolygon3D field will be
+   * that is hit. In case it is a thing the iPolygon3D field will be
    * filled with the polygon that was hit.
    * If polygonPtr is null then the polygon will not be filled in.
    */
   csMeshWrapper* HitBeam (const csVector3& start, const csVector3& end,
-  	csVector3& intersect, csPolygon3D** polygonPtr);
+  	csVector3& intersect, iPolygon3D** polygonPtr);
 
   /**
    * Check visibility in a frustum way for all things and polygons in
@@ -341,7 +363,7 @@ public:
    * Note. This function correctly accounts for portal polygons
    * and could thus return a polygon not belonging to this sector.
    */
-  csPolygon3D* IntersectSphere (csVector3& center, float radius,
+  iPolygon3D* IntersectSphere (csVector3& center, float radius,
                                float* pr = NULL);
 
   /**
@@ -381,7 +403,7 @@ public:
    *
    * If 'mesh' != NULL the mesh will be filled in.
    */
-  csPolygon3D* IntersectSegment (const csVector3& start,
+  iPolygon3D* IntersectSegment (const csVector3& start,
 	const csVector3& end, csVector3& isect,
 	float* pr = NULL, bool only_portals = false,
 	csMeshWrapper** p_mesh = NULL);
@@ -421,6 +443,7 @@ public:
   /// Get the engine for this sector.
   csEngine* GetEngine () const { return engine; }
 
+#ifndef CS_USE_NEW_RENDERER
   /// Return true if this has fog.
   bool HasFog () const { return fog.enabled; }
 
@@ -439,6 +462,7 @@ public:
 
   /// Disable fog.
   void DisableFog () { fog.enabled = false; }
+#endif // CS_USE_NEW_RENDERER
 
   SCF_DECLARE_IBASE_EXT (csObject);
 
@@ -462,8 +486,6 @@ public:
       { return scfParent; }
     virtual int GetRecLevel () const
       { return scfParent->draw_busy; }
-    virtual bool SetVisibilityCuller (const char *Name)
-      { return scfParent->UseCuller (Name); }
     virtual bool SetVisibilityCullerPlugin (const char *Name)
       { return scfParent->UseCullerPlugin (Name); }
     virtual iVisibilityCuller* GetVisibilityCuller ()
@@ -478,8 +500,11 @@ public:
       { scfParent->ShineLights (mesh); }
     virtual void SetDynamicAmbientLight(const csColor& color)
       { scfParent->SetDynamicAmbientLight(color); }  
+    virtual csColor GetDynamicAmbientLight() const
+      { return scfParent->dynamic_ambient_color; }  
     virtual void CalculateSectorBBox (csBox3& bbox, bool do_meshes) const
       { scfParent->CalculateSectorBBox (bbox, do_meshes); }
+#ifndef CS_USE_NEW_RENDERER
     virtual bool HasFog () const
       { return scfParent->HasFog (); }
     virtual csFog *GetFog () const
@@ -488,6 +513,7 @@ public:
       { scfParent->SetFog (density, color); }
     virtual void DisableFog ()
       { scfParent->DisableFog (); }
+#endif // CS_USE_NEW_RENDERER
     virtual iPolygon3D* HitBeam (const csVector3& start, const csVector3& end,
   	csVector3& isect);
     virtual iMeshWrapper* HitBeam (const csVector3& start, const csVector3& end,
@@ -496,6 +522,14 @@ public:
   	csVector3& new_position, bool& mirror, bool only_portals = false);
     virtual void Draw (iRenderView* rview)
       { scfParent->Draw (rview); }
+#ifdef CS_USE_NEW_RENDERER
+    virtual void DrawZ (iRenderView* rview)
+      { scfParent->DrawZ (rview); }
+    virtual void DrawShadow (iRenderView* rview, iLight* light)
+      { scfParent->DrawShadow (rview, light); }
+    virtual void DrawLight (iRenderView* rview, iLight* light)
+      { scfParent->DrawLight (rview, light); }
+#endif // CS_USE_NEW_RENDERER
     virtual void SetSectorCallback (iSectorCallback* cb)
     {
       scfParent->SetSectorCallback (cb);
@@ -512,15 +546,20 @@ public:
     {
       return scfParent->GetSectorCallback (idx);
     }
+    virtual void CheckFrustum (iFrustumView* lview)
+    {
+      scfParent->CheckFrustum (lview);
+    }
   } scfiSector;
   friend struct eiSector;
 };
 
-CS_DECLARE_OBJECT_VECTOR (csSectorListHelper, iSector);
-
 /// List of 3D engine sectors.
-class csSectorList : public csSectorListHelper
+class csSectorList : public iSectorList
 {
+private:
+  csRefArrayObject<iSector> list;
+
 public:
   SCF_DECLARE_IBASE;
   bool CleanupReferences;
@@ -528,25 +567,19 @@ public:
   /// constructor
   csSectorList (bool CleanupReferences);
   /// destructor
-  ~csSectorList ();
+  virtual ~csSectorList () { RemoveAll (); }
 
-  /// override FreeItem
-  virtual bool FreeItem (csSome Item);
+  /// Override FreeItem.
+  virtual void FreeItem (iSector* item);
 
-  class SectorList : public iSectorList
-  {
-  public:
-    SCF_DECLARE_EMBEDDED_IBASE (csSectorList);
-
-    virtual int GetCount () const;
-    virtual iSector *Get (int n) const;
-    virtual int Add (iSector *obj);
-    virtual bool Remove (iSector *obj);
-    virtual bool Remove (int n);
-    virtual void RemoveAll ();
-    virtual int Find (iSector *obj) const;
-    virtual iSector *FindByName (const char *Name) const;
-  } scfiSectorList;
+  virtual int GetCount () const { return list.Length (); }
+  virtual iSector *Get (int n) const { return list.Get (n); }
+  virtual int Add (iSector *obj);
+  virtual bool Remove (iSector *obj);
+  virtual bool Remove (int n);
+  virtual void RemoveAll ();
+  virtual int Find (iSector *obj) const;
+  virtual iSector *FindByName (const char *Name) const;
 };
 
 #endif // __CS_SECTOR_H__

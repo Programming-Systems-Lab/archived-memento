@@ -5,8 +5,8 @@
 // Permission is granted to use this code for any purpose, as long as this
 // copyright message remains intact.
 
-#ifndef _csBitArray_H
-#define _csBitArray_H
+#ifndef __CS_BITARRAY_H__
+#define __CS_BITARRAY_H__
 
 #include <memory.h>
 #include <assert.h>
@@ -113,7 +113,6 @@ public:
    explicit csBitArray(unsigned size)
    {
       Init(size);
-
       // Clear last bits
       Trim();
    }
@@ -296,6 +295,12 @@ public:
       Trim();
       return *this;
    }
+   
+   /// return the full array
+   store_type* GetArrayBits()
+   {
+     return mpStore;
+   }
 
    /// Gets quick access to the single-word (only useful when the bit array <= the word size of the machine.)
    unsigned GetSingleWord()
@@ -310,4 +315,4 @@ public:
    }
 };
 
-#endif
+#endif // __CS_BITARRAY_H__

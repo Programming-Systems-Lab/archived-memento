@@ -16,14 +16,16 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IMESH_LIGHTING_H__
-#define __IMESH_LIGHTING_H__
+#ifndef __CS_IMESH_LIGHTING_H__
+#define __CS_IMESH_LIGHTING_H__
 
 #include "csutil/scf.h"
 
 struct iCacheManager;
+struct iDynLight;
+struct iStatLight;
 
-SCF_VERSION (iLightingInfo, 0, 0, 3);
+SCF_VERSION (iLightingInfo, 0, 1, 3);
 
 /**
  * This interface is implemented by mesh objects that have some kind
@@ -41,16 +43,15 @@ struct iLightingInfo : public iBase
    * Read the lighting information from the cache. Call this instead
    * of InitializeDefault(). Returns false if there was a problem.
    * This function will read the data from the current VFS dir.
-   * The id is used to uniquely identify the elements of this cache.
    */
-  virtual bool ReadFromCache (iCacheManager* cache_mgr, int id) = 0;
+  virtual bool ReadFromCache (iCacheManager* cache_mgr) = 0;
 
   /**
    * Write the lighting information to the cache. Returns false if there
    * was a problem. This function will write the data to the current VFS
-   * dir. The id is used to uniquely identify the elements of this cache.
+   * dir.
    */
-  virtual bool WriteToCache (iCacheManager* cache_mgr, int id) = 0;
+  virtual bool WriteToCache (iCacheManager* cache_mgr) = 0;
 
   /**
    * Finally prepare the lighting for use. This function must be called
@@ -59,17 +60,37 @@ struct iLightingInfo : public iBase
   virtual void PrepareLighting () = 0;
 
   /**
-   * Set the name of the lightmap cache to use for this. If not given
-   * then the 'id' will be used for uniqueness.
+   * Sets dynamic ambient light for this object.
    */
-  virtual void SetCacheName (const char* cachename) = 0;
+  virtual void SetDynamicAmbientLight (const csColor& color) = 0;
 
   /**
-   * Get the name of the lightmap cache used for this.
-   * Returns NULL if none given.
+   * Get dynamic ambient light.
    */
-  virtual const char* GetCacheName () const = 0;
+  virtual const csColor& GetDynamicAmbientLight () = 0;
+
+  /**
+   * Get dynamic ambient light version to test if needs to be recalculated.
+   */
+  virtual uint32 GetDynamicAmbientVersion () const = 0;
+
+  /**
+   * Indicate that some dynamic light has changed. This function will
+   * be called by the lighting system whenever a dynamic light that
+   * affects this mesh is changed in some way.
+   */
+  virtual void DynamicLightChanged (iDynLight* dynlight) = 0;
+
+  /**
+   * Indicate that some dynamic light no longer affects this mesh.
+   */
+  virtual void DynamicLightDisconnect (iDynLight* dynlight) = 0;
+
+  /**
+   * Indicate that some pseudo-dynamic light has changed color.
+   */
+  virtual void StaticLightChanged (iStatLight* statlight) = 0;
 };
 
-#endif // __IMESH_LIGHTING_H__
+#endif // __CS_IMESH_LIGHTING_H__
 

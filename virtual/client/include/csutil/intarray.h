@@ -16,12 +16,12 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSUTIL_INTARRAY_H__
-#define __CSUTIL_INTARRAY_H__
+#ifndef __CS_UTIL_INTARRAY_H__
+#define __CS_UTIL_INTARRAY_H__
 
 #include "csutil/garray.h"
 
-CS_TYPEDEF_GROWING_ARRAY (csIntArrayHelper, int);
+typedef csGrowingArray<int> csIntArrayHelper;
 
 /// Growing array of <code>int</code>s.
 class csIntArray : public csIntArrayHelper
@@ -43,4 +43,4 @@ public:
   static csIntArray *CreateIdentityMapping (int n, int offset = 0);
 };
 
-#endif // __CSUTIL_INTARRAY_H__
+#endif // __CS_UTIL_INTARRAY_H__

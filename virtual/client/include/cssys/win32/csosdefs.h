@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSOSDEFS_H__
-#define __CSOSDEFS_H__
+#ifndef __CS_CSOSDEFS_H__
+#define __CS_CSOSDEFS_H__
 
 #if defined(COMP_VC)
   #pragma warning(disable:4291)   // no matching operator delete found
@@ -49,6 +49,7 @@
   #pragma warning(disable:4102)
   #pragma warning(disable:4005)
   #pragma warning(disable:4130)
+  #pragma warning(disable:4711)
 
   #pragma inline_depth (255)
   #pragma inline_recursion (on)
@@ -181,12 +182,28 @@
   #undef  DEBUG_BREAK
   #define DEBUG_BREAK ::DebugBreak()
   
-  #if defined(COMP_VC) && defined(CS_EXTENSIVE_MEMDEBUG)
+  #if defined(COMP_VC) 
     #include <crtdbg.h>
-    #define malloc(size) 	_malloc_dbg ((size), _NORMAL_BLOCK, __FILE__, __LINE__)
-    #define free(ptr) 		_free_dbg ((ptr), _NORMAL_BLOCK)
-    #define realloc(ptr, size) 	_realloc_dbg ((ptr), (size), _NORMAL_BLOCK, __FILE__, __LINE__)
-    #define calloc(num, size)	_calloc_dbg ((num), (size), _NORMAL_BLOCK, __FILE__, __LINE__)
+
+    #if defined(CS_EXTENSIVE_MEMDEBUG)
+      #define malloc(size) 	_malloc_dbg ((size), _NORMAL_BLOCK, __FILE__, __LINE__)
+      #define free(ptr) 		_free_dbg ((ptr), _NORMAL_BLOCK)
+      #define realloc(ptr, size) 	_realloc_dbg ((ptr), (size), _NORMAL_BLOCK, __FILE__, __LINE__)
+      #define calloc(num, size)	_calloc_dbg ((num), (size), _NORMAL_BLOCK, __FILE__, __LINE__)
+
+      // heap consistency check is on by default, leave it
+      #define CS_DEBUG_MSVC_INIT_GOOP \
+        _CrtSetDbgFlag (_CrtSetDbgFlag (_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF)
+      // check for leaks on exit
+      #define CS_DEBUG_MSVC_EXIT_GOOP 
+    #else
+      // turn heap consistency check off
+      #define CS_DEBUG_MSVC_INIT_GOOP \
+        _CrtSetDbgFlag ((_CrtSetDbgFlag (_CRTDBG_REPORT_FLAG) & ~_CRTDBG_ALLOC_MEM_DF) | \
+	  _CRTDBG_LEAK_CHECK_DF)
+      // check for leaks on exit
+      #define CS_DEBUG_MSVC_EXIT_GOOP 
+    #endif
   #endif
 
 #else
@@ -195,6 +212,13 @@
   #define VERIFY_RESULT(expression, result) expression
 #endif
 
+#ifndef CS_DEBUG_MSVC_INIT_GOOP 
+  #define CS_DEBUG_MSVC_INIT_GOOP 
+#endif
+
+#ifndef CS_DEBUG_MSVC_EXIT_GOOP 
+  #define CS_DEBUG_MSVC_EXIT_GOOP 
+#endif
 
 #ifdef CS_SYSDEF_PROVIDE_HARDWARE_MMIO
 
@@ -447,6 +471,17 @@ static inline void* fast_mem_copy (void *dest, const void *src, int count)
   #define main csMain
 #endif
 
+// cygwin has no _beginthread and _endthread functions
+#ifdef __CYGWIN32__
+#ifndef _beginthread
+#define _beginthread(func, stack, ptr)	CreateThread (NULL, 0, \
+	  LPTHREAD_START_ROUTINE(func), ptr, CREATE_SUSPENDED, 0)
+#endif
+#ifndef _endthread
+#define _endthread()  {}
+#endif
+#endif
+
 // just to avoid windows.h inclusion
 #define csSW_SHOWNORMAL 1
 
@@ -464,8 +499,17 @@ int ApplicationShow = csSW_SHOWNORMAL;
   #define CS_WIN32_ARGV __argv
 #endif
 
+/*
+ if the EXE is compiled as a GUI app,
+ a WinMain is needed. But if compiled
+ as a console app it's not used but main() is
+ instead. To have our MSVC debug goop for both
+ provide versions which call the stuff and
+ redirect to the 'real' main().
+ */
+
 #define CS_IMPLEMENT_PLATFORM_APPLICATION \
-int main (int argc, char* argv[]); \
+int _cs_main (int argc, char* argv[]); \
 HINSTANCE ModuleHandle = NULL; \
 int ApplicationShow = csSW_SHOWNORMAL; \
 int WINAPI WinMain (HINSTANCE hApp, HINSTANCE prev, LPSTR cmd, int show) \
@@ -474,22 +518,33 @@ int WINAPI WinMain (HINSTANCE hApp, HINSTANCE prev, LPSTR cmd, int show) \
   ApplicationShow = show; \
   (void)prev; \
   (void)cmd; \
-  return main(CS_WIN32_ARGC, CS_WIN32_ARGV); \
+  CS_DEBUG_MSVC_INIT_GOOP; \
+  int ret = _cs_main(CS_WIN32_ARGC, CS_WIN32_ARGV); \
+  CS_DEBUG_MSVC_EXIT_GOOP; \
+  return ret; \
 }
+
 #endif
+
+// the main() is actually in win32.cpp
+
+#define main _cs_main
 
 #if !defined(CS_STATIC_LINKED)
 
 #define CS_IMPLEMENT_PLATFORM_PLUGIN \
 HINSTANCE ModuleHandle = NULL; \
+int ApplicationShow = csSW_SHOWNORMAL; \
+int _cs_main(int argc, char* argv[]) { return 0; } \
 extern "C" BOOL WINAPI \
 DllMain (HINSTANCE hinstDLL, DWORD fdwReason, LPVOID /*lpvReserved*/) \
 { \
   if (fdwReason == DLL_PROCESS_ATTACH) \
     ModuleHandle = hinstDLL; \
   return TRUE; \
-}
+} \
+extern "C" __declspec(dllexport) \
+const char* plugin_compiler() { return CS_COMPILER_NAME; }
 
 #endif // !CS_STATIC_LINKED
-
-#endif // __CSOSDEFS_H__
+#endif // __CS_CSOSDEFS_H__

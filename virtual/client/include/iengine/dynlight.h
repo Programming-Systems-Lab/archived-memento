@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IENGINE_DYNLIGHT_H__
-#define __IENGINE_DYNLIGHT_H__
+#ifndef __CS_IENGINE_DYNLIGHT_H__
+#define __CS_IENGINE_DYNLIGHT_H__
 
 #include "csutil/scf.h"
 
@@ -31,8 +31,9 @@
 class csDynLight;
 struct iObject;
 struct iLight;
+struct iLightingInfo;
 
-SCF_VERSION (iDynLight, 0, 0, 1);
+SCF_VERSION (iDynLight, 0, 2, 0);
 
 /**
  * The iDynLight interface represents a dynamic light.
@@ -47,6 +48,18 @@ struct iDynLight : public iBase
   /// Get the iLight for this light.
   virtual iLight *QueryLight () = 0;
 
+  /**
+   * Add a mesh to this dynamic light. This is usually
+   * called during Setup() by meshes that are hit by the
+   * dynamic light.
+   */
+  virtual void AddAffectedLightingInfo (iLightingInfo* li) = 0; 
+
+  /**
+   * Remove a mesh from this dynamic light.
+   */
+  virtual void RemoveAffectedLightingInfo (iLightingInfo* li) = 0; 
+
   /// Setup the light (i.e. do the lighting calculations).
   virtual void Setup () = 0;
 
@@ -56,5 +69,5 @@ struct iDynLight : public iBase
 
 /** @} */
 
-#endif // __IENGINE_DYNLIGHT_H__
+#endif // __CS_IENGINE_DYNLIGHT_H__
 

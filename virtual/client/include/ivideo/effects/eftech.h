@@ -17,11 +17,17 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IEFFECTTECHNIQUE_H__
-#define __IEFFECTTECHNIQUE_H__
+#ifndef __CS_IVIDEO_IEFFECTTECHNIQUE_H__
+#define __CS_IVIDEO_IEFFECTTECHNIQUE_H__
 
 /**\file
+ * Effect technique interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+
 #include "csutil/scf.h"
 #include "cstypes.h"
 
@@ -45,17 +51,17 @@ SCF_VERSION (iEffectTechnique, 0, 0, 1);
 struct iEffectTechnique : public iBase
 {
   /// Create a new pass.
-  virtual iEffectPass* CreatePass() = 0;
+  virtual csPtr<iEffectPass> CreatePass() = 0;
   /// Return number of passes.
   virtual int GetPassCount() = 0;
   /// Return a specific pass.
-  virtual iEffectPass* GetPass( int pass ) = 0;
+  virtual iEffectPass* GetPass (int pass) = 0;
 
   /**
    * Set validation status.
    * \sa #CS_TECHNIQUE_FAILED
    */
-  virtual void SetValidation( int validation ) = 0;
+  virtual void SetValidation (int validation) = 0;
   /**
    * Retrieve validation status.
    * \sa #CS_TECHNIQUE_FAILED
@@ -63,12 +69,12 @@ struct iEffectTechnique : public iBase
   virtual int GetValidation() = 0;
 
   /// Set this technique's quality.
-  virtual void SetQuality( float q ) = 0;
+  virtual void SetQuality (float q) = 0;
   /// Retrieve this technique's quality.
   virtual float GetQuality() = 0;
 
   /// Set client flags.
-  virtual void SetClientFlags( uint32 flags) = 0;
+  virtual void SetClientFlags (uint32 flags) = 0;
   /// Retrieve client flags.
   virtual uint32 GetClientFlags() = 0;
 
@@ -81,4 +87,6 @@ struct iEffectTechnique : public iBase
   // --Anders Stenberg
 };
 
-#endif // __IEFFECTTECHNIQUE_H__
+/** @} */
+
+#endif // __CS_IVIDEO_EFFECTTECHNIQUE_H__

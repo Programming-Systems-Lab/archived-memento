@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IMESH_SPRITE3D_H__
-#define __IMESH_SPRITE3D_H__
+#ifndef __CS_IMESH_SPRITE3D_H__
+#define __CS_IMESH_SPRITE3D_H__
 
 #include "csutil/scf.h"
 #include "csutil/garray.h"
@@ -115,8 +115,10 @@ struct iSpriteAction : public iBase
   virtual iSpriteFrame* GetNextFrame (int f) = 0;
   /// Get the delay for the specified frame.
   virtual int GetFrameDelay (int f) = 0;
+  /// Get the displacement for the specified frame.
+  virtual float GetFrameDisplacement (int f) = 0;
   /// Add a frame to this action.
-  virtual void AddFrame (iSpriteFrame* frame, int delay) = 0;
+  virtual void AddFrame (iSpriteFrame* frame, int delay, float displacement) = 0;
 };
 
 SCF_VERSION (iSpriteSocket, 0, 0, 1);
@@ -203,6 +205,7 @@ struct iSprite3DFactoryState : public iBase
    */
   virtual void SetNormals (csVector3 const* norms, int frame) = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /**
    * Add a triangle to the normal, texel, and vertex meshes
    * a, b and c are indices to texel vertices
@@ -218,6 +221,7 @@ struct iSprite3DFactoryState : public iBase
   virtual void SetTriangleCount (int count) = 0;
   /// Set array of triangles.  The array is copied.
   virtual void SetTriangles( csTriangle const* trigs, int count) = 0;
+#endif // CS_USE_NEW_RENDERER
 
   /// Create and add a new frame to the sprite.
   virtual iSpriteFrame* AddFrame () = 0;
@@ -368,11 +372,27 @@ struct iSprite3DState : public iBase
   virtual bool SetAction (const char * name,
   	bool loop = true, float speed = 1) = 0;
 
+  /// Set whether action should run in reverse or not.
+  virtual void SetReverseAction(bool reverse) = 0;
+
+  /// Set single-step frame advance flag on actions
+  virtual void SetSingleStepAction(bool singlestep) = 0;
+
+  /**
+   * This sets an action to run one time, then the
+   * sprite reverts to the prior action.
+   */
+  virtual bool SetOverrideAction(const char *name,
+        float speed = 1) = 0;
+
   /// Propogate set action to all children
   virtual bool PropagateAction (const char *name) = 0;
 
   /// Get the current action.
   virtual iSpriteAction* GetCurAction () const = 0;
+
+  /// Get whether the current action is reversed or not
+  virtual bool GetReverseAction () const = 0;
 
   /// Enable/disable tweening.
   virtual void EnableTweening (bool en) = 0;
@@ -443,7 +463,13 @@ struct iSprite3DState : public iBase
    * Get the base color.
    */
   virtual void GetBaseColor (csColor& col) const = 0;
+
+  /// find a socked based on the sprite attached to it.
+  virtual iSpriteSocket* FindSocket (iMeshWrapper *mesh) const = 0;  
+
+  /// find a named socket into the sprite.
+  virtual iSpriteSocket* FindSocket (const char * name) const = 0;
 };
 
-#endif
+#endif // __CS_IMESH_SPRITE3D_H__
 

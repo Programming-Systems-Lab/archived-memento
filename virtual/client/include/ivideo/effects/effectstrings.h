@@ -16,8 +16,6 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-
-
 /////////////////////////////////////////
 // General strings
 /////////////////////////////////////////
@@ -95,6 +93,9 @@ REGISTER_STRING( subtract, "subtract" )
 REGISTER_STRING( interpolate, "interpolate" )
 REGISTER_STRING( dot_product, "dot product" )
 REGISTER_STRING( dot_product_to_alpha, "dot product to alpha" )
+
+REGISTER_STRING( scale_rgb, "scale rgb")
+REGISTER_STRING( scale_alpha, "scale alpha")
 
 /////////////////////////////////////////
 // NVVertex program support

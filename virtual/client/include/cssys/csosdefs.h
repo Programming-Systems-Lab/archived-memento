@@ -22,16 +22,12 @@
 
 // Include platform-specific system definitions and overrides.
 
-#if defined(OS_NEXT)		/* Must appear before OS_UNIX */
-#  include "cssys/next/csosdefs.h"
+#if defined(OS_MACOSX)		/* Must appear before OS_UNIX */
+#  include "cssys/macosx/csosdefs.h"
 #elif defined(OS_UNIX)
 #  include "cssys/unix/csosdefs.h"
 #elif defined(OS_WIN32)
 #  include "cssys/win32/csosdefs.h"
-#elif defined(OS_OS2)
-#  include "cssys/os2/csosdefs.h"
-#elif defined(OS_DOS) && defined(COMP_GCC)
-#  include "cssys/djgpp/csosdefs.h"
 # else
 #  error Unable to locate platform-specific "csosdefs.h" file.
 #endif

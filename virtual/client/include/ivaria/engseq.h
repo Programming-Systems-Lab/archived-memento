@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IVARIA_ENGSEQ_H__
-#define __IVARIA_ENGSEQ_H__
+#ifndef __CS_IVARIA_ENGSEQ_H__
+#define __CS_IVARIA_ENGSEQ_H__
 
 #include "csutil/scf.h"
 
@@ -37,6 +37,7 @@ class csReversibleTransform;
 class csVector3;
 class csBox3;
 class csSphere;
+struct iSharedVariable;
 
 SCF_VERSION (iParameterESM, 0, 0, 1);
 
@@ -224,6 +225,24 @@ struct iSequenceWrapper : public iBase
 		  const csColor& color, csTicks duration) = 0;
 
   /**
+   * Operation: set dynamic ambient light color.
+   */
+  virtual void AddOperationSetAmbient (csTicks time, iParameterESM* light,
+		  const csColor& color,iSharedVariable *colorvar) = 0;
+
+  /**
+   * Operation: fade dynamic ambient light to some color during some time.
+   */
+  virtual void AddOperationFadeAmbient (csTicks time, iParameterESM* light,
+		  const csColor& color, csTicks duration) = 0;
+
+  /**
+   * Operation: Delay executation of the rest of the script by a random
+   * time between min and max msec.
+   */
+  virtual void AddOperationRandomDelay(csTicks time,int min, int max) = 0;
+
+  /**
    * Operation: set a mesh color.
    */
   virtual void AddOperationSetMeshColor (csTicks time, iParameterESM* mesh,
@@ -292,7 +311,7 @@ struct iSequenceWrapper : public iBase
 		  iSequence* falseSequence) = 0;
 };
 
-SCF_VERSION (iSequenceTrigger, 0, 0, 2);
+SCF_VERSION (iSequenceTrigger, 0, 0, 3);
 
 /**
  * A sequence trigger. When all conditions in a trigger are
@@ -332,6 +351,15 @@ struct iSequenceTrigger : public iBase
    * Condition: true if clicked on a mesh.
    */
   virtual void AddConditionMeshClick (iMeshWrapper* mesh) = 0;
+
+  /**
+   * Condition: light change.  Call this to add a trigger
+   * which fires a sequence when a light gets darker than 
+   * a certain value or lighter than a certain value, or
+   * whenever a light changes.
+   */
+  virtual void AddConditionLightChange (iLight *whichlight, 
+				        int oper, const csColor& col) = 0;
 
   /**
    * Condition: manual trigger. Call this to set add a trigger
@@ -397,6 +425,23 @@ struct iSequenceTrigger : public iBase
    * can retest the conditions.
    */
   virtual bool CheckState () = 0;
+
+  /**
+   * Force the sequence of this trigger to be fired right now.
+   * Note that this will even fire if the trigger is disabled and
+   * conditions are completely ignored.
+   * <p>
+   * Also calling ForceFire() will NOT cause the trigger to become disabled
+   * (as opposed to when a trigger normally fires). So if you want to make
+   * sure the trigger does not accidently fire again right after firing it
+   * you should disable the trigger (and possibly let the sequence enable
+   * it again).
+   * <p>
+   * Note that ForceFire() still respects the fire delay with which the
+   * sequence was registered. If you use 'now' == true then this delay
+   * will be ignored and the sequence will be started immediatelly.
+   */
+  virtual void ForceFire (bool now = false) = 0;
 };
 
 SCF_VERSION (iSequenceTimedOperation, 0, 0, 1);
@@ -418,7 +463,7 @@ struct iSequenceTimedOperation : public iBase
   virtual void Do (float time, iBase* params) = 0;
 };
 
-SCF_VERSION (iEngineSequenceManager, 0, 0, 2);
+SCF_VERSION (iEngineSequenceManager, 0, 0, 3);
 
 /**
  * Sequence manager specifically designed for working on
@@ -481,6 +526,14 @@ struct iEngineSequenceManager : public iBase
    */
   virtual iSequenceTrigger* FindTriggerByName (const char* name) const = 0;
 
+  /**
+   * Fire a trigger manually, specifying the name.
+   * This will call ForceFire() on the trigger (if one is found). If
+   * now == false then the usual delay will be respected. Otherwise
+   * the sequence will be run immediatelly without the default delay.
+   */
+  virtual bool FireTriggerByName (const char *name, bool now = false) const = 0;
+
   //-----------------------------------------------------------------------
 
   /**
@@ -513,6 +566,11 @@ struct iEngineSequenceManager : public iBase
    */
   virtual iSequenceWrapper* FindSequenceByName (const char* name) const = 0;
 
+  /**
+   * Run a sequence and don't mess around with triggers.
+   */
+  virtual bool RunSequenceByName (const char *name,int delay) const = 0;
+
   //-----------------------------------------------------------------------
 
   /**
@@ -528,5 +586,5 @@ struct iEngineSequenceManager : public iBase
   //-----------------------------------------------------------------------
 };
 
-#endif // __IVARIA_ENGSEQ_H__
+#endif // __CS_IVARIA_ENGSEQ_H__
 

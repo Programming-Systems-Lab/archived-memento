@@ -16,8 +16,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IISO_H__
-#define __IISO_H__
+#ifndef __CS_IVARIA_ISO_H__
+#define __CS_IVARIA_ISO_H__
 
 #include "csutil/scf.h"
 #include "csutil/cscolor.h"
@@ -465,10 +465,12 @@ struct iIsoMeshSprite : iIsoSprite {
   /// get the transformation matrix used for this mesh.
   virtual const csMatrix3& GetTransform() const = 0;
 
+#ifndef CS_USE_NEW_RENDERER
   /// Set the zbuf mode for the mesh
   virtual void SetZBufMode(csZBufMode mode) = 0;
   /// Get the zbuf mode for the mesh
   virtual csZBufMode GetZBufMode() const = 0;
+#endif // CS_USE_NEW_RENDERER
 };
 
 
@@ -546,4 +548,4 @@ struct iIsoMaterialWrapperIndex: public iBase
   /// Set the index -- use with caution!
   virtual void SetIndex(int i) = 0;
 };
-#endif
+#endif // __CS_IVARIA_ISO_H__

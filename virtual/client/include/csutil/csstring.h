@@ -20,6 +20,7 @@
 #define __CS_CSSTRING_H__
 
 #include <stdarg.h>
+#include <ctype.h>
 #include "csutil/snprintf.h"
 
 /**
@@ -505,6 +506,12 @@ const csString& operator = (TYPE s) { return Replace (s); }
    */
   char* Detach ()
   { char *d = Data; Data = 0; Size = 0; MaxSize = 0; return d; }
+
+  void strlwr()
+  {
+    for (char *p=Data; *p; p++)
+      *p = tolower(*p);
+  }
 };
 
 /// Concatenate a csString with an ASCIIZ and return resulting csString

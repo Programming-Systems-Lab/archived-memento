@@ -25,6 +25,8 @@
 #include "csutil/flags.h"
 #include "csutil/csvector.h"
 #include "csutil/nobjvec.h"
+#include "csutil/hashmap.h"
+#include "csutil/refarr.h"
 #include "csengine/lview.h"
 #include "iengine/light.h"
 #include "iengine/statlght.h"
@@ -32,12 +34,12 @@
 
 class csLightMap;
 class csDynLight;
-class csLightPatchPool;
 class csHalo;
 class csPolygon3D;
 class csCurve;
 class csSector;
 struct iMeshWrapper;
+struct iLightingInfo;
 
 /**
  * Superclass of all positional lights.
@@ -47,10 +49,8 @@ struct iMeshWrapper;
 class csLight : public csObject
 {
 private:
-  /// ID for this light.
-  unsigned long light_id;
-  /// Last used ID.
-  static unsigned long last_light_id;
+  /// ID for this light (16-byte MD5).
+  char* light_id;
 
 protected:
   /// Home sector of the light.
@@ -70,6 +70,17 @@ protected:
 
   /// Attenuation type
   int attenuation;
+
+  /// Light number. Changes when the light changes in some way (color/pos).
+  uint32 lightnr;
+
+  /**
+   * List of light callbacks.
+   */
+  csRefArray<iLightCallback> light_cb_vector;
+
+  /// Get a unique ID for this light. Generate it if needed.
+  const char* GenerateUniqueID ();
 
 public:
   /// Set of flags
@@ -107,12 +118,15 @@ public:
   virtual ~csLight ();
 
   /// Get the ID of this light.
-  unsigned long GetLightID () { return light_id; }
+  const char* GetLightID () { return GenerateUniqueID (); }
+
+  /// Return true if the light is pseudo-dynamic.
+  virtual bool IsDynamic () const { return false; }
 
   /**
    * Set the current sector for this light.
    */
-  virtual void SetSector (csSector* sector) { csLight::sector = sector; }
+  virtual void SetSector (csSector* sector);
 
   /**
    * Get the current sector for this light.
@@ -122,7 +136,7 @@ public:
   /**
    * Set the center position.
    */
-  void SetCenter (const csVector3& v) { center = v; }
+  void SetCenter (const csVector3& v);
 
   /**
    * Get the center position.
@@ -147,8 +161,7 @@ public:
   /**
    * Set the radius.
    */
-  void SetRadius (float radius)
-    { dist = radius; sqdist = dist*dist; inv_dist = 1 / dist; }
+  void SetRadius (float radius);
 
   /**
    * Get the light color.
@@ -162,7 +175,7 @@ public:
    * lightmaps are not automatically updated when calling this function
    * as that is a time consuming process.
    */
-  virtual void SetColor (const csColor& col) { color = col; }
+  virtual void SetColor (const csColor& col);
 
   /**
    * Return the associated halo
@@ -189,6 +202,33 @@ public:
    */
   float GetBrightnessAtDistance (float d);
 
+  //----------------------------------------------------------------------
+  // Callbacks
+  //----------------------------------------------------------------------
+  void SetLightCallback (iLightCallback* cb)
+  {
+    light_cb_vector.Push (cb);
+  }
+
+  void RemoveLightCallback (iLightCallback* cb)
+  {
+    int idx = light_cb_vector.Find (cb);
+    if (idx != -1)
+    {
+      light_cb_vector.Delete (idx);
+    }
+  }
+
+  int GetLightCallbackCount () const
+  {
+    return light_cb_vector.Length ();
+  }
+  
+  iLightCallback* GetLightCallback (int idx) const
+  {
+    return (iLightCallback*)light_cb_vector.Get (idx);
+  }
+
   //------------------------ iLight interface -----------------------------
   SCF_DECLARE_IBASE_EXT (csObject);
 
@@ -196,29 +236,56 @@ public:
   struct Light : public iLight
   {
     SCF_DECLARE_EMBEDDED_IBASE (csLight);
-    virtual csLight* GetPrivateObject ();
-    virtual unsigned long GetLightID ();
-    virtual iObject *QueryObject();
-    virtual const csVector3& GetCenter ();
-    virtual void SetCenter (const csVector3& pos);
+    virtual csLight* GetPrivateObject () { return scfParent; }
+    virtual const char* GetLightID () { return scfParent->GetLightID (); }
+    virtual iObject *QueryObject() { return scfParent; }
+    virtual const csVector3& GetCenter () { return scfParent->GetCenter (); }
+    virtual void SetCenter (const csVector3& pos)
+    {
+      scfParent->SetCenter (pos);
+    }
     virtual iSector *GetSector ();
     virtual void SetSector (iSector* sector);
-    virtual float GetRadius ();
-    virtual float GetSquaredRadius ();
-    virtual float GetInverseRadius ();
-    virtual void SetRadius (float r);
-    virtual const csColor& GetColor ();
-    virtual void SetColor (const csColor& col);
-    virtual bool IsDynamic();
-    virtual int GetAttenuation ();
-    virtual void SetAttenuation (int a);
-    virtual float GetBrightnessAtDistance (float d);
+    virtual float GetRadius () { return scfParent->GetRadius (); }
+    virtual float GetSquaredRadius () { return scfParent->GetSquaredRadius (); }
+    virtual float GetInverseRadius () { return scfParent->GetInverseRadius (); }
+    virtual void SetRadius (float r) { scfParent->SetRadius (r); }
+    virtual const csColor& GetColor () { return scfParent->GetColor (); }
+    virtual void SetColor (const csColor& col) { scfParent->SetColor (col); }
+    virtual bool IsDynamic () const { return scfParent->IsDynamic (); }
+    virtual int GetAttenuation () { return scfParent->GetAttenuation (); }
+    virtual void SetAttenuation (int a) { scfParent->SetAttenuation (a); }
+    virtual float GetBrightnessAtDistance (float d)
+    {
+      return scfParent->GetBrightnessAtDistance (d);
+    }
     virtual iCrossHalo* CreateCrossHalo (float intensity, float cross);
     virtual iNovaHalo* CreateNovaHalo (int seed, int num_spokes,
   	float roundness);
     virtual iFlareHalo* CreateFlareHalo ();
     virtual csFlags& GetFlags () { return scfParent->flags; }
+    virtual void SetLightCallback (iLightCallback* cb)
+    {
+      scfParent->SetLightCallback (cb);
+    }
+    virtual void RemoveLightCallback (iLightCallback* cb)
+    {
+      scfParent->RemoveLightCallback (cb);
+    }
+    virtual int GetLightCallbackCount () const
+    {
+      return scfParent->GetLightCallbackCount ();
+    }
+    virtual iLightCallback* GetLightCallback (int idx) const
+    {
+      return scfParent->GetLightCallback (idx);
+    }
+    virtual uint32 GetLightNumber () const
+    {
+      return scfParent->lightnr;
+    }
   } scfiLight;
+  friend struct Light;
 };
 
 /**
@@ -239,8 +306,8 @@ private:
    */
   bool dynamic;
 
-  /// Vector of lightmaps that are affected by this dynamic light.
-  csVector lightmaps;
+  /// Set of meshes that we are currently affecting.
+  csHashSet lightinginfos;
 
 public:
   /**
@@ -264,7 +331,7 @@ public:
   /**
    * Return true if this light is pseudo-dynamic.
    */
-  bool IsDynamic () { return dynamic; }
+  virtual bool IsDynamic () const { return dynamic; }
 
   /**
    * Set the light color. Note that setting the color
@@ -278,12 +345,8 @@ public:
    */
   virtual void SetColor (const csColor& col);
 
-  /**
-   * Register a lightmap for a pseudo-dynamic light.
-   * Every lightmap which is interested in updating itself
-   * as this light changes should register itself to the light.
-   */
-  void RegisterLightMap (csLightMap* lmap);
+  /// Add affected mesh.
+  void AddAffectedLightingInfo (iLightingInfo* li);
 
   /**
    * Shine this light on all polygons visible from the light.
@@ -317,165 +380,10 @@ public:
     { return scfParent; }
     virtual iLight *QueryLight ()
     { return &scfParent->scfiLight; }
-    virtual bool IsDynamic ()
-    { return scfParent->IsDynamic (); }
+    virtual void AddAffectedLightingInfo (iLightingInfo* li)
+    { scfParent->AddAffectedLightingInfo (li); }
   } scfiStatLight;
   friend struct eiStaticLight;
-};
-
-/**
- * A light patch. This is a 3D polygon which fits on a world level 3D
- * polygon and defines where the light hits the polygon.
- * There is a list of light patches in every polygon (all dynamic lights
- * hitting a polygon will give rise to a seperate light patch) and there
- * is a list of light patches in every dynamic light (representing all
- * polygons that are hit by that particular light).
- */
-class csLightPatch
-{
-  friend class csLightPatchPool;
-
-private:
-  csLightPatch* next_poly;
-  csLightPatch* prev_poly;
-  csLightPatch* next_light;
-  csLightPatch* prev_light;
-
-  /// Vertices.
-  csVector3* vertices;
-  /// Current number of vertices.
-  int num_vertices;
-  /// Maximum number of vertices.
-  int max_vertices;
-
-  /// Polygon that this light patch is for.
-  csPolygon3D* polygon;
-  /// Curve that this light patch is for
-  csCurve* curve;
-
-  /// Light that this light patch originates from.
-  csDynLight* light;
-
-  /// List of shadow frustums.
-  csShadowBlock shadows;
-
-  /// frustum of where the visible light hits (for use with curves)
-  csFrustum *light_frustum;
-
-public:
-  /**
-   * Create an empty light patch (infinite frustum).
-   */
-  csLightPatch ();
-
-  /**
-   * Unlink this light patch from the polygon and the light
-   * and then destroy.
-   */
-  ~csLightPatch ();
-
-  /**
-   * Make room for the specified number of vertices and
-   * initialize to start a new light patch.
-   */
-  void Initialize (int n);
-
-  /**
-   * Remove this light patch (unlink from all lists).
-   */
-  void RemovePatch ();
-
-  /**
-   * Get the polygon that this light patch belongs too.
-   */
-  csPolygon3D* GetPolygon () { return polygon; }
-
-  /**
-   * Get the curve that this light patch belongs too.
-   */
-  csCurve* GetCurve () { return curve; }
-
-  /**
-   * Get the light that this light patch belongs too.
-   */
-  csDynLight* GetLight () { return light; }
-
-  /// Get a reference to the shadow list.
-  csShadowBlock& GetShadowBlock () { return shadows; }
-
-  /// Get the number of vertices in this light patch.
-  int GetVertexCount () { return num_vertices; }
-  /// Get all the vertices.
-  csVector3* GetVertices () { return vertices; }
-
-  /// Get a vertex.
-  csVector3& GetVertex (int i)
-  {
-    CS_ASSERT (vertices != NULL);
-    CS_ASSERT (i >= 0 && i < num_vertices);
-    return vertices[i];
-  }
-
-  /**
-   * Get next light patch as seen from the standpoint
-   * of the polygon.
-   */
-  csLightPatch* GetNextPoly () { return next_poly; }
-
-  /**
-   * Get the next light patch as seen from the standpoint
-   * of the light.
-   */
-  csLightPatch* GetNextLight () { return next_light; }
-
-  /// Set polygon.
-  void SetPolyCurve (csPolygon3D* pol) { polygon = pol; curve = NULL; }
-  /// Set curve.
-  void SetPolyCurve (csCurve* c) { curve = c; polygon = NULL; }
-  /// Set light.
-  void SetLight (csDynLight* l) { light = l; }
-  /// Add to poly list.
-  void AddPolyList (csLightPatch*& first)
-  {
-    next_poly = first;
-    prev_poly = NULL;
-    if (first)
-      first->prev_poly = this;
-    first = this;
-  }
-  /// Remove from poly list.
-  void RemovePolyList (csLightPatch*& first)
-  {
-    if (next_poly) next_poly->prev_poly = prev_poly;
-    if (prev_poly) prev_poly->next_poly = next_poly;
-    else first = next_poly;
-    prev_poly = next_poly = NULL;
-    polygon = NULL;
-    curve = NULL;
-  }
-  /// Add to light list.
-  void AddLightList (csLightPatch*& first)
-  {
-    next_light = first;
-    prev_light = NULL;
-    if (first)
-      first->prev_light = this;
-    first = this;
-  }
-  /// Remove from light list.
-  void RemoveLightList (csLightPatch*& first)
-  {
-    if (next_light) next_light->prev_light = prev_light;
-    if (prev_light) prev_light->next_light = next_light;
-    else first = next_light;
-    prev_light = next_light = NULL;
-    light = NULL;
-  }
-
-  /// Set the light frustum.
-  void SetLightFrustum (csFrustum* lf) { light_frustum = lf; }
-  /// Get the light frustum.
-  csFrustum* GetLightFrustum () { return light_frustum; }
 };
 
 /**
@@ -489,8 +397,8 @@ private:
   csDynLight* next;
   csDynLight* prev;
 
-  /// List of light patches for this dynamic light.
-  csLightPatch* lightpatches;
+  /// Set of meshes that we are currently affecting.
+  csHashSet lightinginfos;
 
 public:
   /**
@@ -524,16 +432,16 @@ public:
   virtual void SetColor (const csColor& col);
 
   /**
-   * Unlink a light patch from the light patch list.
-   * Warning! This function does not test if the light patch
-   * is really on the list!
+   * Add a lighting info to this dynamic light. This is usually
+   * called during Setup() by meshes that are hit by the
+   * dynamic light.
    */
-  void UnlinkLightpatch (csLightPatch* lp);
+  void AddAffectedLightingInfo (iLightingInfo* li);
 
   /**
-   * Add a light patch to the light patch list.
+   * Remove a lighting info from this dynamic light.
    */
-  void AddLightpatch (csLightPatch* lp);
+  void RemoveAffectedLightingInfo (iLightingInfo* li);
 
   ///
   void SetNext (csDynLight* n) { next = n; }
@@ -555,6 +463,10 @@ public:
     /// Used by the engine to retrieve internal dyn light object (ugly)
     virtual csDynLight* GetPrivateObject ()
     { return scfParent; }
+    virtual void AddAffectedLightingInfo (iLightingInfo* li)
+    { scfParent->AddAffectedLightingInfo (li); }
+    virtual void RemoveAffectedLightingInfo (iLightingInfo* li)
+    { scfParent->RemoveAffectedLightingInfo (li); }
     virtual void Setup ()
     { scfParent->Setup (); }
     virtual iObject *QueryObject ()
@@ -571,36 +483,89 @@ public:
 };
 
 
-CS_DECLARE_OBJECT_VECTOR (csLightListHelper, iLight);
-
 /**
  * List of lights for a sector. This class implements iLightList.
  */
-class csLightList : public csLightListHelper
+class csLightList : public iLightList
 {
+private:
+  csRefArrayObject<iLight> list;
+
 public:
   SCF_DECLARE_IBASE;
 
   /// constructor
   csLightList ();
+  virtual ~csLightList () { RemoveAll (); }
 
-  /// Find a light by ID
-  iLight *FindByID (unsigned long id) const;
+  /// Override PrepareItem
+  virtual void PrepareItem (iLight*) { }
+  /// Override FreeItem
+  virtual void FreeItem (iLight*) { }
 
-  /// iLightList implementation.
-  class LightList : public iLightList
-  {
-    SCF_DECLARE_EMBEDDED_IBASE (csLightList);
-    virtual int GetCount () const;
-    virtual iLight *Get (int n) const;
-    virtual int Add (iLight *obj);
-    virtual bool Remove (iLight *obj);
-    virtual bool Remove (int n);
-    virtual void RemoveAll ();
-    virtual int Find (iLight *obj) const;
-    virtual iLight *FindByName (const char *Name) const;
-    virtual iLight *FindByID (unsigned long id) const;
-  } scfiLightList;
+  virtual int GetCount () const { return list.Length (); }
+  virtual iLight *Get (int n) const { return list.Get (n); }
+  virtual int Add (iLight *obj);
+  virtual bool Remove (iLight *obj);
+  virtual bool Remove (int n);
+  virtual void RemoveAll ();
+  virtual int Find (iLight *obj) const;
+  virtual iLight *FindByName (const char *Name) const;
+  virtual iLight *FindByID (const char* id) const;
+};
+
+/**
+ * This is user-data for iFrustumView for the lighting process.
+ */
+struct csLightingProcessInfo : public iLightingProcessInfo
+{
+private:
+  // Light.
+  csLight* light;
+  // For dynamic lighting.
+  bool dynamic;
+  // Current lighting color.
+  csColor color;
+  // Array of user data.
+  csRefArray<iLightingProcessData> userdatas;
+
+public:
+  csLightingProcessInfo (csLight* light, bool dynamic);
+  virtual ~csLightingProcessInfo () { }
+
+  /**
+   * Get the light.
+   */
+  csLight* GetCsLight () const { return light; }
+  virtual iLight* GetLight () const { return &(light->scfiLight); }
+
+  /**
+   * Return true if dynamic.
+   */
+  virtual bool IsDynamic () const { return dynamic; }
+
+  /**
+   * Set the current color.
+   */
+  virtual void SetColor (const csColor& col) { color = col; }
+
+  /**
+   * Get the current color.
+   */
+  virtual const csColor& GetColor () const { return color; }
+
+  /// Attach userdata.
+  virtual void AttachUserdata (iLightingProcessData* userdata);
+
+  /// Query for userdata based on SCF type.
+  virtual csPtr<iLightingProcessData> QueryUserdata (scfInterfaceID id,
+  	int version);
+
+  /// Finalize lighting.
+  virtual void FinalizeLighting ();
+
+  SCF_DECLARE_IBASE;
 };
 
 #endif // __CS_LIGHT_H__
+

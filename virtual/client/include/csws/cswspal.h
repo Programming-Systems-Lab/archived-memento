@@ -17,8 +17,8 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __CSWSPAL_H__
-#define __CSWSPAL_H__
+#ifndef __CS_CSWSPAL_H__
+#define __CS_CSWSPAL_H__
 
 /**\file
  * Crystal Space Windowing System: CSWS palette definition
@@ -128,6 +128,12 @@ extern int cswsPaletteSize;
 extern int csRegisterPalette (int *Palette, int Size);
 /// Change the global color scheme (or restore scheme if NULL passed)
 extern void csSetColorScheme (csApp *iApp, csColorScheme &Scheme);
+
+/**
+ * Cleanup the global palette array when it is not needed anymore.
+ * Must be called to avoid memleaks.
+ */
+extern void csResetPalette (void);
 
 /**
  * \name Palette indices
@@ -521,4 +527,4 @@ extern void csSetColorScheme (csApp *iApp, csColorScheme &Scheme);
 
 /** @} */
 
-#endif // __CSWSPAL_H__
+#endif // __CS_CSWSPAL_H__

@@ -17,14 +17,21 @@
     Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef __IEFFECTLAYER_H__
-#define __IEFFECTLAYER_H__
+#ifndef __CS_IVIDEO_EFFECTLAYER_H__
+#define __CS_IVIDEO_EFFECTLAYER_H__
 
 /**\file
+ * Effect layer interface
  */
+ 
+/**
+ * \addtogroup gfx3d
+ * @{ */
+
 #include "csutil/scf.h"
 #include "cstypes.h"
 #include "csutil/ref.h"
+#include "csutil/strset.h"
 #include "efvector4.h"
 
 SCF_VERSION (iEffectLayer, 0, 0, 1);
@@ -57,10 +64,12 @@ struct iEffectLayer : public iBase
   /// Get the id of the next state.
   virtual csStringID GetNextState() = 0;
 
-	/// Get renderer specific data
-	virtual csRef<iBase> GetRendererData() = 0;
-	/// Set renderer specific data
-	virtual void SetRendererData(csRef<iBase> data) = 0;
+  /// Get renderer specific data
+  virtual iBase* GetRendererData () = 0;
+  /// Set renderer specific data
+  virtual void SetRendererData (iBase* data) = 0;
 };
 
-#endif // __IEFFECTLAYER_H__
+/** @} */
+
+#endif // __CS_IVIDEO_EFFECTLAYER_H__
