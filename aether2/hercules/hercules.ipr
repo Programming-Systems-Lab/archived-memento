@@ -25,7 +25,10 @@
         <root type="simple" url="jar://C:/ditd/java/aether/lib/dom4j.jar!/" />
         <root type="simple" url="jar://C:/ditd/java/aether/lib/dom4jutil-0.1.jar!/" />
         <root type="simple" url="jar://C:/ditd/java/aether/lib/concurrent.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/dundee-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/dundee-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/sdf-0.1.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/ctor-0.1.jar!/" />
+        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/bsh-1.2b7.jar!/" />
       </root>
     </classPath>
     <excludePath>

@@ -11,54 +11,52 @@
   </component>
   <component name="FileEditorManager">
     <history>
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/domain/RemoteDomainAgentTest.java" line="46" column="21" vertical-scroll-proportion="0.8935108" horizontal-scroll-proportion="0.16030534">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/Avatar.java" line="16" column="0" vertical-scroll-proportion="0.34775373" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/LocatableWorldObject.java" line="37" column="4" vertical-scroll-proportion="1.7237936" horizontal-scroll-proportion="0.03925845" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/domain/DomainAgentTest.java" line="29" column="28" vertical-scroll-proportion="0.5973378" horizontal-scroll-proportion="0.21374045">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/WorldObject.java" line="12" column="17" vertical-scroll-proportion="-0.9417637" horizontal-scroll-proportion="0.129771" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="55" column="8" vertical-scroll-proportion="0.19467553" horizontal-scroll-proportion="0.061068702">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/Portal.java" line="8" column="17" vertical-scroll-proportion="0.18801996" horizontal-scroll-proportion="0.129771" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/Sector.java" line="10" column="17" vertical-scroll-proportion="-1.1690822" horizontal-scroll-proportion="0.129771" />
-      <source-position-entry url="jar://C:/ditd/java/aether/lib/dundee-0.1.jar!/net/concedere/dundee/DefaultComponent.class" line="9" column="13" vertical-scroll-proportion="0.32038835" horizontal-scroll-proportion="0.099236645">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/AetherComponent.java" line="13" column="0" vertical-scroll-proportion="0.4605475" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/ThreadPoolProvider.java" line="25" column="13" vertical-scroll-proportion="0.32206118" horizontal-scroll-proportion="0.099236645" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/MonitorProvider.java" line="22" column="13" vertical-scroll-proportion="0.32850242" horizontal-scroll-proportion="0.099236645" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/WorldModel.java" line="18" column="4" vertical-scroll-proportion="0.531401" horizontal-scroll-proportion="0.030534351" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/DefaultWorldModel.java" line="15" column="0" vertical-scroll-proportion="0.11916264" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/PublisherProvider.java" line="66" column="26" vertical-scroll-proportion="0.016103059" horizontal-scroll-proportion="0.19847329" />
+      <source-position-entry url="file://$PROJECT_DIR$/doc/world_controller.txt" line="0" column="0" vertical-scroll-proportion="-1.7536232" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/LinkProvider.java" line="16" column="15" vertical-scroll-proportion="0.36717427" horizontal-scroll-proportion="0.16357689" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/manager/WorldController.java" line="31" column="13" vertical-scroll-proportion="-0.15059222" horizontal-scroll-proportion="0.14176664" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/PublisherProvider.java" line="91" column="12" vertical-scroll-proportion="0.8950931" horizontal-scroll-proportion="0.1308615" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/ThreadPoolProviderTest.java" line="48" column="0" vertical-scroll-proportion="0.8950931" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="261" column="26" vertical-scroll-proportion="0.81049067" horizontal-scroll-proportion="0.28353328">
+        <folding>
+          <element signature="class#SwitchBoardServiceProvider;class#DefaultSwitchBoard" expanded="true" />
+        </folding>
+      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/ThreadPoolProvider.java" line="25" column="13" vertical-scroll-proportion="0.33333334" horizontal-scroll-proportion="0.13631406" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/ConnectionFactory.java" line="35" column="13" vertical-scroll-proportion="-5.9796953" horizontal-scroll-proportion="0.14176664" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/memento/world/manager/WorldManagerTest.java" line="23" column="13" vertical-scroll-proportion="0.34517765" horizontal-scroll-proportion="0.14176664" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/DefaultConnectionProvider.java" line="83" column="6" vertical-scroll-proportion="0.9255499" horizontal-scroll-proportion="0.06543075" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/DeployFraxTest.java" line="24" column="5" vertical-scroll-proportion="0.6480541" horizontal-scroll-proportion="0.05452563">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
     </history>
-    <open-files />
+    <open-files>
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/memento/world/manager/WorldManagerTest.java" line="23" column="13" vertical-scroll-proportion="0.34517765" horizontal-scroll-proportion="0.14176664" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/DefaultConnectionProvider.java" line="83" column="6" vertical-scroll-proportion="0.9255499" horizontal-scroll-proportion="0.06543075" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/DeployFraxTest.java" line="24" column="5" vertical-scroll-proportion="0.6480541" horizontal-scroll-proportion="0.05452563" selected="true">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
+    </open-files>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1032" height="776" extended-state="0" />
-    <editor active="false" />
+    <frame x="-4" y="-4" width="1032" height="746" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.2488889" order="5" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.47851852" order="2" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.3116279" order="5" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.47906977" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.33037037" order="7" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4004065" order="0" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="true" weight="0.3699187" order="0" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.375" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="3" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.4034553" order="1" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33037037" order="1" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33023256" order="1" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="false" weight="0.32991204" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
@@ -267,10 +265,9 @@
   <component name="ProjectViewSettings">
     <navigator currentView="ProjectPane" flattenPackages="true" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
     <view id="ProjectPane">
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/test" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/doc" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$" />
     </view>
     <view id="SourcepathPane" />
@@ -473,6 +470,15 @@
     <configuration name="RemoteDomainAgentTest" type="JUnit" default="false" selected="false">
       <option name="PACKAGE_NAME" />
       <option name="MAIN_CLASS_NAME" value="aether.server.domain.RemoteDomainAgentTest" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    </configuration>
+    <configuration name="DeployFraxTest" type="JUnit" default="false" selected="false">
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" value="aether.server.core.DeployFraxTest" />
       <option name="METHOD_NAME" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" />
