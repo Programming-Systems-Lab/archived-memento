@@ -8,12 +8,15 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.3 $
- *  $Date: 2003-08-12 22:21:49 $
+ *  $Revision: 1.4 $
+ *  $Date: 2003-09-02 17:57:49 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
 #include "AI2TVJNICPP.h"
+
+// The global pointer to ChimeSystemDriver
+// extern ChimeSystemDriver *driver;
 
 /**
  * The CPP side JNI interface for the AI2TV client.
@@ -28,29 +31,26 @@
  */
 AI2TVJNICPP::AI2TVJNICPP(){
   _isActive = 1;
-  DEBUG=1;
+  doDEBUG=1;
   // make sure the base psl dir is in your classpath
   JAVACLASS = "psl/ai2tv/client/AI2TVJNIJava"; 
  
   classpath = "-Djava.class.path=c:/pslroot/psl/ai2tv/client/build;c:/pslroot/jars/siena-1.4.3.jar;.";
 
-  // this seems to be the path that it checks for the java class, 
-  // though it's strange that it isn't simply c:\pslroot...
   libpath = "-Djava.library.path=c:/pslroot/psl/ai2tv/client/";
-
   // this is the default base video URL 
-  baseURL = "-Dai2tv.baseURL=http://franken.psl.cs.columbia.edu/ai2tv/";
+  baseURL = "-Dai2tv.baseURL=http://wall.psl.cs.columbia.edu/ai2tv/";
 
   // this is the default siena server
   // sienaServer = "-Dai2tv.server=ka:franken.psl.cs.columbia.edu:4444";
-  sienaServer = "-Dai2tv.server=ka:localhost:4444";
+  sienaServer = "-Dai2tv.server=ka:grand.psl.cs.columbia.edu:4444";
 
   _jvm = NULL;
   _env = NULL;
   _class = NULL;
   _obj = NULL;
 
-  if (DEBUG > 0)
+  if (doDEBUG > 0)
     printf("Creating the Java VM\n");
   _env = create_vm(_jvm);
   if (_env == NULL) return;
@@ -75,7 +75,7 @@ AI2TVJNICPP::AI2TVJNICPP(){
  * http://java.sun.com/j2se/1.3/docs/guide/jni/jni-12.html#DestroyJavaVM
  */
 AI2TVJNICPP::~AI2TVJNICPP(){
-  if (DEBUG > 0)
+  if (doDEBUG > 0)
     printf("Shutting down the Java VM");  
   delete _class;
   delete _obj;
@@ -129,7 +129,7 @@ JNIEnv* AI2TVJNICPP::create_vm(JavaVM* jvm) {
  */
 void AI2TVJNICPP::instantiateClasses(){
   if (_class == NULL) { 
-	  if (DEBUG > 0)
+	  if (doDEBUG > 0)
       printf("Finding the class\n");
     _class = _env->FindClass(JAVACLASS);
   }
@@ -142,11 +142,14 @@ void AI2TVJNICPP::instantiateClasses(){
   }
 
   if (_obj == NULL) {
-  if (DEBUG > 0)
+  if (doDEBUG > 0)
     printf("Instantiating the JObject\n");
 
     jmethodID mid = _env->GetMethodID(_class, "<init>", "()V");
-    _obj = _env->NewObject(_class, mid);
+    if (mid != 0)
+      _obj = _env->NewObject(_class, mid);
+    else 
+      printf("Error, method ID for constructor not found!\n");
   }
 }
 
@@ -258,8 +261,9 @@ int AI2TVJNICPP::videoLength(){
  * 
  * @param dir: directory location
  */
-void AI2TVJNICPP::setCacheDir(char* dir){
+void AI2TVJNICPP::setCacheDir(const char* dir){
   jmethodID mid;
+
   mid = _env->GetMethodID(_class, "setCacheDir","(Ljava/lang/String;)V");
   _env->CallVoidMethod(_obj, mid, _env->NewStringUTF(dir));
 }
@@ -271,7 +275,6 @@ void AI2TVJNICPP::setCacheDir(char* dir){
  */
 char* AI2TVJNICPP::getCacheDir(){
   jmethodID mid;
-  mid = _env->GetMethodID(_class, "getCacheDir","()Ljava/lang/String;");
   jstring dir = (jstring) _env->CallObjectMethod(_obj, mid);
   
   return (char*) _env->GetStringUTFChars(dir,0);
@@ -313,13 +316,22 @@ void AI2TVJNICPP::setLoginInfo(const char* login,
 			       const char* server, 
 			       const char* uid, 
 			       const char* gid){
+
+  printf("AI2TVJNICPP: Login info: %s %s %s %s %s\n", login, password, server, uid, gid);
+
   jmethodID mid;
-  mid = _env->GetMethodID(_class, "setLoginInfo","(Ljava/lang/String;,Ljava/lang/String;,Ljava/lang/String;,Ljava/lang/String;,Ljava/lang/String;)V");
-  _env->CallVoidMethod(_obj, mid, _env->NewStringUTF(login),
-		       _env->NewStringUTF(password),
-		       _env->NewStringUTF(server),
-		       _env->NewStringUTF(uid),
-		       _env->NewStringUTF(gid));
+  mid = _env->GetMethodID(_class, "setLoginInfo","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+  if (mid != 0){
+    _env->CallVoidMethod(_obj, mid, 
+			 _env->NewStringUTF(uid),
+			 _env->NewStringUTF(gid),
+			 _env->NewStringUTF(password));
+			 
+  } else {
+    printf("Error, mid for setLoginInfo not found\n");
+  }
+
 }
 
 /**
@@ -352,7 +364,12 @@ void AI2TVJNICPP::initialize(){
  */
 int AI2TVJNICPP::getAvailableVideos(char availableVideos[10][50]){
   jmethodID mid;
+
   mid = _env->GetMethodID(_class, "getAvailableVideos","()[Ljava/lang/String;");
+  printf("getAvailableVideos MID: %d\n", mid);
+  if (mid == 0)
+    return 0;
+
   jobjectArray videoObjectArray = (jobjectArray) _env->CallObjectMethod(_obj, mid);
   jstring video = (jstring)_env->GetObjectArrayElement(videoObjectArray, 0);
 
@@ -368,6 +385,7 @@ int AI2TVJNICPP::getAvailableVideos(char availableVideos[10][50]){
   }
 
   // clean up the used objects
+  delete isCopy;
   _env->DeleteLocalRef(videoObjectArray);
   return i;
 }
@@ -390,16 +408,16 @@ void AI2TVJNICPP::shutdown(){
  * Tell the CHIME "Video" viewer to load this frame into memory
  */
 JNIEXPORT void JNICALL
-Java_psl_ai2tv_client_AI2TVJNIJava_loadFrame(JNIEnv *env, jobject obj, jstring frame) {
+Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring frame) {
   jboolean* isCopy = new jboolean(false);
   const char *str = env->GetStringUTFChars(frame,isCopy);
 
   printf("c++ : loading frame %s\n", str);
 
-  /* 
-   * Mark needs to add in functionality here.
-   */
+  // driver->GetAi2tvInterface ()->LoadFrame (frame, frame);
 
+
+  delete isCopy;
   env->ReleaseStringUTFChars(frame, str);
   return;
 }
@@ -407,19 +425,23 @@ Java_psl_ai2tv_client_AI2TVJNIJava_loadFrame(JNIEnv *env, jobject obj, jstring f
 /**
  * Tell the CHIME "Video" viewer to display this frame
  */
-JNIEXPORT void JNICALL
-Java_psl_ai2tv_client_AI2TVJNIJava_displayFrame(JNIEnv *env, jobject obj, jstring frame) {
+JNIEXPORT jboolean JNICALL
+Java_psl_ai2tv_client_AI2TVJNIJava_displayImage(JNIEnv *env, jobject obj, jstring frame) {
+  // dan needs to figure out when to release these in memory
   jboolean* isCopy = new jboolean(false);
+  jboolean* displaySuccessful = new jboolean(false);
+
   const char *str = env->GetStringUTFChars(frame,isCopy);
 
   printf("c++ : Displayed frame %s\n", str);
 
-  /* 
-   * Mark needs to add in functionality here.
-   */
+  // driver->GetAi2tvInterface ()->DisplayFrame (frame);
+  
 
+  delete isCopy;
+  delete displaySuccessful;
   env->ReleaseStringUTFChars(frame, str);
-  return;
+  return *displaySuccessful;
 }
 
 // ----- END: JNI related functions called by the Java side ----- //
