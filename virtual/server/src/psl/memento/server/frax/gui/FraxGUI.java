@@ -108,7 +108,7 @@ public class FraxGUI implements ActionListener {
   }
   
   private void createGUI() {
-    mFrame = new JFrame("Frax Metadata Extractor");
+    mFrame = new JFrame("Frax Metadata Extractor - Front End");
     
     mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     
@@ -256,10 +256,10 @@ public class FraxGUI implements ActionListener {
       String command = iEvent.getActionCommand();      
       
       if (mExtractButton.equals(source)) {
-        execExtract();
+        execExtract((iEvent.getModifiers() & ActionEvent.SHIFT_MASK) != 0);
       } else if (mAddressText.equals(source)) {
         if ("comboBoxChanged".equals(command)) {
-          execExtract();
+          execExtract(false);
         } else if ("comboBoxEdited".equals(command)) {
           addAddressToHistory();
         }
@@ -288,7 +288,7 @@ public class FraxGUI implements ActionListener {
       mAddressText.insertItemAt(address, 0);
     }
     
-    private void execExtract() {
+    private void execExtract(boolean iForceReload) {
       String uriString = (String) mAddressText.getSelectedItem();
       if (uriString == null || uriString.trim().equals("")) {        
         return;
@@ -298,7 +298,8 @@ public class FraxGUI implements ActionListener {
       mStopButton.setEnabled(true);
       mFraxGUI.mResultsText.setText("");      
       
-      mCurrentExtractionThread = new ExtractionThread(uriString, this);
+      mCurrentExtractionThread = new ExtractionThread(uriString, this,
+        iForceReload);
       mCurrentExtractionThread.start();
     }
     
@@ -327,12 +328,15 @@ public class FraxGUI implements ActionListener {
     private String mURI;
     private AddressPanel mP;    
     private boolean mRunning;
+    private boolean mForceReload;
     
-    public ExtractionThread(String iURI, AddressPanel iP) {
+    public ExtractionThread(String iURI, AddressPanel iP,
+        boolean iForceReload) {
       super();
       
       mURI = iURI;
-      mP = iP;      
+      mP = iP;
+      mForceReload = iForceReload;
     }
     
     public void run() {
@@ -356,7 +360,7 @@ public class FraxGUI implements ActionListener {
           config.getExtractContentMetadata(),
           config.getUseOracleForExtractors(),
           config.getUseOracleForPlugs(),
-          config.getUseMetadataCache());
+          (mForceReload ? false : config.getUseMetadataCache()));
         
         long timeTotal = System.currentTimeMillis() - timeStarted;
 

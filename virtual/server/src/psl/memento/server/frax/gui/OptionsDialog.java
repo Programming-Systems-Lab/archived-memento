@@ -56,7 +56,6 @@ public class OptionsDialog extends javax.swing.JDialog {
     buttonOK = new javax.swing.JButton();
 
     setTitle("Options");
-    setLocationRelativeTo(null);
     setModal(true);
     setResizable(false);
     addWindowListener(new java.awt.event.WindowAdapter() {
@@ -76,7 +75,7 @@ public class OptionsDialog extends javax.swing.JDialog {
     jPanel2.setLayout(new javax.swing.BoxLayout(jPanel2, javax.swing.BoxLayout.Y_AXIS));
 
     chkUseMDCache.setSelected(Frax.getInstance().getConfiguration().getUseMetadataCache());
-    chkUseMDCache.setText("Use metadata cache");
+    chkUseMDCache.setText("Use metadata cache (do not force reload)");
     chkUseMDCache.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         chkUseMDCacheActionPerformed(evt);

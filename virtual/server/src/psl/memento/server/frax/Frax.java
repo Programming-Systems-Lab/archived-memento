@@ -63,6 +63,8 @@ public final class Frax {
   private ConnectionSource mConnSource;
   private Connection mMasterConn;
   private Model mPersistentModel;
+  private List mAcquiredDataRecord;
+  private BitSet mAcquiredDataIdentities;
   
   public static Frax getInstance() {    
     if (sInstance == null) {
@@ -73,10 +75,12 @@ public final class Frax {
   }
   
   private Frax() {
-    Runtime.getRuntime().addShutdownHook(new FraxShutdownHook());
+    Runtime.getRuntime().addShutdownHook(new FraxShutdownHook());    
   }
   
-  private void shutDown() {
+  private void shutDown() {    
+    writeAcquiredDataRecord();
+    
     if (mPersistentModel != null) {
       mPersistentModel.close();
     }
@@ -400,6 +404,8 @@ public final class Frax {
     }
     
     mConfiguration = iConfiguration;
+    
+    readAcquiredDataRecord();    
   }
   
   public void synchWithOracle() throws FraxException {
@@ -431,8 +437,6 @@ public final class Frax {
         mOracle.registerPlug(ClassBundle.getInstance(
           c, config.getTypeString(c.getName())));
       }
-    
-      //mOracle.registerExtractor(ClassBundle.getInstance(config.getExtractorClass("ftp"), "ftp"));
     } catch (RemoteException ex) {
       throw new FraxException("RMI error.", ex);
     }
@@ -451,6 +455,8 @@ public final class Frax {
   public boolean registerExtractor(ClassBundle iBundle) {
     try {
       registerCommon(iBundle);
+      int index = mAcquiredDataRecord.size() - 1;
+      mAcquiredDataIdentities.set(index);
       
       Frax.getInstance().getConfiguration().addExtractor(
         iBundle.getClassName(), iBundle.getLabel(),
@@ -477,6 +483,8 @@ public final class Frax {
   public boolean registerPlug(ClassBundle iBundle) {
     try {
       registerCommon(iBundle);
+      int index = mAcquiredDataRecord.size() - 1;
+      mAcquiredDataIdentities.clear(index);
       
       Frax.getInstance().getConfiguration().addPlug(
         iBundle.getClassName(), iBundle.getLabel(),
@@ -514,6 +522,88 @@ public final class Frax {
     }
 
     MiscUtils.rebuildClassLoaderPaths();
+    mAcquiredDataRecord.add(iBundle);
+  }
+  
+  private void readAcquiredDataRecord() {
+    mAcquiredDataRecord = new ArrayList();
+    mAcquiredDataIdentities = new BitSet();
+    
+    ObjectInputStream ois = null;
+    int dataRecSize = -1;
+    try {
+      ois = new ObjectInputStream(
+        new FileInputStream("etc/frax/acquired.dat"));
+      
+      dataRecSize = ois.readInt();
+      mAcquiredDataIdentities = (BitSet) ois.readObject();
+      
+      for (int i = 0; i < dataRecSize; i++) {
+        mAcquiredDataRecord.add(ois.readObject());
+      }
+    } catch (Exception ex) {
+      // do nothing
+    } finally {
+      if (ois != null) {
+        try {
+          ois.close();
+        } catch (IOException ex2) {
+          // do nothing
+        }
+      }
+    }
+    
+    if (dataRecSize < 1) {
+      return;
+    }
+    
+    for (int i = 0; i < dataRecSize; i++) {
+      ClassBundle c = (ClassBundle) mAcquiredDataRecord.get(i);
+      
+      if (mAcquiredDataIdentities.get(i)) {
+        Frax.getInstance().getConfiguration().addExtractor(
+          c.getClassName(), c.getLabel(),
+          MiscUtils.concatenateDeps(c.getDependenciesNames()));
+      } else {
+        Frax.getInstance().getConfiguration().addPlug(
+          c.getClassName(), c.getLabel(),
+          MiscUtils.concatenateDeps(c.getDependenciesNames()));
+      }
+    }
+  }
+  
+  private void writeAcquiredDataRecord() {
+    if (mAcquiredDataRecord.isEmpty()) {
+      return;
+    }
+    
+    ObjectOutputStream oos = null;
+    try {
+      oos = new ObjectOutputStream(
+        new FileOutputStream("etc/frax/acquired.dat"));
+      
+      oos.writeInt(mAcquiredDataRecord.size());
+      oos.writeObject(mAcquiredDataIdentities);
+      
+      for (int i = 0, n = mAcquiredDataRecord.size(); i < n; i++) {        
+        ClassBundle c = (ClassBundle) mAcquiredDataRecord.get(i);
+        c.setClassByteData(null);
+        c.setDependencyByteData(null);
+        oos.writeObject(c);
+      }
+
+      oos.flush();
+    } catch (Exception ex) {
+      // do nothing
+    } finally {
+      if (oos != null) {
+        try {
+          oos.close();
+        } catch (IOException ex2) {
+          // do nothing
+        }
+      }
+    }
   }
   
   public static void main(String[] args) {

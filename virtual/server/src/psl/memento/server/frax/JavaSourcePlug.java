@@ -26,7 +26,7 @@ public class JavaSourcePlug extends Plug {
     try {
       Jalopy jalopy = new Jalopy();
       
-      jalopy.setInput(iSource,  "J:\\downloads\\temp\\Jalopy.java");
+      jalopy.setInput(iSource, "psl-frax.jar");
       JavaNode node = jalopy.parse();
       
       Jalopy.State s = jalopy.getState();

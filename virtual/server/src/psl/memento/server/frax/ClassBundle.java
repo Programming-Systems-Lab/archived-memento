@@ -6,7 +6,7 @@ import java.util.*;
 
 import psl.memento.server.frax.util.MiscUtils;
 
-public class ClassBundle implements Serializable {
+public class ClassBundle implements Serializable {  
   private String mLabel;
   private String mClassName;
   private byte[] mClassByteData;
