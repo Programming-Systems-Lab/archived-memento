@@ -16,7 +16,7 @@ import aether.server.framework.Identifiable;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public interface Responder extends aether.server.framework.Identifiable
+public interface Responder extends Identifiable
 {
 	/**
 	 * Proces an incoming request by setting variables on the approriate

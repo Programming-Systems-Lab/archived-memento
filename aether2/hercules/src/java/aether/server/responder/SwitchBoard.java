@@ -35,7 +35,8 @@ public interface SwitchBoard
 	 * @throws ResponderException
 	 *         if the Responder can't be unbound
 	 */
-	public void unbind(Responder r, String dest) throws ResponderException, IOException;
+	public void unbind(Responder r, String dest) throws ResponderException,
+			IOException;
 
 	/**
 	 * Add a SwitchBoardListener interested in monitoring this SwitchBoard.

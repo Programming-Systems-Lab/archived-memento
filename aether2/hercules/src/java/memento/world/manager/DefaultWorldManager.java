@@ -17,6 +17,8 @@ import memento.world.model.WorldModel;
 
 import javax.swing.event.EventListenerList;
 
+import aether.server.framework.Identifiable;
+
 /**
  * Default implementation of the WorldManager interface.
  *
@@ -24,10 +26,11 @@ import javax.swing.event.EventListenerList;
  * @version 0.1
  **/
 public class DefaultWorldManager extends DefaultComponent
-		implements Initializable, Disposable, WorldManager
+		implements Initializable, Disposable, WorldManager, Identifiable
 {
 	private Map worldUIMap = Collections.synchronizedMap(new HashMap());
 	private BeanContextMembershipListener bcml;
+	private String guid;
 
 	/**
 	 * EventListenerList used to manage listeners.
@@ -97,6 +100,16 @@ public class DefaultWorldManager extends DefaultComponent
 			return true;
 		}
 		return false;
+	}
+
+	public String getGuid()
+	{
+		return guid;
+	}
+
+	public void setGuid(String guid)
+	{
+		this.guid = guid;
 	}
 
 	public void addWorldManagerListener(WorldManagerListener wml)

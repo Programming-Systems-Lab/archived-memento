@@ -1,6 +1,7 @@
 package aether.server.responder;
 
-import aether.component.DefaultComponent;
+import net.concedere.dundee.DefaultComponent;
+
 
 /**
  * Partial implementation of the Responder interface.

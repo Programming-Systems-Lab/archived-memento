@@ -1,7 +1,5 @@
 package aether.server.responder;
 
-import java.io.IOException;
-
 /**
  * Indicates that an exception occured while attempting to send a response.
  *

@@ -1,5 +1,7 @@
 package aether.server.responder;
 
+import net.concedere.dundee.ComponentException;
+
 
 /**
  * Indicates a general error within the Responder subsystem.
@@ -7,7 +9,7 @@ package aether.server.responder;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public class ResponderException extends net.concedere.dundee.ComponentException
+public class ResponderException extends ComponentException
 {
     public ResponderException()
 	{
