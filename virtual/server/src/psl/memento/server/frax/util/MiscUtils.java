@@ -23,13 +23,14 @@ public class MiscUtils {
       
       return p.getString();
     } catch (RDFException ex) {
-      // the resource has no mime type property
-      // check the file extension
-      String uri = iResource.getURI();
-      int dotIndex = uri.lastIndexOf('.');
-      String ext = (dotIndex == -1) ? "" : uri.substring(dotIndex + 1);      
-      return Frax.getInstance().getConfiguration().getMIMEType(ext);
     }    
+
+    // the resource has no mime type property
+    // check the file extension
+    String uri = iResource.getURI();
+    int dotIndex = uri.lastIndexOf('.');
+    String ext = (dotIndex == -1) ? "" : uri.substring(dotIndex + 1);      
+    return Frax.getInstance().getConfiguration().getMIMEType(ext);
   }
 
 	public static String dateToString(Date iDate) {

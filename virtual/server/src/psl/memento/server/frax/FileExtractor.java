@@ -15,8 +15,6 @@ import psl.memento.server.frax.vocabulary.ResourceVocab;
 import psl.memento.server.frax.vocabulary.FileVocab;
 
 class FileExtractor extends Extractor {
-	private static final String kScheme = "file";
-  
   private static final String kErrorBadFileURI =
     "A file URI cannot have authority, query, or fragment components.";
 
@@ -49,8 +47,6 @@ class FileExtractor extends Extractor {
    */
   public InputStream extractSchemeMetadata(URI iURI, Resource iTarget)
       throws FraxException {
-    super.extractSchemeMetadata(iURI, iTarget);    
-        
     // we only support files on the local machine, so make sure the
     // authority, query, and fragment components are all null
     if (iURI.getAuthority() != null || iURI.getQuery() != null ||
@@ -74,9 +70,7 @@ class FileExtractor extends Extractor {
       
       if (f.isFile()) {
         // add file-only properties
-        iTarget.addProperty(ResourceVocab.kSize.getProperty(), f.length());
-        
-        // TODO: determine MIME type from file extension
+        iTarget.addProperty(ResourceVocab.kSize.getProperty(), f.length());        
         
         // return an input stream to the file content
         try {
@@ -107,8 +101,4 @@ class FileExtractor extends Extractor {
     // should never be reached, but keep the compiler happy
     return null;
   }
-  
-	public String getScheme() {
-    return kScheme;
-  }  
 }

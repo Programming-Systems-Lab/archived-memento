@@ -18,8 +18,6 @@ import psl.memento.server.frax.vocabulary.ResourceVocab;
 import psl.memento.server.frax.vocabulary.HTTPVocab;
 
 class HTTPExtractor extends Extractor {
-	private static final String kScheme = "http";
-  
   private static final String kErrorCantCreateURL =
     "Could not create a URL object out of: ";
   private static final String kErrorHttp =
@@ -53,8 +51,6 @@ class HTTPExtractor extends Extractor {
    */
   public InputStream extractSchemeMetadata(URI iURI, Resource iTarget)
       throws FraxException {
-    super.extractSchemeMetadata(iURI, iTarget);
-    
     try {      
       HttpClient httpClient = new HttpClient();
       
@@ -88,10 +84,6 @@ class HTTPExtractor extends Extractor {
     } catch (RDFException ex) {
       throw new FraxException(kErrorAddingProperty, ex);
     }
-  }
-  
-	public String getScheme() {
-    return kScheme;
   }
   
   private void extractMetadataFromHeaders(HttpMethod iMethod,

@@ -61,18 +61,18 @@ public class XMLFraxConfiguration implements FraxConfiguration {
     mDigester.push(this);
     
     // add extractor rules
-    mDigester.addObjectCreate("frax-config/extractors", HashMap.class);
-    mDigester.addSetNext("frax-config/extractors", "setExtractorMap");
-    mDigester.addCallMethod("frax-config/extractors/extractor", "put", 2);
-    mDigester.addCallParam("frax-config/extractors/extractor", 0, "scheme");
-    mDigester.addCallParam("frax-config/extractors/extractor", 1, "class");
+    mDigester.addObjectCreate("frax-config/extractor-map", HashMap.class);
+    mDigester.addSetNext("frax-config/extractor-map", "setExtractorMap");
+    mDigester.addCallMethod("frax-config/extractor-map/map-entry", "put", 2);
+    mDigester.addCallParam("frax-config/extractor-map/map-entry", 0, "scheme");
+    mDigester.addCallParam("frax-config/extractor-map/map-entry", 1, "class");
     
     // add plug rules
-    mDigester.addObjectCreate("frax-config/plugs", HashMap.class);
-    mDigester.addSetNext("frax-config/plugs", "setPlugMap");
-    mDigester.addCallMethod("frax-config/plugs/plug", "put", 2);
-    mDigester.addCallParam("frax-config/plugs/plug", 0, "mimetype");
-    mDigester.addCallParam("frax-config/plugs/plug", 1, "class");
+    mDigester.addObjectCreate("frax-config/plug-map", HashMap.class);
+    mDigester.addSetNext("frax-config/plug-map", "setPlugMap");
+    mDigester.addCallMethod("frax-config/plug-map/map-entry", "put", 2);
+    mDigester.addCallParam("frax-config/plug-map/map-entry", 0, "mimetype");
+    mDigester.addCallParam("frax-config/plug-map/map-entry", 1, "class");
     
     // add extension map rules
     mDigester.addObjectCreate("frax-config/extension-map", HashMap.class);

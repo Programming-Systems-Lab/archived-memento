@@ -16,8 +16,6 @@ import psl.memento.server.frax.FraxException;
  * @author Mark Ayzenshtat
  */
 public abstract class Extractor {
-  private static final String kErrorSchemeMismatch =
-    "The given URI scheme does not match the scheme of the extractor object.";  
   protected static final String kErrorAddingProperty =
     "Error adding RDF Property object.";
   private static final String kWarningCouldNotInstantiateExtractor = 
@@ -89,21 +87,6 @@ public abstract class Extractor {
    * byte data for resources with this scheme
    * @exception FraxException if an error occurred extracting metadata
    */
-  public InputStream extractSchemeMetadata(URI iURI, Resource iTarget)
-      throws FraxException {  
-    // make sure the extractor scheme matches up with the scheme in the URI
-    if (!iURI.getScheme().equalsIgnoreCase(getScheme())) {
-      throw new FraxException(kErrorSchemeMismatch);
-    }
-    
-    return null;
-  }
- 
-  /**
-   * Returns the URI scheme that this extractor knows how to
-   * retrieve metadata from.
-   *
-   * @return the URI scheme
-   */
-  public abstract String getScheme();
+  public abstract InputStream extractSchemeMetadata(URI iURI, Resource iTarget)
+      throws FraxException;
 }
