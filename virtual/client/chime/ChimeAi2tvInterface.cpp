@@ -19,8 +19,12 @@ extern ChimeSystemDriver *driver;
  **********************************************************/
 ChimeAi2tvInterface::ChimeAi2tvInterface ()
 {
-	client = NULL;
-	//client = new AI2TVJNICPP ();
+	//client = NULL;
+	client = new AI2TVJNICPP ();
+	if (client == NULL){
+		printf("Error, AI2TV Client could not be created\n");
+		return;
+	}
 }
 
 /**********************************************************
@@ -51,7 +55,13 @@ void ChimeAi2tvInterface::GetAvailableVideos (char videos[10][50])
 void ChimeAi2tvInterface::SetLoginInfo (const char *strUserName)
 {
 	printf("Login info: %s\n", strUserName);
-	if (client) client->setLoginInfo (strUserName);
+	
+	const char* passwd = "iLuvMinnie";
+	const char* server = "disneyworld";
+	const char* uid = "goofy";
+	const char* gid = "disney";
+
+	if (client) client->setLoginInfo (strUserName, passwd, server, uid, gid);
 }
 
 /**********************************************************
@@ -102,4 +112,13 @@ void ChimeAi2tvInterface::StopPressed ()
 {
 	if (client) client->stopPressed ();
 	printf("Stop pressed\n");
+}
+
+/***********************************************************
+ * indicates whether the JNI component is active
+ ***********************************************************/
+int ChimeAi2tvInterface::isActive ()
+{
+	//return client->isActive ();
+	return 0;
 }

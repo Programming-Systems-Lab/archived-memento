@@ -17,7 +17,7 @@ private:
 
 	AI2TVJNICPP *client;
 	ChimeAi2tvInterface ();
-
+	
 public:
 
 	static ChimeAi2tvInterface* GetInstance (const char *strUserName);
@@ -35,6 +35,7 @@ public:
     void StopPressed();
     void PausePressed();
     void GotoPressed(int time);
+	int isActive();
 };
 
 #endif //__ChimeAi2tvInterface_H__

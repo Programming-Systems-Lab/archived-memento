@@ -1064,7 +1064,7 @@ bool ChimeSystemDriver::HandleKeyEvent (iEvent &Event)
 			{
 				// Setup Ai2TV interface for this user
 				chAi2tvInterface = ChimeAi2tvInterface::GetInstance (chUser->GetUserName ());
-				if (chAi2tvInterface)
+				if (chAi2tvInterface->isActive() != 0)
 				{
                     char sources [10][50];
 					chAi2tvInterface->GetAvailableVideos (sources);

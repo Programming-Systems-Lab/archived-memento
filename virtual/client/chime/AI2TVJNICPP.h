@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.h,v $
- *  $Revision: 1.1 $
- *  $Date: 2003-07-31 19:30:12 $
+ *  $Revision: 1.2 $
+ *  $Date: 2003-08-05 16:11:35 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.h,v $
  */
 
@@ -31,12 +31,14 @@
  */
 class AI2TVJNICPP
 {
-  int doDEBUG;
+  int DEBUG;
 
  public:
   AI2TVJNICPP();
   ~AI2TVJNICPP();
   
+  int isActive();
+
   // the following functions are called by the CPP side to execute
   // Java side methods
   void playPressed();
@@ -52,13 +54,14 @@ class AI2TVJNICPP
   void setBaseURL(char* url);
   char* getBaseURL();
 
-  void setLoginInfo(const char* info);
+  void setLoginInfo(const char* login, const char* passwd, const char* server,
+					const char* uid, const char* gid);
   void loadVideo(char* name, char* date);
   void initialize();
   int getAvailableVideos(char videoList[10][50]);
 
   void shutdown();
-
+  
   // These functions are the CPP functions available to the Java side.  
   // I display these here for information purposes only.
   // Java_psl_ai2tv_client_AI2TVJNIJava_loadFrame(JNIEnv *env, jobject obj)
@@ -75,6 +78,7 @@ class AI2TVJNICPP
   void instantiateClasses();
   const static int NUM_VIDEOS = 3;
   const static int VIDEO_NAME_LENGTH = 15;
+  int _isActive;
 };
 
 #endif // !defined(_AI2TVJNICPP_H_)

@@ -33,7 +33,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="jvm.lib"
+				AdditionalOptions="c:\java1.4\lib\jvm.lib"
 				AdditionalDependencies="libcssys_d.lib libcsutil_d.lib libcsgeom_d.lib libcsgfx_d.lib libcstool_d.lib libcsws_d.lib"
 				ShowProgress="2"
 				OutputFile="$(OutDir)/chime.exe"
@@ -254,6 +254,9 @@
 			</File>
 			<File
 				RelativePath="ChimeWindowToolkit.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\ai2tv\client\psl_ai2tv_client_AI2TVJNIJava.h">
 			</File>
 		</Filter>
 		<Filter
