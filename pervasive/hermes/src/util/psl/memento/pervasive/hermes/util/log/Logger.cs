@@ -8,7 +8,10 @@ using psl.memento.pervasive.hermes.util.runloop;
 namespace psl.memento.pervasive.hermes.util.log
 {
 	/// <summary>
-	/// Summary description for Logger.
+	/// Logger is used to log messages for the server.
+	/// it uses a runloop so that the calling class gets quick returns on 
+	/// log calls.
+	/// it also allows multiple levels of debugging.
 	/// </summary>
 	public class Logger : Dispatcher
 	{
@@ -53,6 +56,10 @@ namespace psl.memento.pervasive.hermes.util.log
 			
 		}
 
+		/// <summary>
+		/// this class gets the logger object
+		/// </summary>
+		/// <returns></returns>
 		public static Logger getLogger()
 		{
 			if(Logger._logger == null)
@@ -66,7 +73,11 @@ namespace psl.memento.pervasive.hermes.util.log
 			return Logger._logger;
 		}
 
-
+/// <summary>
+/// this is the dispatch that actually puts the obj (which is a string) into the log file
+/// or the console.
+/// </summary>
+/// <param name="obj"></param>
 		override public void dispatch(Object obj) 
 		{
 			//Console.WriteLine(obj);

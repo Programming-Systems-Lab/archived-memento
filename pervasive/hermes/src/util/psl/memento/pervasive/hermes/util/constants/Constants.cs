@@ -16,7 +16,7 @@ namespace psl.memento.pervasive.hermes.util.constants
 		
 		private Hashtable CONSTANTS;
 		private static Constants _con = new Constants(); 
-
+	
 		private Constants()
 		{
 			//open up the constants.xml file

@@ -6,7 +6,7 @@ using System.Security;
 namespace psl.memento.pervasive.hermes.util.runloop
 {
 	/// <summary>
-	/// Handles the actual thread
+	/// DispatchManager is handles the thread that performs the runloop function
 	/// </summary>
 	public class DispatchManager
 	{

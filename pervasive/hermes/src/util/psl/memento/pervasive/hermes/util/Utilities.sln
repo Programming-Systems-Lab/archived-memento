@@ -14,6 +14,9 @@ Global
 		{41467341-E8DC-4D98-BACC-EB40DD7FB2FA}.Release.ActiveCfg = Release|.NET
 		{41467341-E8DC-4D98-BACC-EB40DD7FB2FA}.Release.Build.0 = Release|.NET
 	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		Item:1 = README.txt
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection
 	GlobalSection(ExtensibilityAddIns) = postSolution
