@@ -1,0 +1,324 @@
+package psl.memento.pervasive.roca.util;
+
+import psl.memento.pervasive.roca.data.*;
+import psl.memento.pervasive.roca.room.*;
+import org.jdom.*;
+import java.util.*;
+
+/**
+ * Generates XML describing the populated 3D room.
+ *
+ * @author Kristina Holst
+ */
+
+public class XMLGenerator {
+  /* Maximum number of objects that can be added to a room */
+  private static final int MAX_NUM_OBJECTS = 100;
+  
+  /* Number of corner points in room (assumes rectangular prism) */
+  private static final int kNumPoints = 8;
+  
+  public static Document generateRoomXML() {
+    Room room = Room.getInstance();
+    
+    int objectCounter = 0;
+    
+    Element[] elemObject = new Element[MAX_NUM_OBJECTS];
+    Element[] elemType = new Element[MAX_NUM_OBJECTS];
+    Element[] elemSize = new Element[MAX_NUM_OBJECTS];
+    Element[] elemPosition = new Element[MAX_NUM_OBJECTS];
+    Element[] elemRotation = new Element[MAX_NUM_OBJECTS];
+    
+    Element elemCompleteRoom = new Element("CompleteRoom");
+    
+    String roomURL;
+    if (((roomURL = room.getRoomURL()) != null) && (!roomURL.equals(""))) {
+      Element elemRoomURL = new Element("RoomURL");
+      elemRoomURL.addContent(roomURL);
+    }
+    
+    Element elemRoomBoundaries = new Element("RoomBoundaries");
+    
+    Element[] elemPoint = new Element[kNumPoints];
+    
+    for (int i = 0; i < kNumPoints; i++) {
+      elemPoint[i] = new Element("Point");
+    }
+    
+    double height = room.getHeight();
+    double width = room.getSpanNSWalls();
+    double depth = room.getSpanWEWalls();
+    
+    if ((height > 0) && (width > 0) && (depth > 0)) {
+      int pointCounter = 0;
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(0));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(width));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(0));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(width));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(depth));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(0));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(depth));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(0));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(height));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(width));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(height));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(width));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(depth));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(height));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemPoint[pointCounter].setAttribute("x", String.valueOf(0));
+      elemPoint[pointCounter].setAttribute("y", String.valueOf(depth));
+      elemPoint[pointCounter].setAttribute("z", String.valueOf(height));
+      elemRoomBoundaries.addContent(elemPoint[pointCounter++]);
+      
+      elemCompleteRoom.addContent(elemRoomBoundaries);
+    }
+    
+    Element elemDoor = new Element("Door");
+    
+    Door door = room.getDoor();
+    
+    String doorURL;
+    if (((doorURL = door.getDoorURL()) != null) && (!doorURL.equals(""))) {
+      Element elemDoorURL = new Element("DoorURL");
+      elemDoorURL.addContent(doorURL);
+      elemDoor.addContent(elemDoorURL);
+    }
+    
+    CartesianCoord doorPosition;
+    if ((doorPosition = door.getPosition()) != null) {
+      Element elemDoorPosition = new Element("DoorPosition");
+      elemDoorPosition.setAttribute("x", String.valueOf(doorPosition.getX()));
+      elemDoorPosition.setAttribute("y", String.valueOf(doorPosition.getY()));
+      elemDoorPosition.setAttribute("z", String.valueOf(doorPosition.getZ()));
+      elemDoor.addContent(elemDoorPosition);
+    }
+    
+    if (elemDoor.hasChildren())
+      elemCompleteRoom.addContent(elemDoor);
+    
+    /* Add all stationary objects to XML doc */
+    LinkedList objectList = room.getAllStationaryObjects();
+    
+    if (objectList.size() > 0) {
+      Element elemStationaryObjects = new Element("StationaryObjects");
+      
+      for (int i = 0; (i < objectList.size()) && (objectCounter < MAX_NUM_OBJECTS); i++) {
+        RoomObject roomObject = (RoomObject)objectList.get(i);
+        
+        elemObject[objectCounter] = new Element("Object");
+        elemStationaryObjects.addContent(elemObject[objectCounter]);
+        
+        elemType[objectCounter] = new Element("Type");
+        elemType[objectCounter].addContent(roomObject.getType());
+        elemObject[objectCounter].addContent(elemType[objectCounter]);
+        
+        SizeData size;
+        if ((size = roomObject.getSize()) != null) {
+          elemSize[objectCounter] = new Element("Size");
+          elemSize[objectCounter].setAttribute("width", String.valueOf(size.getWidth()));
+          elemSize[objectCounter].setAttribute("length", String.valueOf(size.getLength()));
+          elemSize[objectCounter].setAttribute("height", String.valueOf(size.getHeight()));
+          elemObject[objectCounter].addContent(elemSize[objectCounter]);
+        }
+        
+        CartesianCoord position;
+        if ((position = roomObject.getPosition()) != null) {
+          elemPosition[objectCounter] = new Element("Position");
+          elemPosition[objectCounter].setAttribute("x", String.valueOf(position.getX()));
+          elemPosition[objectCounter].setAttribute("y", String.valueOf(position.getY()));
+          elemPosition[objectCounter].setAttribute("z", String.valueOf(position.getZ()));
+          elemObject[objectCounter].addContent(elemPosition[objectCounter]);
+        }
+        
+        RotationData rotation;
+        if ((rotation = roomObject.getRotation()) != null) {
+          elemRotation[objectCounter] = new Element("Rotation");
+          elemRotation[objectCounter].setAttribute("yaw", String.valueOf(rotation.getYaw()));
+          elemRotation[objectCounter].setAttribute("roll", String.valueOf(rotation.getRoll()));
+          elemRotation[objectCounter].setAttribute("pitch", String.valueOf(rotation.getPitch()));
+          elemObject[objectCounter].addContent(elemRotation[objectCounter]);
+        }
+        
+        objectCounter++;
+      }
+      
+      elemCompleteRoom.addContent(elemStationaryObjects);
+    }
+    
+    /* Add all physical objects to XML doc */
+    objectList = room.getAllPhysicalObjects();
+    
+    if (objectList.size() > 0) {
+      Element elemPhysicalObjects = new Element("PhysicalObjects");
+      
+      for (int i = 0; (i < objectList.size()) && (objectCounter < MAX_NUM_OBJECTS); i++) {
+        RoomObject roomObject = (RoomObject)objectList.get(i);
+        
+        elemObject[objectCounter] = new Element("Object");
+        elemPhysicalObjects.addContent(elemObject[objectCounter]);
+        
+        elemType[objectCounter] = new Element("Type");
+        elemType[objectCounter].addContent(roomObject.getType());
+        elemObject[objectCounter].addContent(elemType[objectCounter]);
+        
+        SizeData size;
+        if ((size = roomObject.getSize()) != null) {
+          elemSize[objectCounter] = new Element("Size");
+          elemSize[objectCounter].setAttribute("width", String.valueOf(size.getWidth()));
+          elemSize[objectCounter].setAttribute("length", String.valueOf(size.getLength()));
+          elemSize[objectCounter].setAttribute("height", String.valueOf(size.getHeight()));
+          elemObject[objectCounter].addContent(elemSize[objectCounter]);
+        }
+        
+        CartesianCoord position;
+        if ((position = roomObject.getPosition()) != null) {
+          elemPosition[objectCounter] = new Element("Position");
+          elemPosition[objectCounter].setAttribute("x", String.valueOf(position.getX()));
+          elemPosition[objectCounter].setAttribute("y", String.valueOf(position.getY()));
+          elemPosition[objectCounter].setAttribute("z", String.valueOf(position.getZ()));
+          elemObject[objectCounter].addContent(elemPosition[objectCounter]);
+        }
+        
+        RotationData rotation;
+        if ((rotation = roomObject.getRotation()) != null) {
+          elemRotation[objectCounter] = new Element("Rotation");
+          elemRotation[objectCounter].setAttribute("yaw", String.valueOf(rotation.getYaw()));
+          elemRotation[objectCounter].setAttribute("roll", String.valueOf(rotation.getRoll()));
+          elemRotation[objectCounter].setAttribute("pitch", String.valueOf(rotation.getPitch()));
+          elemObject[objectCounter].addContent(elemRotation[objectCounter]);
+        }
+        
+        objectCounter++;
+      }
+      
+      elemCompleteRoom.addContent(elemPhysicalObjects);
+    }
+    
+    /* Add all pervasive objects to XML doc */
+    objectList = room.getAllPervasiveObjects();
+    
+    if (objectList.size() > 0) {
+      Element elemPervasiveObjects = new Element("PervasiveObjects");
+      
+      for (int i = 0; (i < objectList.size()) && (objectCounter < MAX_NUM_OBJECTS); i++) {
+        RoomObject roomObject = (RoomObject)objectList.get(i);
+        
+        elemObject[objectCounter] = new Element("Object");
+        elemPervasiveObjects.addContent(elemObject[objectCounter]);
+        
+        elemType[objectCounter] = new Element("Type");
+        elemType[objectCounter].addContent(roomObject.getType());
+        elemObject[objectCounter].addContent(elemType[objectCounter]);
+        
+        SizeData size;
+        if ((size = roomObject.getSize()) != null) {
+          elemSize[objectCounter] = new Element("Size");
+          elemSize[objectCounter].setAttribute("width", String.valueOf(size.getWidth()));
+          elemSize[objectCounter].setAttribute("length", String.valueOf(size.getLength()));
+          elemSize[objectCounter].setAttribute("height", String.valueOf(size.getHeight()));
+          elemObject[objectCounter].addContent(elemSize[objectCounter]);
+        }
+        
+        CartesianCoord position;
+        if ((position = roomObject.getPosition()) != null) {
+          elemPosition[objectCounter] = new Element("Position");
+          elemPosition[objectCounter].setAttribute("x", String.valueOf(position.getX()));
+          elemPosition[objectCounter].setAttribute("y", String.valueOf(position.getY()));
+          elemPosition[objectCounter].setAttribute("z", String.valueOf(position.getZ()));
+          elemObject[objectCounter].addContent(elemPosition[objectCounter]);
+        }
+        
+        RotationData rotation;
+        if ((rotation = roomObject.getRotation()) != null) {
+          elemRotation[objectCounter] = new Element("Rotation");
+          elemRotation[objectCounter].setAttribute("yaw", String.valueOf(rotation.getYaw()));
+          elemRotation[objectCounter].setAttribute("roll", String.valueOf(rotation.getRoll()));
+          elemRotation[objectCounter].setAttribute("pitch", String.valueOf(rotation.getPitch()));
+          elemObject[objectCounter].addContent(elemRotation[objectCounter]);
+        }
+        
+        objectCounter++;
+      }
+      
+      elemCompleteRoom.addContent(elemPervasiveObjects);
+    }
+    
+    /* Add active objects to XML doc */
+    objectList = room.getAllActiveObjects();
+    
+    if (objectList.size() > 0) {
+      Element elemActiveObjects = new Element("ActiveObjects");
+      
+      for (int i = 0; (i < objectList.size()) && (objectCounter < MAX_NUM_OBJECTS); i++) {
+        RoomObject roomObject = (RoomObject)objectList.get(i);
+        
+        elemObject[objectCounter] = new Element("Object");
+        elemActiveObjects.addContent(elemObject[objectCounter]);
+        
+        elemType[objectCounter] = new Element("Type");
+        elemType[objectCounter].addContent(roomObject.getType());
+        elemObject[objectCounter].addContent(elemType[objectCounter]);
+        
+        SizeData size;
+        if ((size = roomObject.getSize()) != null) {
+          elemSize[objectCounter] = new Element("Size");
+          elemSize[objectCounter].setAttribute("width", String.valueOf(size.getWidth()));
+          elemSize[objectCounter].setAttribute("length", String.valueOf(size.getLength()));
+          elemSize[objectCounter].setAttribute("height", String.valueOf(size.getHeight()));
+          elemObject[objectCounter].addContent(elemSize[objectCounter]);
+        }
+        
+        CartesianCoord position;
+        if ((position = roomObject.getPosition()) != null) {
+          elemPosition[objectCounter] = new Element("Position");
+          elemPosition[objectCounter].setAttribute("x", String.valueOf(position.getX()));
+          elemPosition[objectCounter].setAttribute("y", String.valueOf(position.getY()));
+          elemPosition[objectCounter].setAttribute("z", String.valueOf(position.getZ()));
+          elemObject[objectCounter].addContent(elemPosition[objectCounter]);
+        }
+        
+        RotationData rotation;
+        if ((rotation = roomObject.getRotation()) != null) {
+          elemRotation[objectCounter] = new Element("Rotation");
+          elemRotation[objectCounter].setAttribute("yaw", String.valueOf(rotation.getYaw()));
+          elemRotation[objectCounter].setAttribute("roll", String.valueOf(rotation.getRoll()));
+          elemRotation[objectCounter].setAttribute("pitch", String.valueOf(rotation.getPitch()));
+          elemObject[objectCounter].addContent(elemRotation[objectCounter]);
+        }
+        
+        objectCounter++;
+      }
+      
+      elemCompleteRoom.addContent(elemActiveObjects);
+    }
+    
+    Document doc = null;
+    
+    if (elemCompleteRoom.hasChildren())
+      doc = new Document(elemCompleteRoom);
+    
+    return doc;
+  }
+}
