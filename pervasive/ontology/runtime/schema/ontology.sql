@@ -5,7 +5,7 @@ CREATE TABLE onto_ontologies (
 CREATE TABLE onto_nodes (
 	id		bigint identity primary key,
 	ontology_name	varchar(50),
-	label		varchar(100),
+	label		varchar(255),
 )
 
 CREATE INDEX onto_nodesIDIndex ON onto_nodes (id)
@@ -14,7 +14,7 @@ CREATE INDEX onto_nodesLabelIndex ON onto_nodes (label, ontology_name)
 CREATE TABLE onto_nodeProps (
 	id 	bigint,
 	name	varchar(25),
-	value	varchar(100),
+	value	varchar(255),
 	primary key (id, name)
 )
 
@@ -32,7 +32,7 @@ CREATE INDEX onto_edgesEndIDIndex ON onto_edges (end_id)
 CREATE TABLE onto_edgeProps (
 	id	bigint,
 	name	varchar(25),
-	value	varchar(100),
+	value	varchar(255),
 	primary key (id, name)
 )
 

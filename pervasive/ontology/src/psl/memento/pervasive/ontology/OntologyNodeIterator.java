@@ -32,9 +32,10 @@ public class OntologyNodeIterator implements Iterator {
 		if (!hasNext()) throw new NoSuchElementException();
 
 		OntologyNode node = null;
+		PreparedStatement stmt = null;
 
 		try {
-			PreparedStatement stmt = conn.prepareStatement(GET_NEXT_NODE);
+			stmt = conn.prepareStatement(GET_NEXT_NODE);
 			stmt.setLong(1, lastNode);
 			stmt.setString(2, ontologyName);
 			ResultSet rs = stmt.executeQuery();
@@ -43,8 +44,12 @@ public class OntologyNodeIterator implements Iterator {
 			long id = rs.getLong(1);
 			node = ontology.getNode(id);
 			lastNode = id;
+
+			stmt.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 
 		itrCount++;

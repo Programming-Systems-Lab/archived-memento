@@ -140,10 +140,10 @@ public class KAONRelationsExtractor {
 			}
 		}
 		catch (InterruptedException error) {
-			System.out.println(error);
+			error.printStackTrace();
 		}
 		catch (final Exception error) {
-			System.out.println(error);
+			error.printStackTrace();
 		}
 
 		System.out.println("Done.");
@@ -174,7 +174,7 @@ public class KAONRelationsExtractor {
 			}
 		}
 		catch (Exception error) {
-			System.out.println(error);
+			error.printStackTrace();
 		}
 
 		System.out.println("\tRelations successfully added: " + countSucceeded);

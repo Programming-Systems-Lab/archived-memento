@@ -118,19 +118,25 @@ public class OntologyImpl implements Ontology {
 		accessesGetSize++;
 
 		//Get size
+		PreparedStatement stmt = null;
+		long size = 0;
 		try {
-			PreparedStatement stmt = conn.prepareStatement(GET_NUMBER_NODES);
+			stmt = conn.prepareStatement(GET_NUMBER_NODES);
 			stmt.setString(1, ontologyName);
 			ResultSet rs = stmt.executeQuery();
 
 			rs.next();
+			size = rs.getLong(1);
 
 			timeGetSize += System.currentTimeMillis() - start;
-			return rs.getLong(1);
+			stmt.close();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return 0;
+		} finally {
+			if (stmt != null) try {stmt.close();} catch(Exception e) {}
 		}
+
+		return size;
 	}
 
 	public Iterator getNodes() {
@@ -159,30 +165,45 @@ public class OntologyImpl implements Ontology {
 	 * @param id the id of the node to delete
 	 **/
 	public void removeNode(long id) {
+		PreparedStatement removeNodeProps = null;
+		PreparedStatement removeEdgeProps = null;
+		PreparedStatement removeEdges = null;
+		PreparedStatement removeNode = null;
+
 		try {
 			conn.setAutoCommit(false);
-			PreparedStatement removeNodeProps = conn.prepareStatement(DELETE_NODE_PROPS);
+			removeNodeProps = conn.prepareStatement(DELETE_NODE_PROPS);
 			removeNodeProps.setLong(1, id);
 			removeNodeProps.executeUpdate();
 
-			PreparedStatement removeEdgeProps = conn.prepareStatement(DELETE_EDGE_PROPS);
+			removeEdgeProps = conn.prepareStatement(DELETE_EDGE_PROPS);
 			removeEdgeProps.setLong(1, id);
 			removeEdgeProps.setLong(2, id);
 			removeEdgeProps.executeUpdate();
 
-			PreparedStatement removeEdges = conn.prepareStatement(DELETE_EDGES);
+			removeEdges = conn.prepareStatement(DELETE_EDGES);
 			removeEdges.setLong(1, id);
 			removeEdges.setLong(2, id);
 			removeEdges.executeUpdate();
 
-			PreparedStatement removeNode = conn.prepareStatement(DELETE_NODE);
+			removeNode = conn.prepareStatement(DELETE_NODE);
 			removeNode.setLong(1, id);
 			removeNode.executeUpdate();
 
 			conn.commit();
 			conn.setAutoCommit(true);
+
+			removeNodeProps.close();
+			removeEdgeProps.close();
+			removeEdges.close();
+			removeNode.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (removeNodeProps != null) try {removeNodeProps.close();} catch (Exception e) {}
+                        if (removeEdgeProps != null) try {removeEdgeProps.close();} catch (Exception e) {}
+                        if (removeEdges != null) try {removeEdges.close();} catch (Exception e) {}
+                        if (removeNode != null) try {removeNode.close();} catch (Exception e) {}
 		}
 	}
 
@@ -205,16 +226,20 @@ public class OntologyImpl implements Ontology {
 		}
 
 		//Create new node
+		PreparedStatement stmt = null;
 		try {
-			PreparedStatement stmt = conn.prepareStatement(INSERT_NODE);
+			stmt = conn.prepareStatement(INSERT_NODE);
 			stmt.setString(1, ontologyName);
 			stmt.setString(2, label);
 			stmt.executeQuery();
+			stmt.close();
 
 			//Get the new node from the database so that it is inserted in the cache
 			node = getNode(label);
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 
 		timeCreateNode += System.currentTimeMillis() - start;
@@ -227,13 +252,18 @@ public class OntologyImpl implements Ontology {
 	 * @param name the name of the property
 	 */
 	public void removeProperty(long id, String name) {
+		PreparedStatement stmt = null;
+	
 		try {
-			PreparedStatement stmt = conn.prepareStatement(DELETE_NODE_PROP);
+			stmt = conn.prepareStatement(DELETE_NODE_PROP);
 			stmt.setLong(1, id);
 			stmt.setString(2, name);
 			stmt.executeUpdate();
+			stmt.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 	}
 
@@ -247,14 +277,18 @@ public class OntologyImpl implements Ontology {
 		long start = System.currentTimeMillis();
 		accessesAddProperty++;
 
+		PreparedStatement stmt = null;
 		try {
-			PreparedStatement stmt = conn.prepareStatement(INSERT_NODE_PROP);
+			stmt = conn.prepareStatement(INSERT_NODE_PROP);
 			stmt.setLong(1, id);
 			stmt.setString(2, name);
 			stmt.setString(3, value);
 			stmt.executeUpdate();
+			stmt.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 
 		timeAddProperty += System.currentTimeMillis() - start;
@@ -267,6 +301,8 @@ public class OntologyImpl implements Ontology {
 	 * @param endNode the node id to connect to
 	 **/
 	public void connectNodes(long startNode, long endNode) {
+		PreparedStatement stmt = null;
+
 		try {
 			//Check to see if the connection already exists
 			//Store the proper end and start nodes
@@ -277,7 +313,7 @@ public class OntologyImpl implements Ontology {
 			long edgeID = 0;
 
 			do {
-				PreparedStatement stmt = conn.prepareStatement(GET_UNIQUE_EDGES);
+				stmt = conn.prepareStatement(GET_UNIQUE_EDGES);
 				stmt.setLong(1, actualStart);
 				stmt.setLong(2, actualEnd);
 				ResultSet rs = stmt.executeQuery();
@@ -296,11 +332,12 @@ public class OntologyImpl implements Ontology {
 				}
 
 				count++;
+				stmt.close();
 			} while (!exists && count < 2);
 
 			//If the connection exists, increment the weight
 			if (exists) {
-				PreparedStatement stmt = conn.prepareStatement(GET_EDGES_PROPS);
+				stmt = conn.prepareStatement(GET_EDGES_PROPS);
 				stmt.setLong(1, edgeID);
 				ResultSet rs = stmt.executeQuery();
 
@@ -308,16 +345,18 @@ public class OntologyImpl implements Ontology {
 				rs.next();
 				long weight = rs.getLong(1);
 				weight++;
+				stmt.close();
 
 				//update
 				stmt = conn.prepareStatement(UPDATE_EDGE_PROP);
 				stmt.setLong(1, weight);
 				stmt.setLong(2, edgeID);
 				stmt.executeUpdate();
+				stmt.close();
 			}
 			else {
 				//Create a new connection
-				PreparedStatement stmt = conn.prepareStatement(INSERT_EDGE);
+				stmt = conn.prepareStatement(INSERT_EDGE);
 				stmt.setLong(1, startNode);
 				stmt.setLong(2, endNode);
 				ResultSet rs = stmt.executeQuery();
@@ -325,6 +364,7 @@ public class OntologyImpl implements Ontology {
 				//Get the new edge id
 				rs.next();
 				long id = rs.getLong(1);
+				stmt.close();
 
 				//Setup weight
 				stmt = conn.prepareStatement(INSERT_EDGE_PROP);
@@ -332,10 +372,13 @@ public class OntologyImpl implements Ontology {
 				stmt.setString(2, "weight");
 				stmt.setString(3, "1");
 				stmt.executeUpdate();
+				stmt.close();
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 	}
 
@@ -347,12 +390,15 @@ public class OntologyImpl implements Ontology {
 		long start = System.currentTimeMillis();
 		accessesUpdateNode++;
 
+		PreparedStatement stmt = null;
+		PreparedStatement stmt2 = null;
+
 		try {
 			long id = node.getID();
 
 			//Get Properties for node
 			Properties props = new Properties();
-			PreparedStatement stmt = conn.prepareStatement(GET_NODE_PROPS);
+			stmt = conn.prepareStatement(GET_NODE_PROPS);
 			stmt.setLong(1, id);
 			ResultSet rs = stmt.executeQuery();
 
@@ -363,6 +409,7 @@ public class OntologyImpl implements Ontology {
 			}
 
 			node.setProperties(props);
+			stmt.close();
 
 			//Get connected nodes
 			stmt = conn.prepareStatement(GET_EDGES);
@@ -370,7 +417,7 @@ public class OntologyImpl implements Ontology {
 			stmt.setLong(2, id);
 			rs = stmt.executeQuery();
 
-			PreparedStatement stmt2 = conn.prepareStatement(GET_EDGES_PROPS);
+			stmt2 = conn.prepareStatement(GET_EDGES_PROPS);
 
 			while (rs.next()) {
 				long edgeID = rs.getLong(1);
@@ -389,8 +436,14 @@ public class OntologyImpl implements Ontology {
 
 				node.setConnectedNode(connectedID, weight);
 			}
+
+			stmt.close();
+			stmt2.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
+			if (stmt2 != null) try {stmt2.close();} catch (Exception e) {}
 		}
 
 		timeUpdateNode += System.currentTimeMillis() - start;
@@ -404,8 +457,10 @@ public class OntologyImpl implements Ontology {
 		//Get the id from the database of the node
 		OntologyNode node = null;
 
+		PreparedStatement stmt = null;
+
 		try {
-			PreparedStatement stmt = conn.prepareStatement(GET_NODE_BY_LABEL);
+			stmt = conn.prepareStatement(GET_NODE_BY_LABEL);
 			stmt.setString(1, label);
 			stmt.setString(2, ontologyName);
 			ResultSet rs = stmt.executeQuery();
@@ -414,8 +469,11 @@ public class OntologyImpl implements Ontology {
 			long id = rs.getLong(1);
 
 			node = getNode(id);
+			stmt.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (stmt != null) try {stmt.close();} catch (Exception e) {}
 		}
 
 		return node;
@@ -434,8 +492,11 @@ public class OntologyImpl implements Ontology {
 
 		//Create node if it wasn't found
 		if (node == null) {
+			PreparedStatement stmt = null;
+			PreparedStatement stmt2 = null;
+
 			try {
-				PreparedStatement stmt = conn.prepareStatement(GET_NODE);
+				stmt = conn.prepareStatement(GET_NODE);
 				stmt.setLong(1, id);
 				ResultSet rs = stmt.executeQuery();
 
@@ -448,6 +509,7 @@ public class OntologyImpl implements Ontology {
 				node.setOntology(this);
 				node.setOntologyName(ontologyName);
 				node.setLabel(rs.getString(1));
+				stmt.close();			
 
 				//Get Properties for node
 				Properties props = new Properties();
@@ -462,6 +524,7 @@ public class OntologyImpl implements Ontology {
 				}
 
 				node.setProperties(props);
+				stmt.close();
 
 				//Get connected nodes
 				stmt = conn.prepareStatement(GET_EDGES);
@@ -469,7 +532,7 @@ public class OntologyImpl implements Ontology {
 				stmt.setLong(2, id);
 				rs = stmt.executeQuery();
 
-				PreparedStatement stmt2 = conn.prepareStatement(GET_EDGES_PROPS);
+				stmt2 = conn.prepareStatement(GET_EDGES_PROPS);
 
 				while (rs.next()) {
 					long edgeID = rs.getLong(1);
@@ -491,9 +554,15 @@ public class OntologyImpl implements Ontology {
 
 				//Insert new node into cache
 				insertIntoCache(node);
+
+				stmt.close();
+				stmt2.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
+			} finally {
+				if (stmt != null) try {stmt.close();} catch (Exception e) {}
+				if (stmt2 != null) try {stmt2.close();} catch (Exception e) {}
 			}
 		}
 

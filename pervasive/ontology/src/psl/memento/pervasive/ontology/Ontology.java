@@ -10,6 +10,16 @@ public interface Ontology {
 	public void loadOntology(String name); 
 
 	/**
+	 * Connect the ontology to the database
+	 **/
+	public void connect();	
+
+	/**
+	 * Disconnect the ontology from the database
+	 **/
+	public void disconnect();
+
+	/**
 	 * Returns the name of the ontology
 	 * @returns the name of the ontology
 	 **/
