@@ -1,0 +1,23 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "psl.memento.pervasive.hermes.xml.messages", "psl.memento.pervasive.hermes.xml.messages.csdproj", "{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Debug.ActiveCfg = Debug|Pocket PC
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Debug.Build.0 = Debug|Pocket PC
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Debug.Deploy.0 = Debug|Pocket PC
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.ActiveCfg = Release|Pocket PC
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.Build.0 = Release|Pocket PC
+		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.Deploy.0 = Release|Pocket PC
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
