@@ -2,43 +2,44 @@
 <project version="3" relativePaths="true">
   <component name="FileEditorManager">
     <history>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/BlockingEventQueue.java" line="11" column="13" vertical-scroll-proportion="0.33212996" horizontal-scroll-proportion="0.200883" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="2" column="26" vertical-scroll-proportion="0.07317073" horizontal-scroll-proportion="0.2524272" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Link.java" line="53" column="54" vertical-scroll-proportion="0.4512195" horizontal-scroll-proportion="0.52427185" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractLink.java" line="252" column="51" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.49514562" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultLink.java" line="15" column="13" vertical-scroll-proportion="0.5487805" horizontal-scroll-proportion="0.1262136" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Connection.java" line="11" column="17" vertical-scroll-proportion="-0.10627177" horizontal-scroll-proportion="0.16504854" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Publisher.java" line="12" column="17" vertical-scroll-proportion="0.36585367" horizontal-scroll-proportion="0.16504854" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Monitor.java" line="91" column="0" vertical-scroll-proportion="0.9602888" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractMonitor.java" line="260" column="40" vertical-scroll-proportion="0.9602888" horizontal-scroll-proportion="0.3883495" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultConnection.java" line="8" column="25" vertical-scroll-proportion="0.028880866" horizontal-scroll-proportion="0.24271844" />
-      <source-position-entry url="file://$PROJECT_DIR$/.cvsignore" line="6" column="15" vertical-scroll-proportion="0.22743683" horizontal-scroll-proportion="0.14563107" />
-      <source-position-entry url="file://$PROJECT_DIR$/build.xml" line="71" column="0" vertical-scroll-proportion="2.597561" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Message.java" line="1" column="92" vertical-scroll-proportion="0.036585364" horizontal-scroll-proportion="0.89196676" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Request.java" line="48" column="0" vertical-scroll-proportion="0.8815331" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultMonitor.java" line="78" column="36" vertical-scroll-proportion="0.8763066" horizontal-scroll-proportion="0.34903046" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Connection.java" line="11" column="17" vertical-scroll-proportion="-0.902439" horizontal-scroll-proportion="0.16481994" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="14" column="13" vertical-scroll-proportion="-2.6585367" horizontal-scroll-proportion="0.12603877" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Request.java" line="12" column="13" vertical-scroll-proportion="-0.5156794" horizontal-scroll-proportion="0.12603877" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Message.java" line="63" column="31" vertical-scroll-proportion="0.33212996" horizontal-scroll-proportion="0.300554" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Response.java" line="26" column="31" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.300554" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultMulticastSocket.java" line="23" column="27" vertical-scroll-proportion="0.33212996" horizontal-scroll-proportion="0.26177284" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultServerSocket.java" line="17" column="25" vertical-scroll-proportion="0.33212996" horizontal-scroll-proportion="0.24238227">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="2" column="0" vertical-scroll-proportion="0.07317073" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultSocket.java" line="21" column="13" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.12603877" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/MulticastSocket.java" line="0" column="58" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.56232685" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Socket.java" line="14" column="17" vertical-scroll-proportion="-1.8623693" horizontal-scroll-proportion="0.16481994" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/ServerSocket.java" line="70" column="81" vertical-scroll-proportion="0.9425087" horizontal-scroll-proportion="0.78531855">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
     </history>
-    <open-files>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Message.java" line="1" column="92" vertical-scroll-proportion="0.036585364" horizontal-scroll-proportion="0.89196676" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Request.java" line="48" column="0" vertical-scroll-proportion="0.8815331" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultMonitor.java" line="78" column="36" vertical-scroll-proportion="0.8763066" horizontal-scroll-proportion="0.34903046" selected="true" />
-    </open-files>
+    <open-files />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="12" width="835" height="719" extended-state="0" />
-    <editor active="true" />
+    <frame x="21" y="11" width="835" height="719" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.24968314" order="1" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.44585988" order="5" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32991204" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32991204" order="7" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4004065" order="0" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.33333334" order="0" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.41444868" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="3" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32961783" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="false" weight="0.51592356" order="8" />
+      <window_info id="Messages" active="true" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="true" weight="0.51592356" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="6" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="0" />
@@ -186,7 +187,7 @@
     </Diff>
     <Add>
       <option name="ADD_AS_BINARY" value="false" />
-      <option name="LOG_MESSAGE" value="" />
+      <option name="LOG_MESSAGE" value="implementing core event protocol" />
     </Add>
     <Status>
       <option name="NON_RECURSIVE" value="false" />
@@ -248,10 +249,9 @@
     <navigator currentView="ProjectPane" flattenPackages="true" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
     <view id="ProjectPane">
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/doc" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/event" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/net" />
     </view>
     <view id="SourcepathPane" />
     <view id="ClasspathPane" />

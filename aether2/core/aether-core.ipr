@@ -76,7 +76,7 @@
       <maximumHeapSize value="128" />
       <viewClosedWhenNoErrors value="false" />
       <additionalClassPath>
-        <entry path="file://file://file://file://file://$PROJECT_DIR$/../../common-lib/junit.jar" />
+        <entry path="file://file://file://file://file://file://file://$PROJECT_DIR$/../../common-lib/junit.jar" />
       </additionalClassPath>
       <targetFilters>
         <filter targetName="init" isVisible="false" />

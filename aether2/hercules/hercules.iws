@@ -10,30 +10,23 @@
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoardListener.java" line="17" column="36" vertical-scroll-proportion="0.4512195" horizontal-scroll-proportion="0.34903046" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoardEvent.java" line="10" column="13" vertical-scroll-proportion="-1.304878" horizontal-scroll-proportion="0.12603877" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/RuntimeResponderException.java" line="9" column="13" vertical-scroll-proportion="0.101045296" horizontal-scroll-proportion="0.12603877" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/Responder.java" line="32" column="34" vertical-scroll-proportion="0.6707317" horizontal-scroll-proportion="0.32963988">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/Responder.java" line="32" column="34" vertical-scroll-proportion="0.6707317" horizontal-scroll-proportion="0.32963988" />
       <source-position-entry url="file://$PROJECT_DIR$/.cvsignore" line="0" column="0" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="1" column="39" vertical-scroll-proportion="0.036585364" horizontal-scroll-proportion="0.37811634">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/SwitchBoard.java" line="11" column="17" vertical-scroll-proportion="-0.79268295" horizontal-scroll-proportion="0.16481994" />
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/framework/Advertising.java" line="11" column="17" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.16481994" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="185" column="8" vertical-scroll-proportion="-3.7526133" horizontal-scroll-proportion="0.077562325" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="35" column="28" vertical-scroll-proportion="0.8902439" horizontal-scroll-proportion="0.27146813" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="131" column="19" vertical-scroll-proportion="0.12195122" horizontal-scroll-proportion="0.18421052" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="349" column="98" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.9501385" />
+      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="3" column="73" vertical-scroll-proportion="0.1097561" horizontal-scroll-proportion="0.7077562" />
     </history>
     <open-files>
       <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/framework/Advertising.java" line="11" column="17" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.16481994" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="185" column="8" vertical-scroll-proportion="-3.7526133" horizontal-scroll-proportion="0.077562325" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="35" column="28" vertical-scroll-proportion="0.8902439" horizontal-scroll-proportion="0.27146813" selected="true" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/domain/DomainAgent.java" line="131" column="19" vertical-scroll-proportion="0.12195122" horizontal-scroll-proportion="0.18421052" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="349" column="98" vertical-scroll-proportion="0.33275262" horizontal-scroll-proportion="0.9501385" />
+      <source-position-entry url="file://$PROJECT_DIR$/doc/todo.txt" line="3" column="73" vertical-scroll-proportion="0.1097561" horizontal-scroll-proportion="0.7077562" selected="true" />
     </open-files>
   </component>
   <component name="ToolWindowManager">
-    <frame x="155" y="9" width="835" height="719" extended-state="0" />
+    <frame x="126" y="11" width="835" height="719" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
@@ -255,14 +248,17 @@
   <component name="ProjectViewSettings">
     <navigator currentView="ProjectPane" flattenPackages="false" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
     <view id="ProjectPane">
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/doc" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world/model" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/doc" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world/manager" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world/manager" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/server/responder" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/server" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento" />
     </view>
     <view id="SourcepathPane" />
     <view id="ClasspathPane" />

@@ -26,7 +26,7 @@ public class DefaultLinkTest extends AetherTestCase
 
 	public void testLink() throws Exception
 	{
-		Link link = new DefaultLink(getElvinHost(), getElvinPort(), "0");
+		Socket link = new DefaultSocket(getElvinHost(), getElvinPort(), "0");
         link.connect();
 
 		Request req = link.createRequest(Request.Get);

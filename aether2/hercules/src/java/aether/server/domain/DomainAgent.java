@@ -15,10 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.io.*;
 
-import aether.net.Publisher;
-import aether.net.Monitor;
-import aether.net.Connection;
-import aether.net.DefaultMonitor;
+import aether.net.*;
 import aether.server.framework.Advertising;
 import aether.server.framework.Identifiable;
 import aether.event.Notice;
@@ -39,72 +36,76 @@ public class DomainAgent extends BeanContextChildSupport
 {
 	private BeanContextMembershipListener bcml;
 	private EventHandler handler;
-	private String domainTopic;
 
+    private Broadcaster broadcaster;
 	private Monitor monitor;
-	private Connection connection;
+
 	private DomainInfo domainInfo;
 	private Map compMap = Collections.synchronizedMap(new HashMap());
 	private Map remoteMap = Collections.synchronizedMap(new HashMap());
-	private String guid;
 
 	private static final Logger log = Logger.getLogger(DomainAgent.class);
 
     /**
-     * Set the Connection to be used by the DomainAgent.
+     * Set the Monitor this DomainAgent may use to monitor component
+     * registrations on the network.
+     * <p />
+     * Note that this Monitor should already be open and subscribed to the
+     * domain topic.
      *
-     * @param conn Connection used to send events
+     * @param monitor monitor used to receive events from the domain topic
      */
-    public void setConnection(Connection conn)
+    public void setMonitor(Monitor monitor)
     {
-        if (conn == null)
+        if (monitor == null)
         {
-            String msg = "conn can't be null";
+            String msg = "monitor can't be null";
             throw new IllegalArgumentException(msg);
         }
 
-        this.connection = conn;
+        if (!monitor.isOpen())
+        {
+            String msg = "monitor must be open";
+            throw new IllegalArgumentException(msg);
+        }
+
+        this.monitor = monitor;
     }
 
     /**
-     * Get the Connection to be used by the DomainAgent.
+     * Get the Monitor used to receive events from the domain topic.
      *
-     * @return Connection used to send/receive events.
+     * @return Monitor used to receive events from the domain topic
      */
-    public Connection getConnection()
+    public Monitor getMonitor()
     {
-        return connection;
+        return monitor;
     }
 
     /**
-	 * Get the domain topic on which domain notices are exchanged.
-	 *
-	 * @return domain topic on which domain notices are exchanged
-	 */
-	public String getDomainTopic()
-	{
-		return domainTopic;
-	}
+     * Set the Broadcaster used to announce new
+     * @param bcast
+     */
+    public void setBroadcaster(Broadcaster bcast)
+    {
+        if (bcast == null)
+        {
+            String msg = "bcast can't be null";
+            throw new IllegalArgumentException(msg);
+        }
 
-	/**
-	 * Set the domain topic on which domain notices are exchanged.
-	 *
-	 * @param domainTopic domain topic on which domain notices are exchanged
-	 */
-	public void setDomainTopic(String domainTopic)
-	{
-		this.domainTopic = domainTopic;
-	}
+        this.broadcaster = bcast;
+    }
 
-	/**
-	 * Get the info for the domain this agent is acting for.
-	 *
-	 * @return info for the domain this agent is acting for
-	 */
-	public DomainInfo getDomainInfo()
-	{
-		return domainInfo;
-	}
+    /**
+     * Get the Broadcaster used to announce component registrations.
+     *
+     * @return Broadcaster used to announce component registrations
+     */
+    public Broadcaster getBroadcaster()
+    {
+        return broadcaster;
+    }
 
 	/**
 	 * Set the info for the domain this agent will act for.
@@ -113,38 +114,39 @@ public class DomainAgent extends BeanContextChildSupport
 	 */
 	public void setDomainInfo(DomainInfo domainInfo)
 	{
+        if (domainInfo == null)
+        {
+            String msg = "domainInfo can't be null";
+            throw new IllegalArgumentException(msg);
+        }
 		this.domainInfo = domainInfo;
 	}
 
-	public void initialize() throws IOException
-	{
-        connection.open();
-		monitor = new DefaultMonitor(connection, false);
-        monitor.subscribe(getDomainTopic());
+    /**
+     * Get the DomainInfo for the Domain being managed.
+     *
+     * @return DomainInfo for domain being managed
+     */
+    public DomainInfo getDomainInfo()
+    {
+        return domainInfo;
+    }
 
+	public void initialize()
+	{
 		bcml = new DomainListener();
 		getBeanContext().addBeanContextMembershipListener(bcml);
 
 		handler = new DomainHandler();
-
-	    monitor.subscribe(getDomainTopic());
 		monitor.addNoticeListener(handler);
 	}
 
 	public void dispose()
 	{
-		try
-		{
-			monitor.removeNoticeListener(handler);
-			monitor.unsubscribe(this.getDomainTopic());
-			handler = null;
-		}
-		catch (IOException ioe)
-		{
-			log.warn("failed to unsubscribe from domain topic");
-		}
-
+	    monitor.removeNoticeListener(handler);
+		handler = null;
 		getBeanContext().removeBeanContextMembershipListener(bcml);
+        bcml = null;
 	}
 
 	private ComponentInfo createComponentInfo(Identifiable idf)

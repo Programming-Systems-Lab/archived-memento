@@ -35,6 +35,7 @@ public abstract class Event implements Attribute.Event
         // create the unique event id and set the event type
         setEventID(GuidFactory.createId());
         setEventType(getEventType());
+        setTime(System.currentTimeMillis());
 	}
 
     /**
@@ -90,7 +91,7 @@ public abstract class Event implements Attribute.Event
 	 *
 	 * @param time time this event was sent
 	 */
-	public void setTime(long time)
+	private void setTime(long time)
 	{
 		notification.put(TIME, time);
 	}

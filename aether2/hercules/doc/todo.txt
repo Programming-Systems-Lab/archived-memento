@@ -1,6 +1,8 @@
 
 [ 10.27.03 ]
 
+- Change the SwitchBoard framework to use the new LinkDestination classes
+
 - Fix up DomainAgent class. A DomainAgent shouldn't need to know its own GUID
 in order to broadcast notices. Instead, introduce another class, Broadcaster,
 which contains the GUID of the source and the topic to broadcast on. Then

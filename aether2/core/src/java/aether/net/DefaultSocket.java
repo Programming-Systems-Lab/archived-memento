@@ -19,7 +19,7 @@ import java.io.IOException;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public abstract class AbstractLink implements Link
+public class DefaultSocket implements Socket
 {
 	/**
 	 * GUID of the last component to send a response or the end point of this
@@ -35,33 +35,52 @@ public abstract class AbstractLink implements Link
 	/**
 	 * True if this link is closed.
 	 */
-	protected boolean closed = true;
+	protected boolean disconnected = true;
 
-	/**
-	 * Underlying Connection used to send and receive.
-	 */
-	protected Connection connection;
+    /**
+     * Timeout time for send operations.
+     */
+    protected long timeOut = DEFAULT_TIMEOUT;
 
-
+	private Connection connection;
 	private Consumer consumer;
 	private Subscription subscription;
 	private Response response;
-	private boolean timedOut;
-	private NotificationListener notifListener =
-			new LinkNotificationListener();
+	private NotificationListener notifListener;
 
-	private static final Logger logger = Logger.getLogger(AbstractLink.class);
+	private static final Logger logger = Logger.getLogger(DefaultSocket.class);
 
-	public void connect() throws IOException
+     /**
+	 * Construct a new DefaultSocket to some responding component on the network.
+	 *
+	 * @param conn Connection to the underlying event network
+	 * @param dest destination to send requests to
+	 */
+	public DefaultSocket(Connection conn, String dest)
 	{
-     	if (!closed)
+        if ((conn == null) || (dest == null))
+        {
+            String msg = "no parameter can be null";
+            throw new IllegalArgumentException(msg);
+        }
+
+        if (!conn.isOpen())
+        {
+            String msg = "conn must be an open connection";
+            throw new IllegalArgumentException(msg);
+        }
+
+		this.connection = conn;
+		this.destination = dest;
+	}
+
+	public synchronized void connect() throws IOException
+	{
+     	if (!disconnected)
 		 {
 			 String msg = "link already connected";
 			 throw new IllegalStateException(msg);
 		 }
-
-		// open the connection if we have to
-		if (!connection.isOpen()) connection.open();
 
 		// calculate the link id
 		this.linkId = GuidFactory.createId();
@@ -69,33 +88,38 @@ public abstract class AbstractLink implements Link
         // construct the subscription needed to listen for responses sent over
 		// this link
 		this.subscription = Response.createSubscriptionToReceive(linkId);
+        this.notifListener = new LinkNotificationListener();
 		this.subscription.addNotificationListener(notifListener);
 
 		// now subscribe to all responses sent over this link
         this.consumer = new Consumer(connection.elvinConnection());
         this.consumer.addSubscription(subscription);
-		this.closed = false;
+		this.disconnected = false;
 	}
 
-	public synchronized void close() throws IOException
+	public synchronized void disconnect() throws IOException
 	{
-		if (closed)
+		if (disconnected)
 		{
-			String msg = "session already closed";
+			String msg = "link already closed";
 			throw new IllegalStateException(msg);
 		}
 
         // unsubscribe from responses and close the consumer
-		consumer.removeSubscription(this.subscription);
 		consumer.close();
 
-		// free all resources. Note that the Connection is not closed here!
-		// it's the job of the subclass to close the connection
+		// free all resources
         this.consumer = null;
 		this.subscription = null;
+        this.notifListener = null;
 		this.response = null;
-		closed = true;
+		disconnected = true;
 	}
+
+    public boolean isConnected()
+    {
+        return disconnected;
+    }
 
 	public String getLinkId()
 	{
@@ -107,46 +131,36 @@ public abstract class AbstractLink implements Link
 		return destination;
 	}
 
-	public Request createRequest()
+    public void setTimeOut(long timeout)
     {
-		if (closed)
-		{
-			String msg = "link is closed";
-			throw new IllegalStateException(msg);
-		}
+        this.timeOut = timeout;
+    }
 
-		Request request = new Request();
+    public long getTimeOut()
+    {
+        return timeOut;
+    }
 
-		// set the linkId, destination
-		request.setLink(this.linkId);
-		request.setDestination(this.destination);
-
-		return request;
-	}
-
-	public synchronized Response send(Request req) throws IOException
+	public synchronized Response send(Request request) throws IOException
 	{
-		if (req == null)
+		if (request == null)
 		{
 			String msg = "request can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-		if (closed)
+		if (disconnected)
 		{
 			String msg = "link is closed";
 			throw new IllegalStateException(msg);
 		}
 
-        // make sure that this is a request that we created!!
-        if (!linkId.equals(req.getLink()))
-        {
-            String msg = "request wasn't created by this link!";
-            throw new IllegalArgumentException(msg);
-        }
+        // set the linkId, destination
+		request.setLink(this.linkId);
+		request.setDestination(this.destination);
 
 		// now send the request!!
-		connection.publish(req);
+		connection.publish(request);
 
 		// now send the request and block until the response comes
 		return blockUntilResponse();
@@ -157,21 +171,20 @@ public abstract class AbstractLink implements Link
 	 * until a response event is received. This method causes the blocking to
 	 * occur.
 	 *
-	 * @return RESPONSE of the request
+	 * @return Response of the request
 	 * @throws IOException
 	 *         if something goes wrong
 	 */
 	protected synchronized Response blockUntilResponse()
 			throws IOException
 	{
-
         // go into a spin block and just block until either a response comes
 		// or the request is timed out
         try
 		{
-			while ((response == null) && (!timedOut))
+			while (response == null)
 			{
-                this.wait();
+                this.wait(timeOut);
 			}
 		}
 		catch (InterruptedException ie)
@@ -182,9 +195,8 @@ public abstract class AbstractLink implements Link
 		}
 
         // ok we've woken up! did we wake up because we timed out?
-		if (timedOut)
+		if (response == null)
 		{
-            timedOut = false;
             String msg = "request timed out";
 			throw new IOException(msg);
 		}
@@ -197,28 +209,10 @@ public abstract class AbstractLink implements Link
 	}
 
 	/**
-	 * Timeout this Link's most recent request/response transaction.
-	 */
-	public synchronized void timeOut()
-	{
-		if (closed)
-		{
-			String msg = "link is closed";
-			throw new IllegalStateException(msg);
-		}
-
-        timedOut = true;
-
-		// wake up any thread waiting on the connection
-		notify();
-	}
-
-	/**
 	 * A special NotificationListener that will allow us to process all
-	 * events sent to this AbstractLink.
+	 * events sent to this DefaultSocket.
 	 *
-	 * @author Buko O. (buko@concedere.net)
-	 * @version 0.1
+	 * @version $Revision: 1.1 $
 	 */
 	private class LinkNotificationListener implements NotificationListener
 	{
@@ -230,23 +224,32 @@ public abstract class AbstractLink implements Link
 				try
 				{
 					// obtain the lock on the outer object first!
-					synchronized (AbstractLink.this)
+					synchronized (DefaultSocket.this)
 					{
             			response = new Response();
                         response.parse(notification);
 
+                        // xxx: how do you know if the response received
+                        // --- corresponds to the last request sent? there
+                        // --- must be a way to match up responses to requests!
+
 						// wake up any threads sleeping on this object, waiting
 						// for a response
-						AbstractLink.this.notify();
+						DefaultSocket.this.notify();
 					}
 				}
 				catch (EventException me)
 				{
                 	// bad response data, let's log it and ignore it
                     String msg = "receieved badly formed response";
-					throw new Error(msg, me);
+					logger.warn(msg, me);
 				}
 			}
+            else
+            {
+                logger.warn("received notification " + notification
+                            + " which isn't a response");
+            }
 		}
 	}
 }

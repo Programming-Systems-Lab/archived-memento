@@ -1,20 +1,19 @@
 package aether.net;
 
 import aether.event.EventHandler;
+import aether.event.Notice;
 
 import java.io.IOException;
 
 /**
- * Defines an object capable of monitoring a set of resources in the Aether
- * network.
- *
- * TODO: need a special MonitorListener because listeners should know if a
- * monitor is opening or closing?
+ * A MulticastSocket provides the means to work with general topics (one-to-many
+ * channels) within the event network. Using a MulticastSocket it's possible to
+ * subscribe to topics and broadcast Notice objects over a topic.
  *
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public interface Monitor
+public interface MulticastSocket
 {
 	/**
 	 * Subscribe to a topic in the Aether. Any Notices broadcast to the topic
@@ -35,46 +34,40 @@ public interface Monitor
 	 */
 	public void unsubscribe(String topic) throws IOException;
 
-	/**
-	 * Get the underlying Connection used by this Monitor to connect
-	 * to the event network.
-	 *
-	 * @return Connection used by this monitor to connect to the network
-	 */
-	public Connection getConnection();
+    /**
+     * Broadcast a Notice over a topic.
+     *
+     * @param notice notice to broadcast
+     * @param topic  topic to broadcast it over
+     * @throws IOException
+     *         if broadcast fails
+     */
+    public void broadcast(Notice notice, String topic) throws IOException;
 
 	/**
-	 * Set the underlying Connection used by this Monitor to connect
-	 * to the event network.
-	 *
-	 * @param msgConn Connection to connect to the event network
-	 */
-  	public void setConnection(Connection msgConn);
-
-	/**
-	 * Add a listener to the Monitor. Whenever a Monitor notices an event it'll
-	 * be passed to the given listener.
+	 * Add a listener to the MulticastSocket. Whenever a MulticastSocket
+     * notices an event it'll be passed to the given listener.
 	 *
 	 * @param listener listener to handle incoming events
 	 */
-	public void addNoticeListener(EventHandler listener);
+	public void addEventHandler(EventHandler listener);
 
 	/**
 	 * Remove a listener from the monitor.
 	 *
 	 * @param listener listener to unsubscribe
 	 */
-	public void removeNoticeListener(EventHandler listener);
+	public void removeEventHandler(EventHandler listener);
 
 	/**
-	 * Determine if this Monitor is open.
+	 * Determine if this MulticastSocket is open.
 	 *
-	 * @return <code>true</code> if this Monitor is open
+	 * @return <code>true</code> if this MulticastSocket is open
 	 */
 	public boolean isOpen();
 
     /**
-	 * Open the Monitor and allocate any necessary resources.
+	 * Open the MulticastSocket and allocate any necessary resources.
 	 *
 	 * @throws IOException
 	 *         if the monitor fails to open
@@ -82,7 +75,7 @@ public interface Monitor
 	public void open() throws IOException;
 
 	/**
-	 * Close the Monitor and ignore all further notices.
+	 * Close the MulticastSocket and ignore all further notices.
 	 *
 	 * @throws IOException
 	 *         if the monitor doesn't close successfully

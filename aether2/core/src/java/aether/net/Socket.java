@@ -6,15 +6,19 @@ import aether.event.Response;
 import java.io.IOException;
 
 /**
- * A Link represents an established communication channel between a client
- * component and a server component. Once established, clients can send
- * requests over a link and receive responses.
+ * A Socket represents a stateful, synchronous communication channel between
+ * two components.
  *
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public interface Link
+public interface Socket
 {
+    /**
+     * Default timeout value of 30 seconds.
+     */
+    public static final long DEFAULT_TIMEOUT = 1000 * 30;
+
     /**
 	 * Connect to the destination of the link.
 	 *
@@ -29,7 +33,15 @@ public interface Link
 	 * @throws IOException
 	 *         if the link isn't properly closed
 	 */
-	public void close() throws IOException;
+	public void disconnect() throws IOException;
+
+    /**
+     * Determine if the link is currently connected.
+     *
+     * @return <code>true</code> if the link is currently connected else
+     *         <code>false</code>
+     */
+    public boolean isConnected();
 
 	/**
 	 * Get the unique link id.
@@ -49,11 +61,19 @@ public interface Link
 	public String getDestination();
 
     /**
-	 * Construct a Request to be sent over this link.
+     * Set the max number of milliseconds that the <code>send</code> method
+     * may block while waiting for a response.
      *
-     * @return Request that may be sent over this Link
-	 */
-	public Request createRequest();
+     * @param timeout timeout to wait for a response
+     */
+    public void setTimeOut(long timeout);
+
+    /**
+     * Get the timeout time.
+     *
+     * @return timeout time
+     */
+    public long getTimeOut();
 
 	/**
 	 * Send a Request over this link.

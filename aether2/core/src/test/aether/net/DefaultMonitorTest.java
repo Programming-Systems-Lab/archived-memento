@@ -10,7 +10,7 @@ import aether.event.*;
  **/
 public class DefaultMonitorTest extends AetherTestCase
 {
-    private DefaultMonitor monitor;
+    private DefaultMulticastSocket monitor;
 	private EventQueue listQueue;
 	private EventHandler handler;
 
@@ -26,8 +26,8 @@ public class DefaultMonitorTest extends AetherTestCase
 			}
 		};
 
-		monitor = new DefaultMonitor(elvinHost, elvinPort);
-		monitor.addNoticeListener(handler);
+		monitor = new DefaultMulticastSocket(elvinHost, elvinPort);
+		monitor.addEventHandler(handler);
 		monitor.open();
 	}
 
@@ -68,10 +68,10 @@ public class DefaultMonitorTest extends AetherTestCase
 
 	public void testSubscribe() throws Exception
 	{
-   		Monitor mon = new DefaultMonitor(getElvinHost(), getElvinPort());
+   		MulticastSocket mon = new DefaultMulticastSocket(getElvinHost(), getElvinPort());
         mon.open();
 		final EventQueue queue = new SimpleEventQueue();
-		mon.addNoticeListener(new EventHandler()
+		mon.addEventHandler(new EventHandler()
 		{
 			public void handle(Event msg)
 			{

@@ -43,8 +43,6 @@ public class Request extends Message implements Attribute.Request
 		// source of the response is the GUID of the responder
 		resp.setSourceId(srcId);
 
-		resp.setTime(System.currentTimeMillis());
-
 		return resp;
 	}
 
