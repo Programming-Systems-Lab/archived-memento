@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="3" relativePaths="false">
   <component name="ProjectRootManager" version="2">
-    <jdk name="java version &quot;1.4.1_01&quot;" />
+    <jdk name="java version &quot;1.4.2&quot;" />
     <projectPath>
       <root type="composite">
         <root type="simple" url="file://$PROJECT_DIR$" />
@@ -9,26 +9,15 @@
     </projectPath>
     <sourcePath>
       <root type="composite">
-        <root type="jdk" rootType="sourcePath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="sourcePath" name="java version &quot;1.4.2&quot;" />
         <root type="simple" url="file://$PROJECT_DIR$/src/java" />
         <root type="simple" url="file://$PROJECT_DIR$/src/test" />
       </root>
     </sourcePath>
     <classPath>
       <root type="composite">
-        <root type="jdk" rootType="classPath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="classPath" name="java version &quot;1.4.2&quot;" />
         <root type="output" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/aether-core-0.1.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/je4.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/junit.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/log4j.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/dom4j.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/dom4jutil-0.1.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether/lib/concurrent.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/dundee-0.1.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/sdf-0.1.1.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/ctor-0.1.jar!/" />
-        <root type="simple" url="jar://C:/ditd/java/aether2/psl/memento/aether2/lib/bsh-1.2b7.jar!/" />
       </root>
     </classPath>
     <excludePath>
@@ -38,7 +27,7 @@
     </excludePath>
     <javadocPath>
       <root type="composite">
-        <root type="jdk" rootType="javadocPath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="javadocPath" name="java version &quot;1.4.2&quot;" />
       </root>
     </javadocPath>
     <assert_keyword enabled="yes" />
@@ -97,7 +86,7 @@
   <component name="WebRootContainer" />
   <component name="EjbManager" enabled="false" />
   <component name="JUnitProjectSettings">
-    <option name="TEST_RUNNER" value="Text" />
+    <option name="TEST_RUNNER" value="UI" />
   </component>
   <component name="EntryPointsManager">
     <entry_points />
@@ -109,13 +98,12 @@
   </component>
   <component name="CodeStyleManager">
     <option name="USE_DEFAULT_CODE_STYLE_SCHEME" value="true" />
-    <option name="CODE_STYLE_SCHEME" value="Default (1)" />
+    <option name="CODE_STYLE_SCHEME" value="" />
   </component>
   <component name="ExportToHTMLSettings">
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="WebReferencesManager" />
 </project>
 

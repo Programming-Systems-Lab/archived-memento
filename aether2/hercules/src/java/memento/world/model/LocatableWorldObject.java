@@ -45,4 +45,12 @@ public interface LocatableWorldObject extends WorldObject
 	 * @param pos position of the object in the world
 	 */
 	public void setPosition(Position pos);
+
+    public String getName();
+
+    public void setName(String name);
+
+    public String getModel();
+
+    public void setModel(String model);
 }

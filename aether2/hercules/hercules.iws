@@ -1,63 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="3" relativePaths="false">
-  <component name="WebReferencesConfigurable">
-    <property name="CUSTOM_MAP_LOOKUP" type="list" />
-    <property name="INTERFACE_POSTFIX" value="" type="string" />
-    <property name="electric.home" value="/electric" type="string" />
-    <property name="INTERFACE_PREFIX" value="I" type="string" />
-    <property name="INCLUDE_SYSTEM_MAP" value="true" type="boolean" />
-    <property name="THROW_EXCEPTIONS" value="false" type="boolean" />
-    <property name="ENABLED" value="false" type="boolean" />
-  </component>
   <component name="FileEditorManager">
     <history>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/WorldModel.java" line="18" column="4" vertical-scroll-proportion="0.531401" horizontal-scroll-proportion="0.030534351" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/DefaultWorldModel.java" line="15" column="0" vertical-scroll-proportion="0.11916264" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/doc/world_controller.txt" line="0" column="0" vertical-scroll-proportion="-1.7536232" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/LinkProvider.java" line="16" column="15" vertical-scroll-proportion="0.36717427" horizontal-scroll-proportion="0.16357689" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/manager/WorldController.java" line="31" column="13" vertical-scroll-proportion="-0.15059222" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/PublisherProvider.java" line="91" column="12" vertical-scroll-proportion="0.8950931" horizontal-scroll-proportion="0.1308615" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/ThreadPoolProviderTest.java" line="48" column="0" vertical-scroll-proportion="0.8950931" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/responder/DefaultSwitchBoard.java" line="261" column="26" vertical-scroll-proportion="0.81049067" horizontal-scroll-proportion="0.28353328">
-        <folding>
-          <element signature="class#SwitchBoardServiceProvider;class#DefaultSwitchBoard" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/ThreadPoolProvider.java" line="25" column="13" vertical-scroll-proportion="0.33333334" horizontal-scroll-proportion="0.13631406" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/ConnectionFactory.java" line="35" column="13" vertical-scroll-proportion="-5.9796953" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/memento/world/manager/WorldManagerTest.java" line="23" column="13" vertical-scroll-proportion="0.34517765" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/DefaultConnectionProvider.java" line="83" column="6" vertical-scroll-proportion="0.9255499" horizontal-scroll-proportion="0.06543075" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/DeployFraxTest.java" line="24" column="5" vertical-scroll-proportion="0.6480541" horizontal-scroll-proportion="0.05452563">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/.cvsignore" line="5" column="5" vertical-scroll-proportion="0.18292683" horizontal-scroll-proportion="0.048476454" />
+      <source-position-entry url="file://$PROJECT_DIR$/build.xml" line="0" column="0" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/LocatableWorldObject.java" line="54" column="39" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.37811634" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/DefaultLocatableWorldObject.java" line="79" column="5" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.048476454" />
     </history>
     <open-files>
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/memento/world/manager/WorldManagerTest.java" line="23" column="13" vertical-scroll-proportion="0.34517765" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/server/core/DefaultConnectionProvider.java" line="83" column="6" vertical-scroll-proportion="0.9255499" horizontal-scroll-proportion="0.06543075" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/server/core/DeployFraxTest.java" line="24" column="5" vertical-scroll-proportion="0.6480541" horizontal-scroll-proportion="0.05452563" selected="true">
-        <folding>
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/build.xml" line="0" column="0" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/LocatableWorldObject.java" line="54" column="39" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.37811634" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/memento/world/model/DefaultLocatableWorldObject.java" line="79" column="5" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.048476454" selected="true" />
     </open-files>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1032" height="746" extended-state="0" />
+    <frame x="179" y="19" width="835" height="719" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.3116279" order="5" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.47906977" order="2" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.2468153" order="5" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.33037037" order="7" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4004065" order="0" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.375" order="0" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="3" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.4034553" order="1" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33023256" order="1" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="false" weight="0.32991204" order="8" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="7" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4" order="0" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.41318125" order="0" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="3" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="1" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="false" weight="0.33" order="-1" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.4" order="6" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="0" />
@@ -98,6 +68,7 @@
     <option name="SKIP_SYNTHETIC_METHODS" value="true" />
     <option name="SKIP_CONSTRUCTORS" value="false" />
     <option name="STEP_THREAD_SUSPEND_POLICY" value="SuspendThread" />
+    <option name="EVALUATION_TIMEOUT" value="1000" />
     <default_breakpoint_settings>
       <option name="NOTIFY_CAUGHT" value="true" />
       <option name="NOTIFY_UNCAUGHT" value="true" />
@@ -169,7 +140,7 @@
       <option name="METHOD" value="pserver" />
       <option name="USER_NAME" value="buko" />
       <option name="HOST" value="church.psl.cs.columbia.edu" />
-      <option name="REPOSITORY" value="/cvs" />
+      <option name="REPOSITORY" value="psl/memento/aether2/hercules" />
     </cvs_root>
     <Checkout>
       <option name="DATE_TAG" value="" />
@@ -194,7 +165,7 @@
     <Commit>
       <option name="NON_RECURSIVE" value="false" />
       <option name="REVISION_TAG" value="" />
-      <option name="LOG_MESSAGE" value="working distributed master server/domain agent system" />
+      <option name="LOG_MESSAGE" value="" />
       <option name="ADDITIONAL_OPTIONS" value="" />
     </Commit>
     <Diff>
@@ -222,7 +193,7 @@
     <Remove>
       <option name="NON_RECURSIVE" value="false" />
       <option name="FORCE_RECURSIVE" value="false" />
-      <option name="DELETE_FILE" value="true" />
+      <option name="DELETE_FILE" value="false" />
     </Remove>
     <Log>
       <option name="DEFAULT_BRANCH" value="false" />
@@ -234,15 +205,15 @@
       <option name="NON_RECURSIVE" value="false" />
       <option name="FORCE_RECURSIVE" value="false" />
     </Editors>
-    <option name="CLIENT_PATH" value="C:/Program Files/GNU/WinCvs 1.2/cvs.exe" />
+    <option name="CLIENT_PATH" value="C:/Program Files/TortoiseCVS/cvs.exe" />
     <option name="EXTERNAL_DIFF_PATH" value="" />
     <option name="USE_EXTERNAL_DIFF" value="false" />
     <option name="WORKING_FILES_READONLY" value="false" />
-    <option name="COMPRESSION_LEVEL" value="0" />
+    <option name="COMPRESSION_LEVEL" value="9" />
     <option name="ADDITIONAL_OPTIONS" value="" />
     <option name="BINARY_FILES_EXTENSIONS" value="" />
     <option name="REUSE_LAST_LOG_MESSAGE" value="true" />
-    <option name="PUT_FOCUS_INTO_LOG_MESSAGE" value="true" />
+    <option name="PUT_FOCUS_INTO_LOG_MESSAGE" value="false" />
     <option name="SHOW_UPDATE_OPTIONS" value="true" />
     <option name="SHOW_COMMIT_OPTIONS" value="true" />
     <option name="SHOW_DIFF_OPTIONS" value="true" />
@@ -263,12 +234,14 @@
     </expanded_paths>
   </component>
   <component name="ProjectViewSettings">
-    <navigator currentView="ProjectPane" flattenPackages="true" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
+    <navigator currentView="ProjectPane" flattenPackages="false" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
     <view id="ProjectPane">
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/test" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world/model" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/memento/world" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$" />
+      <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
     </view>
     <view id="SourcepathPane" />
     <view id="ClasspathPane" />
@@ -276,7 +249,7 @@
   <component name="RunManager">
     <option name="SHOW_SETTINGS_BEFORE_RUNNING" value="true" />
     <option name="COMPILE_BEFORE_RUNNING" value="true" />
-    <activeType name="JUnit" />
+    <activeType name="Application" />
     <configuration name="&lt;template&gt;" type="Application" default="true" selected="false">
       <option name="MAIN_CLASS_NAME" />
       <option name="VM_PARAMETERS" />
@@ -314,181 +287,10 @@
       <Port>5050</Port>
       <LaunchServer>false</LaunchServer>
     </configuration>
-    <configuration name="ConnectionFactoryTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.ConnectionFactoryTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="LinkProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.LinkProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="MonitorProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.MonitorProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DefaultSwitchBoardTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.responder.DefaultSwitchBoardTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="ComponentLifeCycleTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.ComponentLifeCycleTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="BeanContextChildProviderLifeCycleTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.BeanContextChildProviderLifeCycleTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="SwitchBoardProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.provider.SwitchBoardProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="TestDefaultBeans" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.TestDefaultBeans" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DefaultBootStrapperTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.DefaultBootStrapperTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DefaultDeployerTest" type="JUnit" default="false" selected="true">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.base.DefaultDeployerTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="AssignableTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.deploy.AssignableTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DefaultFinderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.component.base.DefaultFinderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="ThreadPoolProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.ThreadPoolProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DefaultConnectionProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.DefaultConnectionProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="PublisherProviderTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.PublisherProviderTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="WorldManagerTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="memento.world.manager.WorldManagerTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DomainAgentTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.domain.DomainAgentTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="RemoteDomainAgentTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.domain.RemoteDomainAgentTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
-    <configuration name="DeployFraxTest" type="JUnit" default="false" selected="false">
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="aether.server.core.DeployFraxTest" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    </configuration>
   </component>
   <component name="BookmarkManager" />
   <component name="Commander">
-    <leftPanel view="Project" url="file://$PROJECT_DIR$" />
+    <leftPanel view="Project" />
     <rightPanel view="Project" />
     <splitter proportion="0.5" />
   </component>

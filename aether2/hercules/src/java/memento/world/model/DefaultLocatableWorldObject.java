@@ -20,6 +20,17 @@ public class DefaultLocatableWorldObject extends AbstractWorldObject
 	 */
 	protected Position position;
 
+    /**
+     * name of the object in the world
+     */
+    protected String name;
+
+    /**
+     * 3DS model file that represents the id
+     */
+    protected String model;
+
+
 	public Sector getLocation()
 	{
 		return sector;
@@ -45,4 +56,24 @@ public class DefaultLocatableWorldObject extends AbstractWorldObject
 
 		pcSupport.firePropertyChange(PositionProperty, oldPos, pos);
 	}
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getModel()
+    {
+        return model;
+    }
+
+    public void setModel(String model)
+    {
+        this.model = model;
+    }
 }
