@@ -8,22 +8,20 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.h,v $
- *  $Revision: 1.4 $
- *  $Date: 2003-09-06 04:51:01 $
+ *  $Revision: 1.5 $
+ *  $Date: 2003-09-09 01:51:38 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.h,v $
  */
 
-#if !defined(_AI2TVJNICPP_H_)
-#define _AI2TVJNICPP_H_
+#ifndef __AI2TVJNICPP_H__
+#define __AI2TVJNICPP_H__
 
-// #include "cssysdef.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "jni_md.h"
 #include "jni.h"
 #include "psl_ai2tv_client_AI2TVJNIJava.h"
-#include "ChimeSystemDriver.h"
 
 /**
  * The CPP side JNI interface for the AI2TV client.
@@ -83,4 +81,4 @@ class AI2TVJNICPP
   int _isActive;
 };
 
-#endif // !defined(_AI2TVJNICPP_H_)
+#endif // __AI2TVJNICPP_H__

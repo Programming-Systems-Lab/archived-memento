@@ -27,8 +27,8 @@ public:
 	void SetCacheDir (const char *cacheDir);
 	void SelectVideo (char* strVideoSource, char* strVideoDate);
 
-	void LoadFrame (const char *strFileName, const char *strFrameName);
-	void DisplayFrame (const char *strFrameName);
+	// void LoadFrame (const char *strFileName, const char *strFrameName);
+	// void DisplayFrame (const char *strFrameName);
 
 	void ShutDown ();
 

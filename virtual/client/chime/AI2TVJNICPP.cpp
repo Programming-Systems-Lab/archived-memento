@@ -8,8 +8,8 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.6 $
- *  $Date: 2003-09-08 19:19:15 $
+ *  $Revision: 1.7 $
+ *  $Date: 2003-09-09 01:51:38 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
@@ -427,6 +427,7 @@ Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring f
   const char *frameString = env->GetStringUTFChars(frame,isCopy);
   printf("c++ : loading frame %s\n", frameString);
 
+  printf("c++ : loading frame %s\n", frameString);
   driver->LoadFrame (frameString, frameString);
 
   delete isCopy;
