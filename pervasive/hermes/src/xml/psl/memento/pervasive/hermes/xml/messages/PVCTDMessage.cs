@@ -8,10 +8,19 @@ using psl.memento.pervasive.hermes.xml.objects;
 namespace psl.memento.pervasive.hermes.xml.messages
 {
 	/// <summary>
-	/// Summary description for Class1.
+	/// Each of these static methods will write an xml message to the XmlTextWriter.
 	/// </summary>
 	public class PVCTDMessage
 	{
+		/// <summary>
+		/// The main connect message
+		/// </summary>
+		/// <param name="xtw"></param>
+		/// <param name="id"></param>
+		/// <param name="client"></param>
+		/// <param name="messageID"></param>
+		/// <param name="ip"></param>
+		/// <param name="chatName"></param>
 		public static void connect(XmlTextWriter xtw, string id, bool client, string messageID, string ip, string chatName)
 		{
 			xtw.WriteStartDocument();

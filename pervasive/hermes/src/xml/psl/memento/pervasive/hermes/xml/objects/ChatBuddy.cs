@@ -4,7 +4,8 @@ using System.Data;
 namespace psl.memento.pervasive.hermes.xml.objects
 {
 	/// <summary>
-	/// Summary description for Class1.
+	/// ChatBuddy is simply a universal object for handling chat buddies which are objects
+	/// sent in xml messages to describe clients.
 	/// </summary>
 	public class ChatBuddy
 	{

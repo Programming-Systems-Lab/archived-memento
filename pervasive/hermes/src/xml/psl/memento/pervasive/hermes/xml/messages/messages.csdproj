@@ -123,6 +123,10 @@
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
+                <File
+                    RelPath = "README.txt"
+                    BuildAction = "Content"
+                />
             </Include>
         </Files>
     </ECSHARP>

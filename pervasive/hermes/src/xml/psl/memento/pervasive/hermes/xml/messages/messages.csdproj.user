@@ -2,7 +2,7 @@
     <ECSHARP>
         <Build>
             <Settings
-                DeploymentDevice = ""
+                DeploymentDevice = "Pocket PC Device (Default)"
                 ReferencePath = "C:\Documents and Settings\rmb51\My Documents\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\;U:\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release"
             >
                 <Platform Name = "Pocket PC" />
