@@ -1,0 +1,4 @@
+<SuggestionEngineConfiguration>
+<KeywordFinder classname="psl.memento.pervasive.recommendation.keywordfinder.test.KeywordFinderTestImpl" configclassname="psl.memento.pervasive.recommendation.keywordfinder.test.KeywordFinderConfigurationTestImpl" xmlconfig="psl/memento/pervasive/recommendation/keywordfinder/test/kftestimplconf.xml"/>
+<Search classname="psl.memento.pervasive.recommendation.search.test.SearchTestImpl" configclassname="psl.memento.pervasive.recommendation.search.test.SearchConfigurationTestImpl" xmlconfig="psl/memento/pervasive/recommendation/search/test/stestimplconf.xml"/>
+</SuggestionEngineConfiguration>

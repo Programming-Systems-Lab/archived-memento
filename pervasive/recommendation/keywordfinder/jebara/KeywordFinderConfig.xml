@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<configuration>
+	<args topics="shakes.txt" questions="quest.txt" stats="plays.stats" counts="plays.counts"/>
+	<!-- In testReset, set attribute "value" to either "true" or "false". 
+		If any other value or the attribute "value" doesn't exist, default 
+		value is false. -->
+	<testReset value="false" /> 
+</configuration>
