@@ -1,172 +1,102 @@
 package psl.memento.pervasive.ontology;
 
-import java.sql.*;
-import java.io.*;
 import java.util.*;
 
-public class OntologyNode {
-	//Instance variables
-	private String ontologyName;
-	private long id;
-	private Ontology ontology;
-	private Properties props;
-	private long lastAccessed;
-	private String label;
-	private boolean dirty;
-
-	//Connected Nodes
-	private Hashtable connectedNodes;
-
-	//Final variables
-	private final String FREQUENCY = "frequency";
+public interface OntologyNode {
+	/**
+	 * Adds a connection between the current node and the specified node
+	 * If the connection already exists, increment the weight.
+	 * @param node the node to add the connection to.
+	 **/
+	public void addConnection(OntologyNode node);
 
 	/**
-	 * Initializes an Ontology Node for easier traversal
-	 * of the ontology graph.
+	 * Adds a connection between the current node and the specified node
+         * If the connection already exists, increment the weight.
+         * @param label the label of the node to add the connection to.
+         **/
+	public void addConnection(String label);
+
+	/**
+         * Adds a connection between the current node and the specified node
+         * If the connection already exists, increment the weight.
+         * @param label the id of the node to add the connection to.
+         **/
+	public void addConnection(long id);
+
+	/**
+	 * Adds a property with the given name and value to the node
+	 * @param name the name of the property
+	 * @param value the value of the property
 	 **/
-	public OntologyNode () {
-		props = new Properties();
-		connectedNodes = new Hashtable();
-		dirty = false;
-	}
+	public void addProperty(String name, String value);
 
-///////////////// Sets up the node ///////////////////
-// These methods should only be called by the Ontology
-// object when creating a wrapper around pre-existing
-// node data
-//////////////////////////////////////////////////////
+	/**
+	 * Remove a property with the given name from the node
+	 * @param name the name of the property
+	 **/
+	public String removeProperty(String name);
 
-	public void setID(long id) {
-		this.id = id;
-	}
+	/**
+	 * Set the frequency of the node
+	 * @param freq the frequency to set the node to
+	 **/
+	public void setFrequency(long freq);
 
-	public void setOntologyName(String name) {
-		ontologyName = name;
-	}
+	/**
+	 * Get the ID of the node
+	 * @return the ID of the node
+	 **/
+	public long getID();
 
-	public void setLabel(String label) {
-		this.label = label;
-	}
+	/**
+	 * Get the ontology name of the OntologyNode
+	 * @return the name of the ontology node's name
+	 **/
+	public String getOntologyName();
 
-	public void setProperties(Properties props) {
-		this.props = props;
-	}
+	/**
+	 * Get the label of the node
+	 * @return the label of the node
+	 **/
+	public String getLabel();
 
-	public void setConnectedNode(long id, long weight) {
-		connectedNodes.put(new Long(id), new Long(weight));
-	}
+	/**
+	 * Gets the properties of the node
+	 * @return the properties of the node as a Properties object
+	 **/
+	public Properties getProperties();
 
-	public void setLastAccessedTime(long millis) {
-		lastAccessed = millis;
-	}
+	/**
+	 * Gets the Ontology that the node is part of
+	 * @return the ontology
+	 **/
+	public Ontology getOntology();
 
-	public void setOntology(Ontology ontology) {
-		this.ontology = ontology;
-	}
+	/**
+	 * Gets an Iterator of all the connected nodes
+	 * to this node
+	 * @return an iterator of all the nodes connected to this node
+	 **/
+	public Iterator getConnectedNodes();
 
-///////////////// To enhance node later ////////////
+	/**
+	 * Gets the weight between this node and the specified connected node
+	 * @param connectedNode the node that this node is connected to.
+	 * @return the weight between the two nodes
+	 **/
+	public long getWeight(OntologyNode connectedNode);
 
-	public void addConnection(OntologyNode node) {
-		addConnection(node.getID());
-	}
+	/**
+	 * Gets the frequency of the node
+	 * @return the frequency of the node
+	 **/
+	public long getFrequency();
 
-	public void addConnection(String label) {
-		OntologyNode node = ontology.getNode(label);
-		if (node != null) addConnection(node.getID());
-	}
-
-	public void addConnection(long id) {
-		ontology.connectNodes(this.id, id);
-
-		//Set the dirty bit of the current node and the
-		//one that was connected to
-		OntologyNode node = ontology.getNode(id);
-		node.setDirty();
-		dirty = true;
-	}
-
-	public void addProperty(String name, String value) {
-		ontology.addProperty(id, name, value);
-		dirty = true;
-	}
-
-	public String removeProperty(String name) {
-		String value = props.getProperty(name);
-		ontology.removeProperty(id, name);
-		dirty = true;
-		return value;
-	}
-
-	public void setFrequency(long freq) {
-		removeProperty(FREQUENCY);
-		addProperty(FREQUENCY, String.valueOf(freq));
-		dirty = true;
-	}
-
-////////////////////////////////////////////////////
-
-	public long getID() {
-			return id;
-	}
-
-	public String getOntologyName() {
-		return ontologyName;
-	}
-
-	public String getLabel() {
-		return label;
-	}
-
-	public Properties getProperties() {
-		checkDirty();
-		return props;
-	}
-
-	public long getLastAccessedTime() {
-		return lastAccessed;
-	}
-
-	public Ontology getOntology() {
-		return ontology;
-	}
-
-	public Iterator getConnectedNodes() {
-		checkDirty();
-		return new OntologyConnectedNodeIterator(this, connectedNodes);
-	}
-
-	public long getWeight(OntologyNode connectedNode) {
-		checkDirty();
-		Long id = new Long(connectedNode.getID());
-		Object obj = connectedNodes.get(id);
-
-		if (obj == null) return 0;
-		else return ((Long) obj).longValue();
-	}
-
-	public long getFrequency() {
-		checkDirty();
-		String freq = props.getProperty(FREQUENCY);
-		if (freq == null) return 1;
-	
-		return Long.parseLong(freq);
-	}
-
-	public void setDirty() {
-		dirty = true;
-	}
-
-	public void checkDirty() {
-		if (dirty) {
-			ontology.updateNode(this);
-			dirty = false;
-		}
-	}
-
-	public boolean equals(Object obj) {
-		OntologyNode node = (OntologyNode) obj;
-
-		if (node.getID() == id) return true;
-		else return false;
-	}
+	/**
+	 * Returns true if the supplied node is equal to this one
+	 * @param obj the OntologyNode to compare this one to.
+	 * @return true if they are equal, false if they aren't
+	 **/
+	public boolean equals(Object obj);
 }

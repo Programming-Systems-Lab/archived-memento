@@ -13,8 +13,7 @@ public class OntologyTest {
 			Properties settings = new Properties();
 			settings.load(new FileInputStream("config.ini"));
 
-			Ontology ontology = new Ontology(settings);
-			ontology.connect();
+			OntologyImpl ontology = new OntologyImpl(settings);
 			ontology.loadOntology("test_termExtraction");
 
 			///////////////////
