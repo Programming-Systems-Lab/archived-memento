@@ -1,0 +1,248 @@
+Process Evolution in the Marvel Environment 
+Gail E. Kaiser Israel Z. Ben­Shaul 
+Columbia University, Department of Computer Science, New York, NY 10027 
+The primary goal of a process evolution tool is to Evolver generates a graph reflecting only the consistency 
+guarantee that the pre­existing objectbase is consistent implications among rules in the new process model, and 
+with respect to the newly installed process. We had compares it to the consistency rule graph representing the 
+previously proposed an approach that rejected changes to existing process. Matching a rule with its replacement 
+the process that might potentially introduce may require interaction with the process engineer, since 
+inconsistency [2]. We have more recently developed a MARVEL allows multiple rules with the same name but 
+much more powerful approach that accepts any new different conditions. Evolver detects cases where 
+process model (which is syntactically correct and the consistency is either strengthened (adding an edge) or 
+corresponding schema evolution is possible), and weakened (deleting an edge). The rule at the tail of each 
+automatically updates the objectbase according to the new such edge must be evaluated, in the former case to 
+process. This second approach was implemented in the consider rules that have become part of a previously 
+Evolver tool for the MARVEL 3.x rule­based executed consistency chain and in the latter case to 
+environment [4]. consider rules whose conditions might have become 
+satisfiable. 
+The key insight that makes our new approach tractable is 
+that it is unnecessary for Evolver to analyze the contents Evolver generates a batch script of MARVEL commands to 
+of the objectbase to determine whether or not it will be fire any consistency (sub)chains necessary to make the 
+consistent. Instead, Evolver compares the old and new objectbase consistent with respect to the new consistency 
+process models, and determines the set of rules affected graph. The script is executed in the MARVEL command 
+by changes related to consistency. Evolver then generates line client, an alternative to the graphical user interface. 
+a list of all possible instantiations of the affected rules, Rule changes that are concerned only with automation, 
+considering only the types but not the contents of the and do not affect consistency, are also installed but do not 
+objects in the objectbase. Then these rules are executed cause any updates to the objectbase. In addition to 
+by MARVEL's process engine as if they had been normal process evolution, Evolver also supports schema 
+user commands. evolution based on facilities developed for Orion [1]. 
+This approach relies on our distinction between We now give a small example of actual evolution to the 
+consistency and automation in the process model [3]. In C/Marvel environment that we use in our own software 
+essence, when one rule would forward chain to another development. C/Marvel consists of a data model 
+rule to maintain consistency, the second rule is considered (schema), a process model and a set of tool envelopes, 
+an implication of the first, and by definition must be fired based on our original organization of the MARVEL code in 
+whenever the first rule is fired. If it is not possible to the file system, our manual development process and the 
+execute an entire chain defined recursively by such corresponding Unix utilities, respectively. We used the 
+implications, that chain must be rolled back (i.e., the Marvelizer immigration tool [7] to construct a C/Marvel 
+entire consistency chain executes as a transaction), and objectbase containing the source, headers, libraries, 
+thus the opportunity for backward consistency chaining executables, documentation, etc. of MARVEL itself. 
+can never arise. In contrast, if one rule would forward or C/Marvel's data model divides the environment's 
+backward chain to another rule solely for automation objectbase into a shared repository, called the "master 
+purposes, the chaining is considered optional. area", and a collection of private workspaces, each called 
+Automation chaining may be explicitly turned off, if a "miniproject". As part of the process, a user initiates a 
+desired, or can be terminated at any rule boundary without code change by first reserving relevant objects in the 
+rollback of the entire automation chain. 
+
+master area and then copying them to a miniproject. The linked to the AFILE have been Archived, and also that 
+user does all editing and testing in the miniproject. the containing PROJECT is in the CompileAll state. A 
+Archived libraries in the master area may be linked PROJECT would be in this state if either a source file or 
+together with modified code for testing, if objectbase header file had been deposited into the master area since 
+links have been established from objects in the the last time the PROJECT had been built (i.e., all its 
+miniproject to the appropriate objects in the master area. executables manufactured), and the PROJECT had not yet 
+Once the changes and test results are satisfactory, the user been rebuilt. This portion is there to prevent unnecessary 
+copies the objects back to the master area and deposits work. If the condition already evaluates to true, or can be 
+them. Whenever an object representing a source or satisfied through backward chaining to other rules that 
+header file is deposited, the affected archives and archive all the relevant MODULEs, then the AFILE itself is 
+executables in the master area are marked as outdated in a said to have been Archived. No tool invocation is 
+mandatory consistency chain, and may be rebuilt then by actually needed, since the condition directly implies the 
+an optional automation chain or later according to an effect. 
+explicit user command. The parameter to the build rule is a MINIPROJECT 
+In our example, this process is modified so that outdated object, which represents a private workspace for an 
+or reconstructed archives in the master area also individual software developer. The conditions gathers up 
+propagate to all the miniprojects that link to them. The all the C, yacc and lex source files contained in the 
+goal is to encourage users to incorporate changes in other MINIPROJECT, the MINIPROJECT's executable, and 
+parts of the system as soon as they have been deposited, any AFILEs to which it is linked --- perhaps in the master 
+rather than continuing testing using the old versions. We area or another miniproject. The MACHINE_EXEC and 
+do not intend to claim the new process is necessarily MACHINE objects are used to maintain archives and 
+better than the original process for any or all software executables for different machine architectures. The 
+development projects, just that it is representative of build rule requires that all the source files have been 
+relatively simple but realistic process evolution. Compiled since the last time the MINIPROJECT was 
+built. If so, the activity part of the rule invokes the 
+arch [?a:AFILE]: 
+(and build_local envelope to rebuild the MINIPROJECT, 
+(exists LIB ?l suchthat (member [?l.afiles ?a])) that is, generate the executable being developed by the 
+(exists PROJECT ?p suchthat (member [?p.lib ?l])) 
+(forall MODULE ?m suchthat (linkto [?m.afiles ?a]))): user. When the envelope terminates, one of the rule's two 
+(and 
+effects is asserted. If the build was successful, the 
+(?m.archive_status = Archived) 
+no_chain (?p.status = CompileAll)) MINIPROJECT is said to be Built; if the tool produces 
+{ } 
+errors, however, it is NotBuilt. 
+(?a.archive_status = Archived); 
+Figure 2 gives modified arch and build rules, together 
+build [?mp:MINIPROJECT]: 
+(and with newly added update and restore rules. The 
+(forall CFILE ?c suchthat (member [?mp.files ?c ])) 
+only difference in arch is to change its one effect 
+(forall YFILE ?y suchthat (member [?mp.files ?y ])) 
+(forall LFILE ?l suchthat (member [?mp.files ?l ])) predicate from automation ("(...)") to consistency ("[...]"). 
+(exists EXE ?e suchthat (member [?mp.exec ?e ])) 
+When this effect predicate is asserted, consistency 
+(forall AFILE ?a suchthat (linkto [?mp.afiles ?a])) 
+(forall MACHINE_EXEC ?me forward chaining must be attempted to every rule with a 
+suchthat (member [?e.machines ?me])) 
+(forall MACHINE ?mc matching predicate in its condition. The new update 
+suchthat (member [?a.machines ?mc]))): rule has such a predicate. 
+(and 
+(?c.status = Compiled) 
+The parameter of the update rule is a MINIPROJECT. 
+(?l.status = Compiled) 
+(?y.status = Compiled)) When an archive in the master area causes arch to 
+{ LOCAL build_local 
+forward chain to update, the binding is ``inverted'' to 
+?c.object_code ?l.object_code ?y.object_code 
+?mc.afile ?me.exec ?e.history "NO"} find all MINIPROJECT objects that are linked to the 
+(?mp.build_status = Built); 
+particular AFILE object on which the consistency effect 
+(?mp.build_status = NotBuilt); 
+was asserted [6]. The update rule is then instantiated 
+Figure 1: Old C/Marvel arch and build Rules 
+separately for each such object, and the condition is 
+Two of the old C/Marvel rules, arch and build, are evaluated. If the MINIPROJECT is either 
+shown in Figure 1. The parameter to arch is an AFILE INC_NotBuilt or NotBuilt, it is set to NotBuilt. 
+object, which represents a Unix archive (".a") file. The Basically, NotBuilt means that the MINIPROJECT is 
+arch rule first retrieves the ancestor PROJECT object out of date because one or more of the archives it imports 
+containing this AFILE and all the MODULE objects linked from the master area has been updated since it was last 
+to this AFILE. It then checks that all of the MODULEs built. INC_NotBuilt means that one of these archives 
+2 
+
+arch [?a:AFILE]: model, so no schema evolution is required. It then 
+(and 
+attempts to match rules in the old and new process model 
+(exists LIB ?l suchthat (member [?l.afiles ?a])) 
+(exists PROJECT ?p suchthat (member [?p.lib ?l])) pairwise, and requests help interactively when there is an 
+(forall MODULE ?m suchthat (linkto [?m.afiles ?a]))): 
+ambiguity. It discovers the ``change'' to restore, 
+(and 
+(?m.archive_status = Archived) which strengthens consistency because it is the 
+no_chain (?p.status = CompileAll)) 
+destination of a consistency effect of another rule, 
+{ } 
+[?a.archive_status = Archived]; touchup (not shown). Evolver also finds the change to 
+build [?mp:MINIPROJECT]: update, which is the destination of the new consistency 
+(and predicate in arch. It then generates a MARVEL command 
+(forall CFILE ?c suchthat (member [?mp.files ?c ])) 
+(forall YFILE ?y suchthat (member [?mp.files ?y ])) script to trigger the offending restore and update 
+(forall LFILE ?l suchthat (member [?mp.files ?l ])) rules on all affected objects. This would be all objects 
+(exists EXE ?e suchthat (member [?mp.exec ?e ])) 
+(forall AFILE ?a suchthat (linkto [?mp.afiles ?a ])) that are instances of the MINIPROJECT class or any 
+(forall MACHINE_EXEC ?me 
+subclasses of MINIPROJECT (there are none). The 
+suchthat (member [?e.machines ?me ])) 
+(forall MACHINE ?mc script is executed in a MARVEL command line client 
+suchthat (member [?a.machines ?mc ]))): 
+spawned by Evolver. This concludes our example. 
+(or 
+(and 
+Evolver's main limitation concerns evolution of product 
+(?c.status = Compiled) 
+(?l.status = Compiled) data manipulated by MARVEL's ``black box'' 
+(?y.status = Compiled) 
+activities [5]. Consistency chains are currently restricted 
+no_forward (?a.archive_status = Archived)) 
+(?mp.build_status = NotBuilt)) so that a non­empty activity can appear only in the 
+{ LOCAL build_local 
+original rule of a chain, and all rules triggered by forward 
+?c.object_code ?l.object_code ?y.object_code 
+?mc.afile ?me.exec ?e.history "NO"} consistency chaining must have an empty activity. Thus 
+(?mp.build_status = Built); 
+no_chain (?mp.build_status = NotBuilt); the rules queued by Evolver update only process data, as 
+completely specified by the effects of rules, and never 
+update[?mp:MINIPROJECT]: 
+(forall AFILE ?a suchthat (linkto [?mp.afiles ?a])): access product data. This forward repair approach would 
+require human intervention for each non­empty activity 
+(and (?a.archive_status = Archived) 
+(or no_backward (?mp.build_status = INC_NotBuilt) that was invoked, defeating the purpose of an automated 
+no_chain (?mp.build_status = NotBuilt))) 
+process evolution tool. 
+{ } 
+(?mp.build_status = NotBuilt); 
+We postulate a backward repair solution, to apply to the 
+restore[?mp:MINIPROJECT]: rules in automation chains as well as to those in 
+(forall AFILE ?a suchthat (linkto [?mp.afiles ?a])): 
+generalized consistency chains. The gist is to revert 
+no_backward (?a.archive_status = NotArchived) 
+{ } affected process data to their (new) default values, 
+no_chain (?mp.build_status = INC_NotBuilt); 
+without actually undoing any activities. Then our current 
+Figure 2: Modified and Added C/Marvel Rules algorithm would be applied to move the process state 
+forward to the degree possible through newly satisfied 
+has been outdated but not yet reconstructed; this is set by 
+rules with empty activities. We hope to develop this idea 
+the new restore rule when an imported archive 
+further if resources become available. 
+becomes NotArchived. The effective difference is that 
+a MINIPROJECT can be directly rebuilt when its status is The current Evolver tool has been incorporated into 
+NotBuilt, but it is first necessary to reconstruct the P/Marvel, a MARVEL environment for developing and 
+relevant archives in the master area if its status is evolving data models, process models and tool envelopes. 
+INC_NotBuilt. A P/Marvel objectbase contains the source and internal 
+representation of a data model and a process model, and 
+The modified build rule considers the relationship 
+includes references to both testing and "real" objectbases 
+between a MINIPROJECT and the AFILEs it is linked 
+whose environments are instantiated by these models. 
+to. If a source file within the workspace is recompiled 
+Like any MARVEL environment, P/Marvel maintains 
+and the imported archives have already been constructed, 
+consistency among its target objects, in this case 
+then the MINIPROJECT can be built. Alternatively, if an 
+components of data and process models, and automates 
+imported archive has just been reconstructed, so the status 
+aspects of the process, in this case installation and testing 
+has become NotBuilt, it is also appropriate to now 
+of new or evolved data and process models. P/Marvel is 
+rebuild the MINIPROJECT. The no_chain directive was 
+part of MARVEL version 3.0.2, which has been in use 
+added to the second effect to prevent a cycle: if the 
+internally since July 1992, and is planned for release as 
+build is unsuccessful, it is futile to immediately try 
+part of MARVEL 3.1 in early 1993. 
+again. 
+Evolver first detects that there were no changes to the data John Hinsdale implemented an initial version of Evolver that 
+3 
+
+[3] Naser S. Barghouti. Supporting Cooperation in the MARVEL 
+supported schema but not process evolution. Will Marrero 
+Process­Centered SDE. In Herbert Weber (editor), 5th ACM SIGSOFT 
+worked on the Evolver described here, and George Heineman 
+Symposium on Software Development Environments, pages 21­31. 
+also contributed substantially to this research. The 
+Tyson's Corner VA, December, 1992. Special issue of Software 
+Programming Systems Laboratory is supported by National Engineering Notes, 17(5), December 1992. 
+Science Foundation grants CCR­9106368 and CCR­8858029, by 
+grants and fellowships from AT&T, BNR, Bull, DEC, IBM, [4] Israel Z. Ben­Shaul, Gail E. Kaiser and George T. Heineman. 
+An Architecture for Multi­User Software Development Environments. 
+Paramax and SRA, by the New York State Center for Advanced 
+In Herbert Weber (editor), 5th ACM SIGSOFT Symposium on Software 
+Technology in Computers and Information Systems and by the 
+Development Environments, pages 149­158. Tyson's Corner VA, 
+NSF Engineering Research Center for Telecommunications 
+December, 1992. Special issue of Software Engineering Notes, 17(5), 
+Research. 
+December 1992. 
+[5] Mark A. Gisi and Gail E. Kaiser. Extending A Tool Integration 
+Language. In Mark Dowson (editor), 1st International Conference on 
+References the Software Process: Manufacturing Complex Systems, pages 218­227. 
+IEEE Computer Society Press, Redondo Beach CA, October, 1991. 
+[1] Jay Banerjee and Won Kim. Semantics and Implementation of 
+Schema Evolution in Object­Oriented Databases. In ACM SIGMOD [6] George T. Heineman, Gail E. Kaiser, Naser S. Barghouti and 
+Annual Conference on the Management of Data, pages 311­322. San Israel Z. Ben­Shaul. Rule Chaining in MARVEL: Dynamic 
+Francisco CA, May, 1987. Special issue of SIGMOD Record, 16(3), Binding of Parameters. IEEE Expert 7(6):26­32, December, 1992. 
+December 1987. 
+[7] Michael H. Sokolsky and Gail E. Kaiser. A Framework for 
+[2] Naser S. Barghouti and Gail E. Kaiser. Scaling Up Rule­Based Immigrating Existing Software into New Software Development 
+Development Environments. International Journal on Software Environments. Software Engineering Journal 6(6):435­453, November, 
+Engineering & Knowledge Engineering 2(1):59­78, March, 1992. 1991. 
+4 
+
