@@ -6,6 +6,8 @@
 
 package psl.memento.server.vem;
 
+import java.util.Collections;
+
 /**
  *
  * @author  Vladislav
@@ -17,4 +19,12 @@ public class AdvancedLayout extends Layout {
 	return "Advanced Layout";
     }    
     
+    public void calculateLayout() {
+	
+	// sort object list by type
+	Collections.sort(dr.mObjs);
+	
+	// do simple layout
+	super.calculateLayout();
+    }
 }

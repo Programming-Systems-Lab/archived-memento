@@ -34,12 +34,15 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	this.rx = dr.mRoom.getWidth();
 	this.ry = dr.mRoom.getHeight();	
 	
-	// create deep copy of floor plan
-	floorPlan = new Polygon();
-	Polygon orig = dr.mRoom.plan;
-	for (int i=0; i<orig.npoints; i++) {
-	    floorPlan.addPoint(orig.xpoints[i], orig.ypoints[i]);
-	}
+	// set cell variables
+	gran_x = rx / delta;
+	gran_y = ry / delta;
+	cells = new boolean[gran_x][gran_y];
+	
+	// do floor plan
+	floorPlan = dr.mRoom.plan;
+	if (floorPlan != null)
+	    applyFloorPlan();
     }
     
     /**
@@ -48,63 +51,74 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
     
     public void calculateLayout()
     {
-	boolean okay;
-	Polygon p;
-	
-	do {
-	    // set instance variables
-	    gran_x = rx / delta;
-	    gran_y = ry / delta;
-	    cells = new boolean[gran_x+1][gran_y+1];	
+	placeFixedObjects();
+	doObjects(spacingFactor);  
+    }
 
-	    // fill in objects here
-	    if (!(okay = doObjects(spacingFactor))) {
-		// make room bigger
-		rx = rx + rx/2;
-		ry = ry + ry/2;
-		if (floorPlan != null) {
-		    for (int i=0; i<floorPlan.npoints; i++) {
-			floorPlan.xpoints[i] *= 1.5;
-			floorPlan.ypoints[i] *= 1.5;
-		    }
-		    floorPlan.invalidate();
-		}
-	    }	    
-	} while (!okay);
+    protected boolean placeFixedObjects()
+    {
+	Iterator iter = dr.mFixedObjs.iterator();
+	RoomObject ro;
+	
+	while (iter.hasNext()) {
+	    ro = (RoomObject) iter.next();
+	    
+	    if (!testAndOccupy(ro.xloc, ro.yloc, ro.width, ro.height))
+		return false;
+	    else
+		ro.placed = true;
+	}
+	
+	return true;
     }
     
     /**
-     *	Returns true if all objects were successfully placed
+     *	FIXME : need to make deep copy first.
+     */
+    protected void growRoomSize()
+    {
+	// make room bigger
+	rx = rx + rx/2;
+	ry = ry + ry/2;
+	if (floorPlan != null) {
+	    for (int i=0; i<floorPlan.npoints; i++) {
+		floorPlan.xpoints[i] *= 1.5;
+		floorPlan.ypoints[i] *= 1.5;
+	    }
+	    floorPlan.invalidate();
+	}    
+    }
+     
+    /**
+     *	Returns true if ALL objects were successfully placed
      *
      *	@param min  the minimum spacing factor between objects
      *		    (0 = tightest fit)
      */
-    protected boolean doObjects(int min) {
-	int spacing = min - 1;
+    protected boolean doObjects(int max) {
+	int spacing;
 	int numObjs = dr.mObjs.size();
 	int result = numObjs;
-	boolean tmpcells[][] = new boolean[gran_x+1][gran_y+1];
+	boolean tmpcells[][] = new boolean[gran_x][gran_y];
 	
-	if (floorPlan != null)
-	    applyFloorPlan();
-	
-	while (result == numObjs) {
-	    spacing++;
+	for (spacing = 0; spacing <= max; spacing++) {
 	    copyCells(tmpcells, cells);
-	    result = placeObjectsInGrid(dr.mObjs.iterator(), spacing);
+	    result = placeObjectsInGrid(dr.mObjs.iterator(), spacing, -1);
 	    copyCells(cells, tmpcells);
+	    if (result < numObjs) break;
 	}
 	
 	spacing--;  // roll back to last working spacing
-	if (spacing >= min) {  // means that at least the minimal spacing worked
-	    placeObjectsInGrid(dr.mObjs.iterator(), spacing);
+	if (spacing >= 0) {  // means that at least the minimal spacing worked
+	    placeObjectsInGrid(dr.mObjs.iterator(), spacing, -1);
 	    return true;
+	} else {    // place minimum number of objects
+	    placeObjectsInGrid(dr.mObjs.iterator(), spacing, result);
+	    return false;
 	}
-	
-	return false;
     }
     
-    protected int placeObjectsInGrid(Iterator iter, int spacing)
+    protected int placeObjectsInGrid(Iterator iter, int spacing, int limit)
     {
 	RoomObject ro;
 	int ytmp = delta, xtmp = delta;
@@ -114,6 +128,7 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	if (spacing < 0) spacing = 0;
 	
 	while (iter.hasNext()) {
+	    if (limit >= 0 && placedCount >= limit) break;
 	    ro = (RoomObject) iter.next();
 	    foundPosition = false;  // find position for room object
 	    for (xtmp = delta; xtmp < rx; xtmp += delta*(spacing+1)) {
@@ -122,7 +137,8 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 			foundPosition = true;
 			placedCount++;
 			ro.xloc = xtmp;
-			ro.yloc = ytmp;			
+			ro.yloc = ytmp;	
+			ro.placed = true;
 			break;
 		    }
 		}
@@ -142,7 +158,7 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	
 	for(i = x1 / delta; i <= (x1+dx)/delta; i++) {
 	    for (j = y1 / delta; j <= (y1+dy)/delta; j++) {
-		if (i > gran_x || j > gran_y) continue;
+		if (i >= gran_x || j >= gran_y) continue;
 		cells[i][j] = true;
 	    }
 	}
@@ -154,7 +170,7 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	
 	for(i = x1 / delta; i <= (x1+dx)/delta; i++) {
 	    for (j = y1 / delta; j <= (y1+dy)/delta; j++) {
-		if (i > gran_x || j > gran_y) return false;		
+		if (i >= gran_x || j >= gran_y) return false;		
 		if (cells[i][j]) return false;
 	    }
 	}
@@ -225,9 +241,16 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	    }
 	}
 	
+	g.setColor(new Color(204, 204, 204));
 	if (floorPlan == null) {
+	    g.fillRect(0, 0, rx, ry);
 	    g.setColor(Color.black);
 	    g.drawRect(0, 0, rx, ry);
+	}
+	else {
+	    g.fillPolygon(floorPlan);		    
+	    g.setColor(Color.black);
+	    g.drawPolygon(floorPlan);
 	}
 	
 	// do doors
@@ -259,16 +282,27 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 	}
 	
 	// draw objects
-	iter = dr.mObjs.iterator();
+	ArrayList tmp = new ArrayList();
+	Color color;
+	tmp.addAll(dr.mObjs);
+	tmp.addAll(dr.mFixedObjs);
+	iter = tmp.iterator();
 	while (iter.hasNext()) {
 	    ro = (RoomObject) iter.next();
 	    
-	    if (!colorHash.containsKey(ro.type)) {
-		colorHash.put(ro.type, colorArr[nextColor]);
-		nextColor = (nextColor + 1) % colorArr.length;
+	    if (!ro.placed) continue;
+	    
+	    if (ro.fixed) {
+		color = Color.white;
+	    } else {
+		if (!colorHash.containsKey(ro.type)) {
+		    colorHash.put(ro.type, colorArr[nextColor]);
+		    nextColor = (nextColor + 1) % colorArr.length;
+		}
+		color = (Color)colorHash.get(ro.type);
 	    }
 	    
-	    g.setColor((Color)colorHash.get(ro.type));
+	    g.setColor(color);
 	    g.fillRoundRect(ro.xloc, ro.yloc, ro.width, ro.height, 5, 5);
 	    g.setColor(Color.black);
 	    g.drawRoundRect(ro.xloc, ro.yloc, ro.width, ro.height, 5, 5);
@@ -283,11 +317,6 @@ public class Layout extends AbstractLayout implements LayoutDrawer {
 			g.fillRect(i*delta+1, j*delta+1, delta-2, delta-2);
 		}
 	    }
-	}
-	
-	g.setColor(Color.black);
-	if (floorPlan != null) {
-	    g.drawPolygon(floorPlan);
 	}
     }
     

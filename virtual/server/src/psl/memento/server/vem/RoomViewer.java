@@ -122,7 +122,7 @@ public class RoomViewer extends javax.swing.JFrame
         spacingSlider.setPaintTicks(true);
         spacingSlider.setSnapToTicks(true);
         spacingSlider.setValue(2);
-        spacingSlider.setBorder(new javax.swing.border.TitledBorder("Min Spacing Factor"));
+        spacingSlider.setBorder(new javax.swing.border.TitledBorder("Max Spacing Factor"));
         spacingSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 spacingSliderStateChanged(evt);
@@ -316,6 +316,7 @@ public class RoomViewer extends javax.swing.JFrame
 	    p.setBackground((Color)colorHash.get(key));
 	    legendPanel.add(p);
 	}
+	legendPanel.revalidate();
     }
     
     public int getSpacingValue()

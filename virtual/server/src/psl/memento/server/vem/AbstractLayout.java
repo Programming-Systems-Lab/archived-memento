@@ -23,6 +23,10 @@ public abstract class AbstractLayout {
     public AbstractLayout()
     {}
     
+    /**
+     *	Initializes internal settings and calls the <code>calculateLayout()
+     *	</code> method()
+     */
     public void init(DataReader dr, LayoutParameters lp)
     {
 	this.dr = dr;

@@ -17,7 +17,7 @@ import java.awt.*;
 public class DataReader {
     
     public Room mRoom;
-    public ArrayList mObjs, mDoors;
+    public ArrayList mObjs, mFixedObjs, mDoors;
     private String contents;
     
     private StringTokenizer strtok;
@@ -27,6 +27,11 @@ public class DataReader {
         mFilename = filename;
     }
     
+    /**
+     *	Opens the input file, saves the contents to a buffer and then calls 
+     *	<code>parseInput()</code>
+     *
+     */
     public boolean getRoomData() 
     {
         try {
@@ -50,6 +55,10 @@ public class DataReader {
 	contents = buf.toString();
     }
     
+    /**
+     *	Converts whatever data is saved in the buffer and creates objects to
+     *	represent the data.
+     */
     public boolean parseInput() {
 	String tok;
 	int count;
@@ -59,6 +68,7 @@ public class DataReader {
 	
 	// initialize
 	mObjs = new ArrayList();
+	mFixedObjs = new ArrayList();
         mDoors = new ArrayList();
     
 	StringTokenizer reader = new StringTokenizer(contents, "\n");
@@ -66,14 +76,15 @@ public class DataReader {
 	while(reader.hasMoreTokens()) {
             strtok = new StringTokenizer(reader.nextToken(), "(), ");
             tok = strtok.nextToken();
+	    count = strtok.countTokens();            
             
-            if (tok == null) continue;
+	    if (tok == null) continue;
             
             if (tok.equals("room")) {
                 if (gotRoom)
                     return false;
                 
-		count = strtok.countTokens(); 
+ 
 		if (count == 2) {
 		    mRoom = new Room(nextInt(), nextInt());
 		    gotRoom = true;
@@ -91,13 +102,27 @@ public class DataReader {
             }
             
             if (tok.equals("obj")) {
+		if (count != 3 && count != 5) {
+		    System.out.println("Object ignored: wrong number of parameters");
+		    continue;
+		}
+		
                 o = new RoomObject();
                 
                 o.width = nextInt();
                 o.height = nextInt();
+		
+		if (count == 5) {
+		    o.xloc = nextInt();
+		    o.yloc = nextInt();
+		    o.fixed = true;
+		}
                 o.type = nextStr();
                 
-                mObjs.add(o);
+		if (o.fixed)
+		    mFixedObjs.add(o);
+		else
+                    mObjs.add(o);
             }
             
             if (tok.equals("door")) {
@@ -112,10 +137,17 @@ public class DataReader {
         return gotRoom;
     }
     
+    /**
+     *	Returns the file content buffer.
+     */
     public String getFileContent() {
 	return contents;
     }
-    
+
+    /**
+     *	Sets the file content buffer to some other String, possibly editted by
+     *	the user.
+     */
     public void setFileContent(String c) {
 	contents = c;
     }

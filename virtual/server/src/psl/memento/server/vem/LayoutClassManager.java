@@ -29,7 +29,7 @@ public class LayoutClassManager implements java.awt.event.ActionListener {
     
     public void addOption(AbstractButton b, String className) {
 	group.add(b);
-	className = "vem." + className;
+	className = getClass().getPackage().getName() + "." + className;
 	
 	b.setActionCommand(className);
 	b.addActionListener(this);
