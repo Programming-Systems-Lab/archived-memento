@@ -12,6 +12,7 @@ import java.awt.Polygon;
 
 /**
  * Advanced layout class
+ *
  * @author  Vladislav
  */
 public class AdvancedLayout extends Layout {
