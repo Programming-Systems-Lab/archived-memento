@@ -3,7 +3,7 @@ using System;
 namespace psl.memento.pervasive.hermes.server
 {
 	/// <summary>
-	/// Summary description for Constants.
+	/// The constants could be moved to a config file.
 	/// </summary>
 	public class RuntimeConstants
 	{

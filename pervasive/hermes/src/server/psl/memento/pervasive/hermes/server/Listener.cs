@@ -14,7 +14,8 @@ using psl.memento.pervasive.hermes.server.ClientHelp;
 namespace psl.memento.pervasive.hermes.server
 {
 	/// <summary>
-	/// Summary description for Listener.
+	/// Listener is where we listen for incoming clients. 
+	/// we then spawn them off with there own thread.
 	/// </summary>
 	public class Listener
 	{

@@ -13,7 +13,8 @@ using psl.memento.pervasive.hermes.server.ChatHelper;
 namespace psl.memento.pervasive.hermes.server.ClientHelp
 {
 	/// <summary>
-	/// Summary description for ClientResponseHandler.
+	/// ClientResponseHandler is used for sending all responses to the clients.
+	/// 
 	/// </summary>
 	public class ClientResponseHandler
 	{	

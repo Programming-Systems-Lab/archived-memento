@@ -7,7 +7,10 @@ using psl.memento.pervasive.hermes.util.log;
 namespace psl.memento.pervasive.hermes.server.ClientHelp
 {
 	/// <summary>
-	/// Summary description for XMLSocketParser.
+	/// As with the Client this is used to parse incoming strings.
+	/// the class looks for '|||' to indicated the termination of
+	/// a xml messaeg and returns the preceding xml to the ClientRequestHandler
+	/// which does a lookup on the message and calls the appropriate message.
 	/// </summary>
 	public class XMLSocketParser
 	{

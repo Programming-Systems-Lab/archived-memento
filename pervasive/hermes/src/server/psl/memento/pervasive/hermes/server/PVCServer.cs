@@ -11,7 +11,8 @@ namespace psl.memento.pervasive.hermes.server
 
 
 	/// <summary>
-	/// Summary description for Class1.
+	/// This is the main class that handles all the high level sever commands.
+	/// startup and shutdown for instance.
 	/// </summary>
 	public class PVCServer
 	{

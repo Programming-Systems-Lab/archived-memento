@@ -14,7 +14,8 @@ using System;
 namespace psl.memento.pervasive.hermes.server.ClientHelp
 {
 	/// <summary>
-	/// This class will be responsible for reading in xml from the client, parsing it to xml and figuring out what method to call on the client handler.
+	/// This class will be responsible for reading in xml from the client, parsing it to xml and 
+	/// figuring out what method to call on the client handler.
 	/// </summary>
 	public class ClientRequestHandler
 	{

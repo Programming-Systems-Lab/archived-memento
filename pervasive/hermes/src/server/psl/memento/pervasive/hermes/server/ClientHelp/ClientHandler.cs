@@ -12,7 +12,7 @@ using System.Xml;
 namespace psl.memento.pervasive.hermes.server.ClientHelp
 {
 	/// <summary>
-	/// Summary description for ClientHandler.
+	/// Again the inbetween for the server and the client communication.
 	/// </summary>
 	public class ClientHandler
 	{

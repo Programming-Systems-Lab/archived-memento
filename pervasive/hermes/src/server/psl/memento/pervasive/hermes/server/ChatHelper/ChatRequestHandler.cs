@@ -8,11 +8,12 @@ using System.Threading;
 namespace psl.memento.pervasive.hermes.server.ChatHelper
 {
 	/// <summary>
-	/// Summary description for ChatRequestHandler.
+	/// Handles all request for chats.
 	/// </summary>
 	public class ChatRequestHandler
 	{
 		private PVCServer _server;
+		//store all pending chats here by chatID
 		private System.Collections.Hashtable _pendingChats;
 
 		public ChatRequestHandler(PVCServer server)
@@ -46,6 +47,10 @@ namespace psl.memento.pervasive.hermes.server.ChatHelper
 
 		}
 
+		/// <summary>
+		/// Reject of chat.
+		/// </summary>
+		/// <param name="chatID"></param>
 		public void chatRequestReject(object chatID)
 		{		
 
