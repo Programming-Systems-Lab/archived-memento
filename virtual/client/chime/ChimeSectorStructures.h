@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
 	chObjectStructPtr object;			//object definition
 	char strTargetSectorName[50];		//name of the Chime sector this object leads to
-	char strTargetSectorURL[100];		//URL of the Chime sector this object leads to
+	char strTargetSectorSource[100];	//Source of the Chime sector this object leads to
 } chActiveObjectStruct, *chActiveObjectStructPtr;
 
 /******************************************************************************
@@ -47,7 +47,7 @@ typedef struct {
 typedef struct {
 	char strDoorName[50];				//name of this door
 	char strTargetSectorName[50];		//name of the sector this door leads to
-	char strTargetSectorURL[100];		//URL of the sector this door leads to
+	char strTargetSectorSource[100];		//Source of the sector this door leads to
 	chDoorStructPtr door;				//door definition
 } chOuterDoorStruct, *chOuterDoorStructPtr;
 
@@ -91,7 +91,7 @@ typedef struct {
  ******************************************************************************/
 typedef struct {
 	char strSectorName[50];				//name of this sector
-	char strSectorURL[100];				//URL of this sector
+	char strSectorSource[100];				//Source of this sector
 	csVector3 defaultLocation;			//default location in this sector
 	chRoomStructPtr *rooms;				//array of rooms in this sector
 	int numRooms;						//number of rooms

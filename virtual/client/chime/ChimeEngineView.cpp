@@ -20,10 +20,9 @@
  * initialize its CSWS parent window.
  *****************************************************************/
 ChimeEngineView::ChimeEngineView (csComponent *iParent, iEngine *Engine,
-  	iSector *Start, const csVector3& start_pos, iGraphics3D *G3D, csApp *app)
+  	iSector *Start, const csVector3& start_pos, iGraphics3D *G3D)
 	: csComponent (iParent)
 {
-  chApplication = app;
   parentWindow = (csWindow*) iParent;
 
   // create the view
@@ -62,8 +61,8 @@ bool ChimeEngineView::SetRect (int xmin, int ymin, int xmax, int ymax)
   parent->LocalToGlobal (xmax, ymax);
 
   // adjust the view to within the bounds
-  ymin = chApplication->bound.Height () - ymin;
-  ymax = chApplication->bound.Height () - ymax;
+  ymin = app->bound.Height () - ymin;
+  ymax = app->bound.Height () - ymax;
   windowRectangle = new csRect (xmin, ymax, xmax, ymin);
   view->SetRectangle (xmin, ymax, xmax - xmin, ymin - ymax);
   view->GetCamera ()->SetPerspectiveCenter (

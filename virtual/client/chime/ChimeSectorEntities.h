@@ -19,6 +19,8 @@
 
 #define ENTITY_TYPE_DOOR 1
 #define ENTITY_TYPE_OBJECT 2
+#define ENTITY_TYPE_ACTIVE_OBJECT 3
+#define ENTITY_TYPE_USER 4
 
 /******************************************************************************
  * General container for any active object
@@ -127,7 +129,7 @@ protected:
 	iPolygon3D *csDoorPolygon;
 	iPolygon3D **csDoorLabelPolygons;
 	iSector *csTargetRoom;
-	char *strTargetName, *strTargetURL;
+	char *strTargetName, *strTargetSource;
 	char *strDoorTexture;
 	int numLabels;
 
@@ -135,11 +137,11 @@ public:
 
 	ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon, 
 		iPolygon3D **door_label, int num_letters, 
-		char *iTargetName, char *iTargetURL, char *iDoorTexture);				// create a door entity for given door polygon
-	bool SetDoorTarget (char *iTargetName, char *iTargetURL);					// set the target sector of this door
+		char *iTargetName, char *iTargetSource, char *iDoorTexture);			// create a door entity for given door polygon
+	bool SetDoorTarget (char *iTargetName, char *iTargetSource);				// set the target sector of this door
 	bool SetDoorTexture (char *iTexture);										// set the texture used for this door
 	bool SetDoorVisible (bool flag);											// set the door to be visible if flag is true, transparent otherwise
-	bool ConnectDoorToTarget (bool doConnect, iSector *target);					// connect or disconnect this door to its target, depending on flag
+	bool ConnectDoorToTarget (bool doConnect, iSector *target=NULL);			// connect or disconnect this door to its target, depending on flag
 	bool OpenDoor ();															// open this door
 	bool CloseDoor ();															// close this door
 
@@ -163,24 +165,46 @@ protected:
 	iSector *csObjectRoom;
 	char *strObjectSource;
 	char *strObjectModel;
+	char *strObjectMaterial;
 
 public:
 
-	ChimeSectorObject (char *iObjectName, iMeshWrapper *iMesh, 
-		csVector3 *iObjectLocation, iSector *iObjectRoom, 
-		char *iObjectModel);													// create an object for given mesh
-	bool SetObjectSource (char *iObjectSource);									// set the source URL of this object
+	ChimeSectorObject (char *iObjectName, char *iObjectSource = NULL,
+		iMeshWrapper *iMesh = NULL, csVector3 *iObjectLocation = NULL, 
+		iSector *iObjectRoom = NULL, char *sObjectModel = NULL, 
+		char *iObjectMaterial = NULL, int iEntityType = ENTITY_TYPE_OBJECT);	// create an object for given mesh
+	bool SetObjectSource (char *iObjectSource);									// set the source Source of this object
 	bool SetObjectModel (char *iObjectModel);									// set the model used for this object
 	bool SetObjectLocation (csVector2 newMousePosition, iCamera *camera);		// move the object to new location indicated by mouse position using collision detection
+	bool SetObjectLocation (csVector3& new_pos);								// move object to given location
 	bool SetObjectRoom (iSector *iObjectRoom);									// set the room where this object is located
+	bool SetObjectMaterial (char *iObjectMaterial);								// set the material on the object mesh
 	csVector3* GetObjectLabelCenter ();											// return the 3D coordinate of the object's label center
 	char* GetObjectLabel ();													// return the text for this object's label
+	void GetObjectSource (char* iObjectSource);								// copy object source
 	bool IsObjectVisible (iCamera* camera, csRect const window_rect);			// return true if this object's mesh is visible in this camera for this window rectangle
 	bool HasLabel () { return true; }
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);
 	bool IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon);
+};
+
+
+/******************************************************************************
+ * Sector user container
+ ******************************************************************************/
+class ChimeSectorUser : public ChimeSectorObject
+{
+
+public:
+
+	ChimeSectorUser (char *iObjectName, char *iObjectSource, 
+		iMeshWrapper *iMesh, csVector3 *iObjectLocation, iSector *iObjectRoom, 
+		char *iObjectModel, char *iObjectMaterial=NULL);
+
+	void HandleLeftMouseDoubleClick (iEvent &event);
+	void HandleRightMouseClick (iEvent &event);
 };
 
 
@@ -192,9 +216,9 @@ class ChimeSectorActiveObject : public ChimeSectorObject
 
 public:
 
-	ChimeSectorActiveObject (char *iObjectName, iMeshWrapper *iMesh, 
-		csVector3 *iObjectLocation, iSector *iObjectRoom, 
-		char *iObjectModel);													// create an object for given mesh
+	ChimeSectorActiveObject (char *iObjectName, char *iObjectSource, 
+		iMeshWrapper *iMesh, csVector3 *iObjectLocation, iSector *iObjectRoom, 
+		char *iObjectModel, char *iObjectMaterial=NULL);
 
 	void HandleLeftMouseDoubleClick (iEvent &event);
 	void HandleRightMouseClick (iEvent &event);

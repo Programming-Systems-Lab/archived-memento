@@ -71,6 +71,9 @@ CS_IMPLEMENT_APPLICATION
 // The global pointer to ChimeSystemDriver
 extern ChimeSystemDriver *driver;
 
+// The global pointer to ChimeApp
+extern ChimeApp *app;
+
 /*****************************************************************
  * Constructor: sets up the object registry
  *****************************************************************/
@@ -83,9 +86,16 @@ ChimeSystemDriver::ChimeSystemDriver (iObjectRegistry* object_reg)
   chCurrentSector = NULL;
   chSelectedEntity = NULL;
   csEntityMenu = NULL;
+  chView = NULL;
+  chMapView = NULL;
   chVisibleObjects = new csVector ();
   chMenuFont = chSystemFont = chLabelFont = chLabelFontNum = 0;
   clearBackground = false;
+  isRunning = true;
+  isScreenUpdated = false;
+  str2DMessage[0] = '\0';
+  chHistoryWindow = NULL;
+  chChatWindow = NULL;
 }
 
 /*****************************************************************
@@ -99,18 +109,19 @@ ChimeSystemDriver::~ChimeSystemDriver ()
 }
 
 /***********************************************************
- * Load a new sector given its name and URL.
+ * Load a new sector given its name and Source.
  * New sector is filled with objects and users returned by
  * the server, but neighbors are only loaded with sector
  * definitions, void of active objects (those are only loaded
  * when the user enters).
  ***********************************************************/
-ChimeSector* ChimeSystemDriver::LoadNewSector (char *strSectorName, char *strSectorURL, 
-											   csVector3 const &iSectorOrigin, 
-											   csVector3 const &iSectorRotation)
+ChimeSector* ChimeSystemDriver::LoadNewSector (char *strSectorName, char *strSectorSource,
+											   csVector3 &iSectorOrigin, 
+											   csVector3 &iSectorRotation)
 {
 	// first check if this sector is already in the queue
-	ChimeSector *new_sector = chNeighborQueue->FindSector (strSectorName, strSectorURL);
+	ChimeSector *new_sector = chNeighborQueue->FindSector (strSectorName, strSectorSource);
+
 	if (new_sector)
 		return new_sector;
 
@@ -119,8 +130,16 @@ ChimeSector* ChimeSystemDriver::LoadNewSector (char *strSectorName, char *strSec
 	// build empty sectors
 	// fill this sector with objects and doors
 	// attach sectors to outer doors
-	new_sector = ChimeSector::SetupSector (csVector3 (iSectorOrigin - csVector3 (0, 0, 0.2)), iSectorRotation, 
-		"none", strSectorName, strSectorURL, chCurrentSector ? chCurrentSector : NULL);
+	new_sector = ChimeSector::SetupSector (iSectorOrigin, iSectorRotation, 
+		"none", strSectorName, strSectorSource, chCurrentSector ? chCurrentSector : NULL);
+	chNeighborQueue->AddSector (new_sector);
+
+	// update history window
+	char name[100], source[100];
+	new_sector->GetSectorTitle (name, source);
+	chHistoryWindow->AddItem (name, source);
+
+	Redraw ();
 
 	return new_sector;
 }
@@ -260,7 +279,7 @@ void ChimeSystemDriver::SetupFrame ()
 	
   // First, see if the user is on the ground, and if not
   // move him closer to it, simulating falling
-  if (!isOnGround) 
+  if (!isOnGround && isRunning) 
   {
 	  chUser->MoveUser (csVector3 (0, 0, 0), fps, true);
 	  checkVertical = false;
@@ -270,10 +289,10 @@ void ChimeSystemDriver::SetupFrame ()
   float speed = (elapsed_time / 1000.0) * (0.03 * 50);
 
   //Update user's position according to keyboard event
-  if (!csEntityMenu)
+  if (isRunning)
   {
       if (csKeyboardDriver->GetKeyState (CSKEY_RIGHT))
-		chUser->RotateUser(CS_VEC_ROT_RIGHT, speed);
+		  chUser->RotateUser(CS_VEC_ROT_RIGHT, speed);
 	  if (csKeyboardDriver->GetKeyState (CSKEY_LEFT))
           chUser->RotateUser(CS_VEC_ROT_LEFT, speed);
       if (csKeyboardDriver->GetKeyState (CSKEY_PGUP))
@@ -304,9 +323,18 @@ void ChimeSystemDriver::SetupFrame ()
   // Start drawing 2D graphics.
   if (!csGraphics3D->BeginDraw (CSDRAW_2DGRAPHICS)) return;
 
-  // If there is no open menu, draw labels for active entities
-  if (!csEntityMenu)
-	  DrawLabels ();
+  // Draw labels for active entities
+  DrawLabels ();
+
+  if (str2DMessage[0] != '\0')
+  {
+	  int x = chView->GetWindowRectangle ()->Width ();
+	  int y = chView->GetWindowRectangle ()->Height () / 2;
+	  int msg_len = strlen (str2DMessage);
+	  x = (x - msg_len)/2;
+	  chView->GetWindow ()->LocalToGlobal (x, y);
+	  csGraphics2D->Write (csFontServer->GetFont (chSystemFont), x, y, csTxtManager->FindRGB (200, 0, 20), -1, str2DMessage);
+  }
 
   // Draw "frames per second" inside main view
   if (chDebugMode == DEBUG)
@@ -319,6 +347,7 @@ void ChimeSystemDriver::SetupFrame ()
       csGraphics2D->DrawBox (x-3, y-3, 96, 26, csTxtManager->FindRGB (255, 255, 255));
       csGraphics2D->Write (csFontServer->GetFont (chSystemFont), x, y, csTxtManager->FindRGB (200, 0, 20), -1, buf);
   }
+
 }
 
 /*****************************************************************
@@ -334,6 +363,9 @@ void ChimeSystemDriver::FinishFrame ()
 	// of everything else
 	if (csEntityMenu && csEntityMenu->Select ())
 		csEntityMenu->Invalidate (true, NULL);
+
+	// Finally, tell the system that the screen was updated
+	isScreenUpdated = true;
 }
 
 /*****************************************************************
@@ -341,7 +373,10 @@ void ChimeSystemDriver::FinishFrame ()
  *****************************************************************/
 bool ChimeSystemDriver::HandleEvent (iEvent& event)
 {
-	chApplication->HandleEvent (event);
+	app->HandleEvent (event);
+
+	if (HandleEventFromOtherWindows (event))
+		return true;
 	
 	switch (event.Type)
 	{
@@ -396,23 +431,27 @@ bool ChimeSystemDriver::EventHandler (iEvent& ev)
  *****************************************************************/
 bool ChimeSystemDriver::ReadInitialSector ()
 {
+
+  // Set up other CHIME windows
+  chHistoryWindow = new ChimeHistoryWindow (app);
+  chChatWindow = new ChimeChatWindow (app);
+
   // Set up the CHIME sector
-  chCurrentSector = ChimeSector::SetupSector (csVector3 (0, 0, -10), csVector3 (0, 0, 0), "none", "sector0", "www.default.com/", NULL);
-  chNeighborQueue->AddSector (chCurrentSector);
+  SetCurrentSector (LoadNewSector ("Yahoo! Main", "http://www.yahoo.com", csVector3 (0, 0, -10), csVector3 (0, 0, 0)));
 
   //------------------ Set up 3D views of this system --------------------------------//
 
   // Main view
-  csWindow *w = new csWindow (chApplication, "3D View", CSWS_TITLEBAR, cswfsThin);
+  csWindow *w = new csWindow (app, "3D View", CSWS_TITLEBAR, cswfsThin);
   w->SetFont (csFontServer->GetFont (chSystemFont));
-  w->SetRect (chApplication->bound.Width()/4, 0, chApplication->bound.Width()-1, chApplication->bound.Height()*2/3);
-  chView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D, chApplication);
+  w->SetRect (app->bound.Width()/4, 0, app->bound.Width()-1, app->bound.Height()*2/3);
+  chView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D);
 
   // Map view
-  w = new csWindow (chApplication, "Map View", CSWS_TITLEBAR, cswfsThin);
+  w = new csWindow (app, "Map View", CSWS_TITLEBAR, cswfsThin);
   w->SetFont (csFontServer->GetFont (chSystemFont));
-  w->SetRect (chApplication->bound.Width()*2/3, chApplication->bound.Height()*2/3 + 2, chApplication->bound.Width()-1, chApplication->bound.Height()-1);
-  chMapView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D, chApplication);
+  w->SetRect (app->bound.Width()*2/3, app->bound.Height()*2/3 + 2, app->bound.Width()-1, app->bound.Height()-1);
+  chMapView = new ChimeEngineView (w, csEngine, chCurrentSector->GetDefaultRoom(), chCurrentSector->GetDefaultLocation(), csGraphics3D);
 
   return true;
 }
@@ -612,7 +651,12 @@ bool ChimeSystemDriver::InitializeEnvironment ()
 	Report ("Chime.Application.ChimeSystemDriver", "Could not create this user!");
     return false;
   }
+  
+  // Place user
   chUser->PlaceUser(chCurrentSector->GetDefaultLocation(), chCurrentSector->GetDefaultRoom());
+
+  // Create colliders, now that user is placed
+  driver ->GetCollider ()->CreateUserCollider ();
 
   return true;
 }
@@ -800,7 +844,7 @@ bool ChimeSystemDriver::HandleMouseMove (iEvent &Event)
 	if (!chSelectedEntity)
 		return true;
 	
-	csVector2 p (Event.Mouse.x, chApplication->bound.Height()-Event.Mouse.y);
+	csVector2 p (Event.Mouse.x, app->bound.Height()-Event.Mouse.y);
 	
 	chSelectedEntity->HandleMouseMove (csLastMousePosition, p, chView->GetCamera ());
 
@@ -811,13 +855,29 @@ bool ChimeSystemDriver::HandleMouseMove (iEvent &Event)
 
 
 /************************************************************
+ * See if any other windows want to handle this event
+ ************************************************************/
+bool ChimeSystemDriver::HandleEventFromOtherWindows (iEvent &Event)
+{
+	if (chHistoryWindow && chHistoryWindow->HandleEvent (Event))
+		return true;
+
+	if (chChatWindow && chChatWindow->HandleEvent (Event))
+		return true;
+
+	return false;
+}
+
+
+/************************************************************
  * Returns a newly created menu
  ************************************************************/
 csMenu* ChimeSystemDriver::CreateMenu (int x, int y)
 {
 	CloseMenu ();
-	csEntityMenu = new csMenu (chApplication, csmfs3D, 0);
+	csEntityMenu = new csMenu (app, csmfs3D, 0);
 	csEntityMenu->SetFont (csFontServer->GetFont (chMenuFont));
+	Stop3D ();
 
 	return csEntityMenu;
 }
@@ -833,6 +893,7 @@ bool ChimeSystemDriver::CloseMenu ()
 		{
 			csEntityMenu->Close ();
 			csEntityMenu = NULL;
+			Start3D ();
 		}
 		catch (...) {return false;}
 	}
@@ -847,7 +908,7 @@ ChimeSectorEntity* ChimeSystemDriver::SelectEntity (float x, float y)
 {
 
 	// Find the point on the creen where the user clicked
-	csVector2 screenCoord (x, chApplication->bound.Height() - y - 1);
+	csVector2 screenCoord (x, app->bound.Height() - y - 1);
 	csLastMousePosition.Set (screenCoord);
 
 	csVector3 v;
@@ -890,14 +951,6 @@ void ChimeSystemDriver::SetDebugMode (int mode)
   chDebugMode = mode;
 }
 
-/***********************************************************
- * Set the controlling instance of ChimeApp that is
- * the parent for this ChimeSystemDriver
- ***********************************************************/
-void ChimeSystemDriver::SetApplication (ChimeApp* app)
-{
-  chApplication = app;
-}
 
 /***********************************************************
  * Returns object registry
@@ -1097,4 +1150,141 @@ void ChimeSystemDriver::Redraw ()
 		chView->GetWindow ()->Invalidate (true);
 	if (chMapView)
 		chMapView->GetWindow ()->Invalidate (true);
+	if (chHistoryWindow)
+		chHistoryWindow->Invalidate (true);
+	if (chChatWindow)
+		chChatWindow->Invalidate (true);
+}
+
+/************************************************************
+ * Start running 3D animation
+ ************************************************************/
+void ChimeSystemDriver::Start3D ()
+{
+	isRunning = true;
+}
+
+/************************************************************
+ * Stop running 3D animation
+ ************************************************************/
+void ChimeSystemDriver::Stop3D ()
+{
+	isRunning = false;
+}
+
+/************************************************************
+ * Displays given text message as 2D message on top of the
+ * 3D screen
+ ************************************************************/
+void ChimeSystemDriver::Display2DMessage (char *strMessage)
+{
+	Stop3D ();
+	strcpy (str2DMessage, strMessage);
+}
+
+/************************************************************
+ * Deletes existing 2D message from screen
+ ************************************************************/
+void ChimeSystemDriver::Delete2DMessage ()
+{
+	str2DMessage[0] = '\0';
+	Start3D ();
+}
+
+/************************************************************
+ * Tells the system to wait for next screen redraw
+ ************************************************************/
+void ChimeSystemDriver::WaitForScreenUpdate ()
+{
+	isScreenUpdated = false;
+}
+
+/************************************************************
+ * Tells whether the screen was updated after last call 
+ * to WaitForScreenUpdate
+ ************************************************************/
+bool ChimeSystemDriver::HasScreenUpdated ()
+{
+	return isScreenUpdated;
+}
+
+/************************************************************
+ * Transport the user to the default location in the sector
+ * whose parameters (name & source) are given
+ ************************************************************/
+void ChimeSystemDriver::TransportToSector (char *strSectorName, char *strSectorSource)
+{
+	// first find the sector
+	ChimeSector *sector = chNeighborQueue->FindSector (strSectorName, strSectorSource);
+
+	if (!sector)
+		return;
+
+	// now get the room and location
+	iSector *room = sector->GetDefaultRoom ();
+	csVector3 pos = sector->GetDefaultLocation ();
+
+	// place the user there
+	chUser->PlaceUser (pos, room);
+
+	isRunning = true;
+	isOnGround = false;
+}
+
+
+/************************************************************
+ * The user is physically in the given room.
+ * Find which sector this room belongs to and
+ * ,if necessary, update the system with new sector. 
+ ************************************************************/
+void ChimeSystemDriver::UpdateCurrentSector (iSector* room)
+{
+	// if this room is in the current sector,
+	// simply tell the sector we're now in this room
+	if (chCurrentSector->IsRoomInThisSector (room))
+	{
+		chCurrentSector->SetCurrentRoom (room);
+		return;
+	}
+
+	// otherwise, find the sector to which this
+	// room belongs and update the system
+	ChimeSector* sector = chNeighborQueue->FindSector (room);
+	if (sector)
+		SetCurrentSector (sector);
+	sector->SetCurrentRoom (room);
+}
+
+
+/*************************************************************
+ * Update the system to the new sector, i.e.
+ * update history and chat windows to reflect the
+ * contents of the new sector
+ *************************************************************/
+void ChimeSystemDriver::SetCurrentSector (ChimeSector* sector)
+{
+	if (!sector)
+		return;
+	
+	// set current sector
+	chCurrentSector = sector;
+
+	// update history window
+	//char name[100], source[100];
+	//chCurrentSector->GetSectorTitle (name, source);
+	//chHistoryWindow->AddItem (name, source);
+
+	// update chat window
+	ChimeSectorUser *user = NULL;
+	char source[100];
+	csVector *user_list (chCurrentSector->FindAllEntities (ENTITY_TYPE_USER));
+	for (int i = 0; i < user_list->Length (); i++)
+	{
+		user = (ChimeSectorUser*) user_list->Get (i);
+		if (user)
+		{
+            user->GetObjectSource (source);
+            chChatWindow->AddItem (user->GetEntityName (), source);
+		}
+	}
 }

@@ -26,7 +26,6 @@ class ChimeEngineView : public csComponent
 private:
 
   csRef<iView> view;				// actual view
-  csApp* chApplication;				// parent csApp instance
   csWindow* parentWindow;			// parent window
   csRect* windowRectangle;			// rectagle of this window in clobal coordinates
 
@@ -34,7 +33,7 @@ public:
 
   // Constructor & Destructor
   ChimeEngineView (csComponent *iParent, iEngine *Engine, iSector *Start,
-    const csVector3& start_pos, iGraphics3D *G3D, csApp *app);
+    const csVector3& start_pos, iGraphics3D *G3D);
   virtual ~ChimeEngineView ();
 
   // Track movement of the window and update engine.

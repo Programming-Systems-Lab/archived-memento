@@ -19,16 +19,18 @@ extern ChimeSystemDriver *driver;
 /*****************************************************************
  * Constructor: creates a new container for given object mesh
  *****************************************************************/
-ChimeSectorObject::ChimeSectorObject (char *iObjectName, iMeshWrapper *iMesh = NULL, 
-									  csVector3 *iObjectLocation = NULL, iSector *iObjectRoom = NULL, 
-									  char *iObjectModel = NULL)
-	: ChimeSectorEntity (iObjectName, ENTITY_TYPE_OBJECT)
+ChimeSectorObject::ChimeSectorObject (char *iObjectName, char *iObjectSource,
+									  iMeshWrapper *iMesh, csVector3 *iObjectLocation, 
+									  iSector *iObjectRoom, char *sObjectModel, 
+									  char *iObjectMaterial, int iEntityType)
+	: ChimeSectorEntity (iObjectName, iEntityType)
 {
 	csObjectMesh = iMesh;
 	csObjectLocation = iObjectLocation;
 	csObjectRoom = iObjectRoom;
-	strObjectModel = iObjectModel;
-	strObjectSource = NULL;
+	strObjectModel = sObjectModel;
+	strObjectSource = iObjectSource;
+	strObjectMaterial = iObjectMaterial;
 
 	// calculate the center of the object's label
 	if (iObjectLocation && iMesh)
@@ -57,7 +59,7 @@ bool ChimeSectorObject::IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygo
 
 
 /*********************************************************************
- * SetObjectSource: sets the name of the source (URL) of this object
+ * SetObjectSource: sets the name of the source (Source) of this object
  *********************************************************************/
 bool ChimeSectorObject::SetObjectSource (char *iObjectSource)
 {
@@ -66,12 +68,80 @@ bool ChimeSectorObject::SetObjectSource (char *iObjectSource)
 }
 
 
+/*********************************************************************
+ * GetObjectSource: copies the source of this object
+ *********************************************************************/
+void ChimeSectorObject::GetObjectSource (char *iObjectSource)
+{
+	strcpy (iObjectSource, strObjectSource);
+}
+
+
 /*******************************************************************
  * SetObjectModel: sets the name of the model used for this object
  *******************************************************************/
 bool ChimeSectorObject::SetObjectModel (char *iObjectModel)
 {
-	strObjectModel = iObjectModel;
+	iMeshFactoryWrapper* factory = driver->csEngine->GetMeshFactories ()->FindByName (iObjectModel);
+	if (factory)
+	{
+		try
+		{
+			csObjectMesh->SetFactory (factory);
+            strObjectModel = iObjectModel;
+			factory->DecRef ();
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+/**************************************************************************
+ * SetObjectMaterial: sets the material of the model used for this object
+ **************************************************************************/
+bool ChimeSectorObject::SetObjectMaterial (char *iObjectMaterial)
+{
+	iMaterialWrapper *material = driver->csEngine->GetMaterialList ()->FindByName (iObjectMaterial);
+	if (material)
+	{
+		try
+		{
+			csObjectMesh->GetMeshObject ()->SetMaterialWrapper (material);
+            strObjectMaterial = iObjectMaterial;
+			material->DecRef ();
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+/*******************************************************************
+ * SetObjectLocation: sets the new location of the object
+ *******************************************************************/
+bool ChimeSectorObject::SetObjectLocation (csVector3& new_pos)
+{
+	csObjectMesh->GetMovable ()->SetPosition (new_pos);
+	csObjectMesh->GetMovable ()->UpdateMove ();
+	return true;
+}
+
+
+/*******************************************************************
+ * SetObjectLocation: does not move as the general object cannot
+ * be moved by mouse.
+ *******************************************************************/
+bool ChimeSectorObject::SetObjectLocation (csVector2 newMousePosition, iCamera *camera)
+{
 	return true;
 }
 
@@ -102,9 +172,9 @@ csVector3* ChimeSectorObject::GetObjectLabelCenter ()
 char* ChimeSectorObject::GetObjectLabel ()
 {
 	char *label = (char*) malloc (100 * sizeof (char));
-	strcpy (label, "Source: ");
-	if (strObjectSource)
-		strcat (label, strObjectSource);
+	strcpy (label, "  Name: ");
+	if (strEntityName)
+		strcat (label, strEntityName);
 	else
 		strcat (label, "<NONE>");
 	return label;

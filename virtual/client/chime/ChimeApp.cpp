@@ -90,21 +90,20 @@ int main (int argc, char* argv[])
   iObjectRegistry* object_reg = csInitializer::CreateEnvironment (argc, argv);
 
   // Create ChimeApp and ChimeSystemDriver instances
-  ChimeApp app (object_reg, DefaultSkin);
+  app  = new ChimeApp (object_reg, DefaultSkin);
   driver = new ChimeSystemDriver (object_reg);
   driver->SetDebugMode (DEBUG);
-  driver->SetApplication (&app);
 
   // Initialize application
-  app.Initialize (object_reg);
+  app->Initialize (object_reg);
 
   // Start application
-  if (!app.StartApplication())
+  if (!app->StartApplication())
       return -1;
 
   // Shut down
   delete driver;
-  app.ShutDown();
+  app->ShutDown();
 
   return 0;
 }

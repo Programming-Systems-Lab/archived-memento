@@ -24,7 +24,7 @@ extern ChimeSystemDriver *driver;
  *****************************************************************/
 ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon, 
 								  iPolygon3D **door_label, int num_letters,
-								  char *iTargetName, char *iTargetURL, 
+								  char *iTargetName, char *iTargetSource, 
 								  char *iDoorTexture) 
 	: ChimeSectorEntity (iDoorName, ENTITY_TYPE_DOOR)
 {
@@ -37,7 +37,7 @@ ChimeSectorDoor::ChimeSectorDoor (char *iDoorName, iPolygon3D *polygon,
 
 	// call the function instead of just assigning,
 	// to set textures of label polygons
-	SetDoorTarget (iTargetName, iTargetURL);
+	SetDoorTarget (iTargetName, iTargetSource);
 }
 
 
@@ -56,10 +56,10 @@ bool ChimeSectorDoor::IsEntitySelected (iMeshWrapper *mesh, iPolygon3D *polygon)
 /*********************************************************************
  * SetDoorTarget: sets the name of the sector this door is linked to
  *********************************************************************/
-bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetURL)
+bool ChimeSectorDoor::SetDoorTarget (char *iTargetName, char *iTargetSource)
 {
 	strTargetName = iTargetName;
-	strTargetURL = iTargetURL;
+	strTargetSource = iTargetSource;
 
 	// if target name is not NULL,
 	// reassign letter textures to label polygons
@@ -108,7 +108,7 @@ bool ChimeSectorDoor::SetDoorTexture (char *iTexture)
  * room to the sector's default room, or sets the linked
  * room to NULL otherwise
  *****************************************************************/
-bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target = NULL)
+bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target)
 {
 	
 	// if connecting...
@@ -150,8 +150,8 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target = NUL
 		rot_angle.y = -rot_angle.y;
 
 		// load the sector into the system
-		ChimeSector *targetSector = driver->LoadNewSector (strTargetName, strTargetURL,
-			csDoorPolygon->GetVertex (0), rot_angle);
+		ChimeSector *targetSector = driver->LoadNewSector (strTargetName, strTargetSource,
+			csVector3 (csDoorPolygon->GetVertex (0)), rot_angle);
 
 		// if the sector is loaded or found successfully,
 		// set the linked room to be its default room
@@ -242,13 +242,16 @@ bool ChimeSectorDoor::SetDoorVisible (bool flag)
  *****************************************************************/
 void ChimeSectorDoor::HandleLeftMouseDoubleClick (iEvent &event) 
 {
-	printf("Activating...\n");
+	driver->Display2DMessage ("Opening door...");
+	driver->WaitForScreenUpdate ();
+
+	//while (!driver->HasScreenUpdated ()) {}
+
 	if (ConnectDoorToTarget (true))
 	{
 		OpenDoor ();
-		driver->Redraw ();
-		printf("Opening door...\n");
 	}
+	driver->Delete2DMessage ();
 }
 
 

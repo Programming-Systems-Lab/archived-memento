@@ -21,6 +21,7 @@
 #include "ChimeEngineView.h"
 #include "ChimeNeighbors.h"
 #include "ChimeSectorEntities.h"
+#include "ChimeWindowToolkit.h"
 
 #define DEBUG	0
 #define NODEBUG	1
@@ -70,10 +71,13 @@ private:
   ChimeSector*				chCurrentSector;							//current CHIME sector
   ChimeUser*				chUser;										//CHIME user
   ChimeCollider*			chCollider;									//collision detector
-  ChimeApp*					chApplication;								//pointer to the controlling instance of ChimeApp
   ChimeEngineView			*chView, *chMapView;						//main and map views of the world
   ChimeNeighbors			*chNeighborQueue;							//queue of Chime sectors loaded
   ChimeSectorEntity			*chSelectedEntity;							//pointer to the entity selected with a single mouse click
+
+  //other windows
+  ChimeHistoryWindow*	chHistoryWindow;								//history list window
+  ChimeChatWindow*		chChatWindow;									//chat window
 
   //helper variables
   int	chDebugMode;													//defines level of debugging output
@@ -83,6 +87,9 @@ private:
   csRect *chMainViewWindowRect, *chMapViewWindowRect;					//pointers to rectangles of windows holding engine views
   int chSystemFont, chMenuFont, chLabelFont, chLabelFontNum;			//indeces that keep track of fonts for the system
   bool clearBackground;													//flag that tells the system whether to clear 2D background
+  bool isRunning;														//flag used to start or stop 3D animation
+  bool isScreenUpdated;													//flags whether screen was updated after a change was made
+  char str2DMessage[100];												//text of a 2D message
 
   //private member functions
 
@@ -91,8 +98,6 @@ private:
   bool HandleEvent (iEvent& event);										//actually handles user events
   void SetupFrame ();													//prepare to render next frame
   void FinishFrame ();													//finish rendering next frame
-  bool UpdatePhysics (float speed);										//update system according to physics change
-  bool InitializePhysics ();											//initialize physics attributes of this world
   bool LoadLibraries (char *libname);									//load libraries used in CHIME from 'libname' file
   bool LoadTexture (char *name, char *file);							//load texture from a file
   bool LoadObject (char *name, char *file, char *texture);				//load a 3DS object from the file with given texture
@@ -102,6 +107,7 @@ private:
   bool HandleRightMouseClick (iEvent &Event);							//respond to single click from right mouse button
   bool HandleRightMouseDoubleClick (iEvent &Event);						//respond to double click from right mouse button
   bool HandleMouseMove (iEvent &Event);									//move an active object following mouse movement
+  bool HandleEventFromOtherWindows (iEvent &Event);						//see if any of other windows can handle this event
   bool CloseMenu ();													//destroy a 2D menu if one exists
   ChimeSectorEntity* SelectEntity (float x, float y);					//select an entity pointed to by the mouse click
   void SelectVisibleObjects (csVector* iEntityList,						//select only those entities that are visible in the current view
@@ -128,22 +134,42 @@ public:
   bool isOnGround;														//false if user is above the ground
 
   //public member functions
+  
+  //-- startup functions --//
   bool Initialize ();													//initialize system driver
   bool InitializeEnvironment ();										//initialize environment
   void Start ();														//start the csEngine
-  void Report(char *source, char *message);								//print error report to standard output
-  csMenu* CreateMenu (int x, int y);									//create new menu at given location
+
+  //-- setter functions --//
   void SetDebugMode (int mode);											//set debugging mode
-  void SetApplication (ChimeApp *app);									//set controlling ChimeApp
   void SetOnGround (bool flag);											//set user on ground/not on ground
+
+  //-- getter functions --//
   iObjectRegistry* GetObjectRegistry();									//returns object registry
   ChimeCollider* GetCollider();											//returns collision system
   ChimeSector* GetCurrentSector();										//returns current CHIME sector
   csVector2 GetLastMousePosition();										//returns the 2D coordinates of mouse's last position on screen
-  ChimeSector* LoadNewSector (char *strSectorName, 
-	  char *strSectorURL, csVector3 const &origin, 
-	  csVector3 const &iSectorRotation);								//load given sector, placing it at the given origin and rotating it
+
+  //-- GUI control functions --//
+  csMenu* CreateMenu (int x, int y);									//create new menu at given location
   void Redraw ();														//redraw the windows and background
+  void Stop3D ();														//stop 3D animation
+  void Start3D ();														//start 3D animation
+  void Display2DMessage (char* strMessage);								//displays a 2D message on the screen
+  void Delete2DMessage ();												//deletes current 2D meesage from the screen
+  void WaitForScreenUpdate ();											//forces the system to wait for screen update
+  bool HasScreenUpdated ();												//tells whether the screen was updated
+
+  //-- system control functions --//
+  void Report(char *source, char *message);								//print error report to standard output
+
+  //-- world control functions --//
+  ChimeSector* LoadNewSector (char *strSectorName, 
+       char *strSectorSource, csVector3 &origin, 
+	   csVector3 &iSectorRotation);										//load given sector, placing it at the given origin and rotating it
+  void TransportToSector (char *strSectorName, char *strSectorSource);	//transport the user to default location in given sector
+  void UpdateCurrentSector (iSector* room);								//update current sector
+  void SetCurrentSector (ChimeSector* sector);							//set current sector
 };
 
 #endif // __ChimeSystemDriver_H__

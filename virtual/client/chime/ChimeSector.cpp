@@ -58,12 +58,12 @@ extern ChimeSystemDriver *driver;
 /****************************************************
  * Constructor simply initializes all the variables
  ****************************************************/
-ChimeSector::ChimeSector(char *strISectorName, char *strISectorURL)
+ChimeSector::ChimeSector(char *strISectorName, char *strISectorSource)
 {
 	strSectorName = strISectorName;
-	strSectorURL = strISectorURL;
-	chCurrentRoom = NULL;
-	strRoomNames = new csStrVector ();
+	strSectorSource = strISectorSource;
+	chEntranceRoom = chCurrentRoom = NULL;
+	chRooms = new csVector ();
 	chActiveEntities = new csVector ();
 	csDefaultLocation = csVector3 (0);
 }
@@ -170,7 +170,7 @@ iPolygon3D* ChimeSector::AddInnerDoor (iThingState *walls, csPoly3D const &verti
 iPolygon3D* ChimeSector::AddOuterDoor (iThingState *walls, csPoly3D const &vertices,
 						 iMaterialWrapper *texture, csVector3 const &txtSize,
 						 char *strDoorName, char *strDoorTargetName, 
-						 char *strDoorTargetURL, char *strDoorTexture)
+						 char *strDoorTargetSource, char *strDoorTexture)
 {
 	// build the polygon for the door (just use AddWall, its the same thing)
 	iPolygon3D *p = AddWall (walls, vertices, texture, txtSize);
@@ -182,7 +182,7 @@ iPolygon3D* ChimeSector::AddOuterDoor (iThingState *walls, csPoly3D const &verti
 
 	// add new door entity to the list
 	chActiveEntities->Push ( new ChimeSectorDoor (strDoorName, 
-		p, label, num_letters, strDoorTargetName, strDoorTargetURL, strDoorTexture));
+		p, label, num_letters, strDoorTargetName, strDoorTargetSource, strDoorTexture));
 
 	return p;
 }
@@ -197,11 +197,11 @@ iPolygon3D* ChimeSector::AddOuterDoor (iThingState *walls, csPoly3D const &verti
  ***********************************************************/
 ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotation,
 									  char* strSectorXMLFile, char *strISectorName, 
-									  char *strISectorURL, ChimeSector *iPreviousSector)
+									  char *strISectorSource, ChimeSector *iPreviousSector)
 {
 
 	// Create new ChimeSector
-	ChimeSector *sector  = new ChimeSector (strISectorName, strISectorURL);
+	ChimeSector *sector  = new ChimeSector (strISectorName, strISectorSource);
 
 	// get the structure that defines this sector for this definition file
 	chSectorStructPtr sectorStruct = ParseSectorDefinition (strSectorXMLFile);
@@ -215,14 +215,21 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 
 	// set sector attributes of the sector structure
 	strcpy (sectorStruct->strSectorName, strISectorName);
-	strcpy (sectorStruct->strSectorURL, strISectorURL);
+	strcpy (sectorStruct->strSectorSource, strISectorSource);
 
 	// process structure coordinates to update them, reflecting
 	// given origin and rotation angle
     ProcessSectorDefinition (sectorStruct, origin, rotation);
 
+	// determine the full name of the region
+	// that needs to be created for this sector
+	char regionName[150];
+	ChimeSector::GetRegionName (strISectorName, strISectorSource, regionName);
+	
 	// build the actual sector
-	sector->BuildSector (sectorStruct);
+	sector->BuildSector (sectorStruct, regionName);
+
+	// set current room and default location
 	sector->chCurrentRoom = sector->GetDefaultRoom ();
 	sector->csDefaultLocation = sectorStruct->defaultLocation;
 
@@ -230,28 +237,19 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 	if (iPreviousSector)
 	{
         // 1. find the entrance (default) door
-		ChimeSectorEntity *entity = NULL;
-        for (int i = 0; i < sector->chActiveEntities->Length (); i++)
-		{
-			entity = (ChimeSectorEntity*) sector->chActiveEntities->Get (i);
-			if (entity->GetEntityType () == ENTITY_TYPE_DOOR && !strcmp (entity->GetEntityName (), "default"))
-				break;
-		}
+		ChimeSectorDoor *door = sector->FindEntranceDoor ();
+		iSector* entrance = driver->GetCurrentSector ()->GetCurrentRoom ();
 
 		// 2. if door is found, connect it to current room
 		// in the previous sector
-		if (entity)
+		if (door && entrance)
 		{
-			iSector *room = iPreviousSector->GetCurrentRoom ();
-			if (room)
-			{
-				ChimeSectorDoor* door = (ChimeSectorDoor*) entity;
-				char sName[50], sURL[100];
-				iPreviousSector->GetSectorTitle (sName, sURL);
-				door->SetDoorTarget (sName, sURL);
-				door->ConnectDoorToTarget (true, room);
-				door->OpenDoor ();
-			}
+			sector->chEntranceRoom = entrance;
+			char sName[50], sSource[100];
+			iPreviousSector->GetSectorTitle (sName, sSource);
+			door->SetDoorTarget (sName, sSource);
+			door->ConnectDoorToTarget (true, entrance);
+			door->OpenDoor ();
 		}
 	}
 
@@ -268,18 +266,15 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
  * BuildSector builds the actual sector from the structure
  * provided by the XML parser in variable sector
  ***********************************************************/
-bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct)
+bool ChimeSector::BuildSector (chSectorStructPtr sectorStruct, char *strRegionName)
 {
 	// return value
 	bool rv = true;
 	int j = 0, i = 0;
 
 	// create a region for this sector with this name
-	char sector_region[150];
-	strcpy (sector_region, strSectorURL);
-	strcpy (sector_region, strSectorName);
-	driver->csEngine->SelectRegion (sector_region);
-	iRegion *region = driver->csEngine->GetRegions ()->FindByName (sector_region);
+	driver->csEngine->SelectRegion (strRegionName);
+	iRegion *region = driver->csEngine->GetRegions ()->FindByName (strRegionName);
 
 	// build all the rooms in this new region
 	// (they will automatically be assigned to this new region)
@@ -348,7 +343,7 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 {
 	// create a iSector room
 	csRef<iSector> room = driver->csEngine->CreateSector(roomStruct->strRoomName);
-	strRoomNames->Push (roomStruct->strRoomName);
+	chRooms->Push (room);
 	
 	// initialize a mesh for the walls
 	csRef<iMeshWrapper> walls (driver->csEngine->CreateSectorWallsMesh (room, "walls"));
@@ -403,8 +398,23 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 
 		// add this object to the list of active objects
 		if (objectMesh)
-			chActiveEntities->Push (new ChimeSectorActiveObject (object->strObjectName, objectMesh, 
-			&(object->location), room, object->strObjectModel));
+		{
+			switch (object->intObjectType)
+			{
+			case ENTITY_TYPE_OBJECT : chActiveEntities->Push (new ChimeSectorObject (object->strObjectName, 
+										  object->strObjectName, objectMesh, &(object->location), 
+										  room, object->strObjectModel, NULL));
+										break;
+			case ENTITY_TYPE_ACTIVE_OBJECT : chActiveEntities->Push (new ChimeSectorActiveObject (object->strObjectName, 
+												 object->strObjectName, objectMesh, &(object->location), 
+												 room, object->strObjectModel, NULL));
+											break;
+			case ENTITY_TYPE_USER : chActiveEntities->Push (new ChimeSectorUser (object->strObjectName, 
+										object->strObjectName, objectMesh, &(object->location), 
+										room, object->strObjectModel, NULL));
+										break;
+			}
+		}
 	}
 
 	// add outer doors
@@ -422,301 +432,10 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 		// build the polygon for outer door
 		AddOuterDoor (walls_state, outer_door->door->door, material, 
 			outer_door->door->txtSize, outer_door->strDoorName, outer_door->strTargetSectorName,
-			outer_door->strTargetSectorURL, outer_door->door->strDoorTexture);
+			outer_door->strTargetSectorSource, outer_door->door->strDoorTexture);
 	}
 
 	return room;
-}
-
-/******************************************************
- * Parse the given XML file to get the room definition
- ******************************************************/
-chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
-{
-	//-------- For now this is just a stub, later will be filled with an actual parser ------//
-	
-	// allocate space for a new sector
-	chSectorStructPtr sector = (chSectorStructPtr) malloc (sizeof (chSectorStruct));
-	sector->defaultLocation = csVector3 (0, 1, 0);
-	strcpy (sector->strSectorName, "default");
-
-	// allocate space for three new rooms
-	sector->rooms = (chRoomStructPtr*) malloc (3 * sizeof(chRoomStruct));
-	sector->rooms[0] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
-	strcpy (sector->rooms[0]->strRoomName, "main");
-	sector->rooms[0]->numDoors = 1;
-	sector->rooms[0]->numWalls = 14;
-	sector->rooms[0]->numLights = 18;
-	sector->rooms[0]->numObjects = 1;
-	sector->rooms[0]->numOuterDoors = 2;
-	sector->rooms[1] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
-	strcpy (sector->rooms[1]->strRoomName, "connector");
-	sector->rooms[1]->numDoors = 1;
-	sector->rooms[1]->numWalls = 5;
-	sector->rooms[1]->numLights = 12;
-	sector->rooms[2] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
-	strcpy (sector->rooms[2]->strRoomName, "hallway");
-	sector->rooms[2]->numDoors = 1;
-	sector->rooms[2]->numWalls = 6;
-	sector->rooms[2]->numLights = 20;
-	sector->numRooms = 2;
-
-	// allocate walls for the main room
-	sector->rooms[0]->walls = (chWallStructPtr*) malloc (sector->rooms[0]->numWalls * sizeof (chWallStruct));
-	for (int i = 0; i < sector->rooms[0]->numWalls; i++) {
-		sector->rooms[0]->walls[i] = (chWallStructPtr) malloc (sizeof (chWallStruct));
-		sector->rooms[0]->walls[i]->txtSize = csVector3 (1, 1, 1);
-		strcpy(sector->rooms[0]->walls[i]->strWallTexture, "wall_text");
-	}
-
-	double floor = 0.0;
-	double ceiling = 10.0;
-	double length = 10;
-	double width = 10;
-	int door_width = 3;
-	double door_delta = 0.0;
-
-	// ceiling
-	sector->rooms[0]->walls[0]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[0]->wall.AddVertex (-width, ceiling, length); sector->rooms[0]->walls[0]->wall.AddVertex (-width, ceiling, -length);
-	sector->rooms[0]->walls[0]->wall.AddVertex (width, ceiling, -length); sector->rooms[0]->walls[0]->wall.AddVertex (width, ceiling, length);
-	strcpy (sector->rooms[0]->walls[0]->strWallTexture, "ceil_text");
-
-	// floor
-	sector->rooms[0]->walls[1]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[1]->wall.AddVertex (-width, floor, -length); sector->rooms[0]->walls[1]->wall.AddVertex (-width, floor, length);
-	sector->rooms[0]->walls[1]->wall.AddVertex (width, floor, length); sector->rooms[0]->walls[1]->wall.AddVertex (width, floor, -length);
-	strcpy (sector->rooms[0]->walls[1]->strWallTexture, "floor_text");
-
-	// left
-	sector->rooms[0]->walls[2]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[2]->wall.AddVertex (-width, floor, -length); sector->rooms[0]->walls[2]->wall.AddVertex (-width, ceiling, -length);
-	sector->rooms[0]->walls[2]->wall.AddVertex (-width, ceiling, length); sector->rooms[0]->walls[2]->wall.AddVertex (-width, floor, length);
-
-	// front
-	sector->rooms[0]->walls[3]->wall = *(new csPoly3D (8));
-	sector->rooms[0]->walls[3]->wall.AddVertex (-width, floor, length); sector->rooms[0]->walls[3]->wall.AddVertex (-width, ceiling, length);
-	sector->rooms[0]->walls[3]->wall.AddVertex (-door_width, ceiling, length); sector->rooms[0]->walls[3]->wall.AddVertex (-door_width, floor, length);
-
-	// right
-	sector->rooms[0]->walls[4]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[4]->wall.AddVertex (width, floor, length); sector->rooms[0]->walls[4]->wall.AddVertex (width, ceiling, length);
-	sector->rooms[0]->walls[4]->wall.AddVertex (width, ceiling, -length); sector->rooms[0]->walls[4]->wall.AddVertex (width, floor, -length);
-
-	// back
-	sector->rooms[0]->walls[5]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[5]->wall.AddVertex (width, floor, -length); sector->rooms[0]->walls[5]->wall.AddVertex (width, ceiling, -length);
-	sector->rooms[0]->walls[5]->wall.AddVertex (-width, ceiling, -length); sector->rooms[0]->walls[5]->wall.AddVertex (-width, floor, -length);
-
-	// ramp
-	sector->rooms[0]->walls[6]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[6]->wall.AddVertex (0, floor, -8); sector->rooms[0]->walls[6]->wall.AddVertex (-7, ceiling/2, -8);
-	sector->rooms[0]->walls[6]->wall.AddVertex (-7, ceiling/2, -5); sector->rooms[0]->walls[6]->wall.AddVertex (0, floor, -5);
-
-	// ramp left
-	sector->rooms[0]->walls[7]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[7]->wall.AddVertex (-10, floor, -8); sector->rooms[0]->walls[7]->wall.AddVertex (-10, ceiling/2, -8);
-	sector->rooms[0]->walls[7]->wall.AddVertex (-7, ceiling/2, -8); sector->rooms[0]->walls[7]->wall.AddVertex (0, floor, -8);
-
-	// ramp right
-	sector->rooms[0]->walls[8]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[8]->wall.AddVertex (0, floor, -5); sector->rooms[0]->walls[8]->wall.AddVertex (-7, ceiling/2, -5);
-	sector->rooms[0]->walls[8]->wall.AddVertex (-10, ceiling/2, -5); sector->rooms[0]->walls[8]->wall.AddVertex (-10, floor, -5);
-
-	// shelf top
-	sector->rooms[0]->walls[9]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[9]->wall.AddVertex (-10, ceiling/2, -8); sector->rooms[0]->walls[9]->wall.AddVertex (-10, ceiling/2, 6);
-	sector->rooms[0]->walls[9]->wall.AddVertex (-7, ceiling/2, 6); sector->rooms[0]->walls[9]->wall.AddVertex (-7, ceiling/2, -8);
-
-	// shelf front
-	sector->rooms[0]->walls[10]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[10]->wall.AddVertex (-7, floor, 6); sector->rooms[0]->walls[10]->wall.AddVertex (-7, ceiling/2, 6);
-	sector->rooms[0]->walls[10]->wall.AddVertex (-10, ceiling/2, 6); sector->rooms[0]->walls[10]->wall.AddVertex (-10, floor, 6);
-
-	// shelf right
-	sector->rooms[0]->walls[11]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[11]->wall.AddVertex (-7, floor, -5); sector->rooms[0]->walls[11]->wall.AddVertex (-7, ceiling/2, -5);
-	sector->rooms[0]->walls[11]->wall.AddVertex (-7, ceiling/2, 6); sector->rooms[0]->walls[11]->wall.AddVertex (-7, floor, 6);
-
-	// front upper
-	sector->rooms[0]->walls[12]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[12]->wall.AddVertex (-door_width, floor+4, length); sector->rooms[0]->walls[12]->wall.AddVertex (-door_width, ceiling, length);
-	sector->rooms[0]->walls[12]->wall.AddVertex (door_width, ceiling, length); sector->rooms[0]->walls[12]->wall.AddVertex (door_width, floor+4, length);
-
-	// front right
-	sector->rooms[0]->walls[13]->wall = *(new csPoly3D (4));
-	sector->rooms[0]->walls[13]->wall.AddVertex (door_width, floor, length); sector->rooms[0]->walls[13]->wall.AddVertex (door_width, ceiling, length);
-	sector->rooms[0]->walls[13]->wall.AddVertex (width, ceiling, length); sector->rooms[0]->walls[13]->wall.AddVertex (width, floor, length);
-
-	// allocate 24 lights for the main room
-	sector->rooms[0]->lights = (chLightStructPtr*) malloc (18 * sizeof (chLightStruct));
-	for (int i = 0; i < 18; i++) {
-		sector->rooms[0]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
-		sector->rooms[0]->lights[i]->color = csColor (1, 1, 1);
-		sector->rooms[0]->lights[i]->scale = 9.0;
-	}
-
-	double delta = 1.0;
-	for (int i = 0; i < 2; i++) {
-		sector->rooms[0]->lights[0+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, -length+delta);
-		sector->rooms[0]->lights[1+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, 0);
-		sector->rooms[0]->lights[2+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, length-delta);
-		sector->rooms[0]->lights[3+i*9]->location = csVector3 (0, i*ceiling/2 + 2, -length+delta);
-		sector->rooms[0]->lights[4+i*9]->location = csVector3 (0, i*ceiling/2 + 2, 0);
-		sector->rooms[0]->lights[5+i*9]->location = csVector3 (0, i*ceiling/2 + 2, length-delta);
-		sector->rooms[0]->lights[6+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, -length+delta);
-		sector->rooms[0]->lights[7+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, 0);
-		sector->rooms[0]->lights[8+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, length-delta);
-	}
-
-	// allocate 1 door for main room
-	sector->rooms[0]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
-	sector->rooms[0]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	strcpy (sector->rooms[0]->doors[0]->strDoorTexture, "floor_text");
-	strcpy (sector->rooms[0]->doors[0]->strRoomName, "connector");
-	sector->rooms[0]->doors[0]->alpha = 0;
-	sector->rooms[0]->doors[0]->txtSize = csVector3 (1, 1, 1);
-	sector->rooms[0]->doors[0]->door = *(new csPoly3D (4));
-	sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor+4, length-2*door_delta);
-	sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor+4, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta);
-
-	// allocate one outer door in this room
-	sector->rooms[0]->outer_doors = (chOuterDoorStructPtr*) malloc (sector->rooms[0]->numOuterDoors * sizeof (chOuterDoorStruct));
-	sector->rooms[0]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorName, "sector2");
-	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorURL, "www.default.com/s2");
-	sector->rooms[0]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[0]->outer_doors[0]->door->alpha = 0;
-	strcpy (sector->rooms[0]->outer_doors[0]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[0]->outer_doors[0]->door->strRoomName, "main");
-	sector->rooms[0]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[0]->outer_doors[0]->door->door = *(new csPoly3D (4));
-	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 + 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 + 1);
-	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 - 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 - 1);
-	strcpy (sector->rooms[0]->outer_doors[0]->strDoorName, "door1");
-
-	sector->rooms[0]->outer_doors[1] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorName, "sector5");
-	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorURL, "www.default.com/s5");
-	sector->rooms[0]->outer_doors[1]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[0]->outer_doors[1]->door->alpha = 0;
-	strcpy (sector->rooms[0]->outer_doors[1]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[0]->outer_doors[1]->door->strRoomName, "main");
-	sector->rooms[0]->outer_doors[1]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[0]->outer_doors[1]->door->door = *(new csPoly3D (4));
-	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor+3, -length+0.01);
-	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor+3, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor, -length+0.01);
-	strcpy(sector->rooms[0]->outer_doors[1]->door->strRoomName, "default");
-	strcpy (sector->rooms[0]->outer_doors[1]->strDoorName, "default");
-
-
-	// allocate one object for main room
-	sector->rooms[0]->numObjects = 1;
-	sector->rooms[0]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
-	sector->rooms[0]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
-	strcpy (sector->rooms[0]->objects[0]->strObjectModel, "user");
-	strcpy (sector->rooms[0]->objects[0]->strObjectName, "object0");
-	sector->rooms[0]->objects[0]->location = csVector3 (-1, 2, -1);
-	sector->rooms[0]->objects[0]->rotation = csVector3 (0, 0, 0);
-	sector->rooms[0]->objects[0]->scale = csVector3 (1, 1, 1);
-
-	// create second (connector) room
-	// allocate 6 walls for the connector
-	sector->rooms[1]->walls = (chWallStructPtr*) malloc (6 * sizeof (chWallStruct));
-	for (int i = 0; i < 6; i++) {
-		sector->rooms[1]->walls[i] = (chWallStructPtr) malloc (sizeof (chWallStruct));
-		sector->rooms[1]->walls[i]->txtSize = csVector3 (1, 1, 1);
-		strcpy(sector->rooms[1]->walls[i]->strWallTexture, "wall_text");
-	}
-
-	// ceiling
-	sector->rooms[1]->walls[0]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, length);
-	sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, 2*length);
-	strcpy (sector->rooms[1]->walls[0]->strWallTexture, "ceil_text");
-
-	// floor
-	sector->rooms[1]->walls[1]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[1]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[1]->wall.AddVertex (-door_width, floor, 2*length);
-	sector->rooms[1]->walls[1]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[1]->wall.AddVertex (door_width, floor, length);
-	strcpy (sector->rooms[0]->walls[1]->strWallTexture, "floor_text");
-
-	// left
-	sector->rooms[1]->walls[2]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, length);
-	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, 2*length);
-
-	// front
-	sector->rooms[1]->walls[3]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, floor, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, ceiling-5, 2*length);
-	sector->rooms[1]->walls[3]->wall.AddVertex (door_width, ceiling-5, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (door_width, floor, 2*length);
-
-	// right
-	sector->rooms[1]->walls[4]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, 2*length);
-	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, length);
-
-	// back
-	sector->rooms[1]->walls[5]->wall = *(new csPoly3D (4));
-	sector->rooms[1]->walls[5]->wall.AddVertex (door_width, floor, length); sector->rooms[1]->walls[5]->wall.AddVertex (door_width, ceiling-5, length);
-	sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, ceiling-5, length); sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, floor, length);
-
-	// allocate 8 lights for the connector room
-	sector->rooms[1]->lights = (chLightStructPtr*) malloc (12 * sizeof (chLightStruct));
-	for (int i = 0; i < 12; i++) {
-		sector->rooms[1]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
-		sector->rooms[1]->lights[i]->color = csColor (1, 1, 1);
-		sector->rooms[1]->lights[i]->scale = 4.0;
-	}
-
-	for (int i = 0; i < 2; i++) {
-		sector->rooms[1]->lights[0+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, length+delta);
-		sector->rooms[1]->lights[1+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, 2*length-delta);
-		sector->rooms[1]->lights[2+i*4]->location = csVector3 (door_width-delta, i*2 + 3, length+delta);
-		sector->rooms[1]->lights[3+i*4]->location = csVector3 (door_width-delta, i*2 + 3, 2*length-delta);
-		sector->rooms[1]->lights[2+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, length+length/2);
-		sector->rooms[1]->lights[3+i*4]->location = csVector3 (door_width-delta, i*2 + 3, length+length/2);
-	}
-
-	// allocate 1 door for connector room
-	sector->rooms[1]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
-	sector->rooms[1]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	strcpy (sector->rooms[1]->doors[0]->strDoorTexture, "door_text");
-	strcpy (sector->rooms[1]->doors[0]->strRoomName, "main");
-	sector->rooms[1]->doors[0]->alpha = 0;
-	sector->rooms[1]->doors[0]->txtSize = csVector3 (1, 1, 1);
-	sector->rooms[1]->doors[0]->door = *(new csPoly3D (4));
-	sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor+10, length-2*door_delta);
-	sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor+10, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta);
-
-	// allocate one object for connector room
-	sector->rooms[1]->numObjects = 1;
-	sector->rooms[1]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
-	sector->rooms[1]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
-	strcpy (sector->rooms[1]->objects[0]->strObjectModel, "user");
-	strcpy (sector->rooms[1]->objects[0]->strObjectName, "object1");
-	sector->rooms[1]->objects[0]->location = csVector3 (door_width-3, floor+2, length*3/2);
-	sector->rooms[1]->objects[0]->rotation = csVector3 (0, 0, 0);
-	sector->rooms[1]->objects[0]->scale = csVector3 (1, 1, 1);
-
-	// set the number of outer doors
-	sector->rooms[1]->numOuterDoors = 1;
-	// allocate one outer door in this room
-	sector->rooms[1]->outer_doors = (chOuterDoorStructPtr*) malloc (sizeof (chOuterDoorStruct));
-	sector->rooms[1]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
-	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorName, "sector1");
-	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorURL, "www.default.com/s1");
-	sector->rooms[1]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
-	sector->rooms[1]->outer_doors[0]->door->alpha = 0;
-	strcpy (sector->rooms[1]->outer_doors[0]->door->strDoorTexture, "door_text");
-	strcpy (sector->rooms[1]->outer_doors[0]->door->strRoomName, "main");
-	sector->rooms[1]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
-	sector->rooms[1]->outer_doors[0]->door->door = *(new csPoly3D (4));
-	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor+3, length*2-0.01);
-	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor+3, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor, length*2-0.01);
-	strcpy (sector->rooms[1]->outer_doors[0]->strDoorName, "door2");
-
-	return sector;
 }
 
 
@@ -904,34 +623,172 @@ void ChimeSector::SetCurrentRoom(iSector *room)
  ******************************************************/
 iSector* ChimeSector::GetDefaultRoom()
 {
-	char sector_region[150];
-	strcpy (sector_region, strSectorURL);
-	strcpy (sector_region, strSectorName);
-	iRegion *region = driver->csEngine->GetRegions ()->FindByName (sector_region);
-	iSector *room = driver->csEngine->FindSector ("default", region);
+	iSector *room = FindRoom ("default");
 	if (!room)
-		room = driver->csEngine->FindSector ("main", region);
+		room = FindRoom ("main");
 	return room;
 }
 
 
 /******************************************************
  * Return true if this is the sector with given name
- * and URL, false otherwise
+ * and Source, false otherwise
  ******************************************************/
-bool ChimeSector::IsThisSector(char *iSectorName, char *iSectorURL)
+bool ChimeSector::IsThisSector(char *iSectorName, char *iSectorSource)
 {
-	return (!strcmp(iSectorName, strSectorName) && !strcmp(iSectorURL, strSectorURL));
+	return (!strcmp(iSectorName, strSectorName) && !strcmp(iSectorSource, strSectorSource));
 }
 
 
 /******************************************************
  * Copy sector title
  ******************************************************/
-void ChimeSector::GetSectorTitle(char *strName, char *strURL)
+void ChimeSector::GetSectorTitle(char *strName, char *strSource)
 {
 	strcpy (strName, strSectorName);
-	strcpy (strURL, strSectorURL);
+	strcpy (strSource, strSectorSource);
+}
+
+
+/*******************************************************
+ * Fill in region name of this sector
+ *******************************************************/
+void ChimeSector::GetRegionName (char *strRegionName)
+{
+	ChimeSector::GetRegionName (strSectorName, strSectorSource, strRegionName);
+}
+
+
+/********************************************************
+ * Creates the name of the region for this sector
+ * based on sector parameters
+ ********************************************************/
+void ChimeSector::GetRegionName (char* strSectorName, char* strSectorSource, char* strRegionName)
+{
+    strcpy (strRegionName, strSectorSource);
+	strcat (strRegionName, strSectorName);
+}
+
+
+/******************************************************
+ * Find the default door that leads to entrance sector
+ ******************************************************/
+ChimeSectorEntity* ChimeSector::FindEntity (char *strEntityName, int iEntityType)
+{
+	ChimeSectorEntity *entity = NULL;
+	for (int i = 0; i < chActiveEntities->Length (); i++)
+	{
+		entity = (ChimeSectorEntity*)chActiveEntities->Get (i);
+		if (entity->GetEntityType () == iEntityType && 
+			!strcmp (strEntityName, entity->GetEntityName ()))
+			return entity;
+	}
+	return NULL;
+}
+
+
+/******************************************************
+ * Find all entities of the same type
+ ******************************************************/
+csVector* ChimeSector::FindAllEntities (int iEntityType)
+{
+	csVector *all = new csVector (8);
+	ChimeSectorEntity *entity = NULL;
+	for (int i = 0; i < chActiveEntities->Length (); i++)
+	{
+		entity = (ChimeSectorEntity*)chActiveEntities->Get (i);
+		if (entity->GetEntityType () == iEntityType)
+			all->Push (entity);
+	}
+	return all;
+}
+
+
+/******************************************************
+ * Find the default door that leads to entrance sector
+ ******************************************************/
+ChimeSectorDoor* ChimeSector::FindEntranceDoor ()
+{
+	return (ChimeSectorDoor*) FindEntity ("default", ENTITY_TYPE_DOOR);
+}
+
+
+/******************************************************
+ * Find the room in this sector under given name
+ ******************************************************/
+iSector* ChimeSector::FindRoom (char *strRoomName)
+{
+	// determine the full name of the region
+	// that needs to be created for this sector
+	char regionName[200];
+	GetRegionName (regionName);
+
+	// find the region
+	iRegion *region = driver->csEngine->GetRegions ()->FindByName (regionName);
+
+	// find the room
+	return driver->csEngine->FindSector (strRoomName, region);
+}
+
+
+/******************************************************
+ * See if given room belongs to this sector
+ ******************************************************/
+bool ChimeSector::IsRoomInThisSector (iSector* room)
+{
+	for (int i = 0; i < chRooms->Length (); i++)
+	{
+		if ((iSector*)chRooms->Get (i) == room)
+			return true;
+	}
+
+	return false;
+}
+
+
+/******************************************************
+ * Update an object inside this sector. The object is
+ * found based on the first two parameters. The other
+ * parameters that are not NULL are used to update
+ * different properties of the found object.
+ ******************************************************/
+void ChimeSector::UpdateObject (char *strObjectName, int iObjectType, 
+								char *strObjectSource, char *strObjectModel, 
+								char *strObjectMaterial, csVector3* vecObjectLocation, 
+								char *strObjectRoom)
+{
+
+	ChimeSectorObject *object = (ChimeSectorObject*) FindEntity (strObjectName, iObjectType);
+
+	// If object is not found, skip
+	if (!object)
+		return;
+
+	// Update object source if not NULL
+	if (strObjectSource)
+		object->SetObjectSource (strObjectSource);
+
+	// Update object model if not NULL
+	if (strObjectModel)
+		object->SetObjectModel (strObjectModel);
+
+	// Update object material if not NULL
+	if (strObjectMaterial)
+		object->SetObjectMaterial (strObjectMaterial);
+
+	// Update object location if not NULL
+	if (vecObjectLocation)
+		object->SetObjectLocation (*vecObjectLocation);
+
+	// Update object room if not NULL
+	// (but first find that room based on its name)
+	if (strObjectRoom)
+	{
+		iSector* room = FindRoom (strObjectRoom);
+		if (!room)
+			return;
+		object->SetObjectRoom (room);
+	}
 }
 
 
@@ -970,6 +827,7 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 
 	//------- rotate all vectors using given rotation matrix -------//
 	sector->defaultLocation = rot_matrix * sector->defaultLocation;
+	sector->defaultLocation += start;
 
 	//for each room...
 	for (int i = 0; i < sector->numRooms; i++)
@@ -1015,4 +873,301 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 		}
 	}
 
+}
+
+
+
+
+
+/******************************************************
+ * Parse the given XML file to get the room definition
+ ******************************************************/
+chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
+{
+	//-------- For now this is just a stub, later will be filled with an actual parser ------//
+	
+	// allocate space for a new sector
+	chSectorStructPtr sector = (chSectorStructPtr) malloc (sizeof (chSectorStruct));
+	sector->defaultLocation = csVector3 (0, 5, 1);
+	strcpy (sector->strSectorName, "default");
+
+	// allocate space for three new rooms
+	sector->rooms = (chRoomStructPtr*) malloc (3 * sizeof(chRoomStruct));
+	sector->rooms[0] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
+	strcpy (sector->rooms[0]->strRoomName, "main");
+	sector->rooms[0]->numDoors = 1;
+	sector->rooms[0]->numWalls = 14;
+	sector->rooms[0]->numLights = 18;
+	sector->rooms[0]->numObjects = 1;
+	sector->rooms[0]->numOuterDoors = 2;
+	sector->rooms[1] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
+	strcpy (sector->rooms[1]->strRoomName, "connector");
+	sector->rooms[1]->numDoors = 1;
+	sector->rooms[1]->numWalls = 5;
+	sector->rooms[1]->numLights = 12;
+	sector->rooms[2] = (chRoomStructPtr) malloc (sizeof (chRoomStruct));
+	strcpy (sector->rooms[2]->strRoomName, "hallway");
+	sector->rooms[2]->numDoors = 1;
+	sector->rooms[2]->numWalls = 6;
+	sector->rooms[2]->numLights = 20;
+	sector->numRooms = 2;
+
+	// allocate walls for the main room
+	sector->rooms[0]->walls = (chWallStructPtr*) malloc (sector->rooms[0]->numWalls * sizeof (chWallStruct));
+	for (int i = 0; i < sector->rooms[0]->numWalls; i++) {
+		sector->rooms[0]->walls[i] = (chWallStructPtr) malloc (sizeof (chWallStruct));
+		sector->rooms[0]->walls[i]->txtSize = csVector3 (1, 1, 1);
+		strcpy(sector->rooms[0]->walls[i]->strWallTexture, "wall_text");
+	}
+
+	double floor = 0.0;
+	double ceiling = 10.0;
+	double length = 10;
+	double width = 10;
+	int door_width = 3;
+	double door_delta = 0.0;
+
+	// ceiling
+	sector->rooms[0]->walls[0]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[0]->wall.AddVertex (-width, ceiling, length); sector->rooms[0]->walls[0]->wall.AddVertex (-width, ceiling, -length);
+	sector->rooms[0]->walls[0]->wall.AddVertex (width, ceiling, -length); sector->rooms[0]->walls[0]->wall.AddVertex (width, ceiling, length);
+	strcpy (sector->rooms[0]->walls[0]->strWallTexture, "ceil_text");
+
+	// floor
+	sector->rooms[0]->walls[1]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[1]->wall.AddVertex (-width, floor, -length); sector->rooms[0]->walls[1]->wall.AddVertex (-width, floor, length);
+	sector->rooms[0]->walls[1]->wall.AddVertex (width, floor, length); sector->rooms[0]->walls[1]->wall.AddVertex (width, floor, -length);
+	strcpy (sector->rooms[0]->walls[1]->strWallTexture, "floor_text");
+
+	// left
+	sector->rooms[0]->walls[2]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[2]->wall.AddVertex (-width, floor, -length); sector->rooms[0]->walls[2]->wall.AddVertex (-width, ceiling, -length);
+	sector->rooms[0]->walls[2]->wall.AddVertex (-width, ceiling, length); sector->rooms[0]->walls[2]->wall.AddVertex (-width, floor, length);
+
+	// front
+	sector->rooms[0]->walls[3]->wall = *(new csPoly3D (8));
+	sector->rooms[0]->walls[3]->wall.AddVertex (-width, floor, length); sector->rooms[0]->walls[3]->wall.AddVertex (-width, ceiling, length);
+	sector->rooms[0]->walls[3]->wall.AddVertex (-door_width, ceiling, length); sector->rooms[0]->walls[3]->wall.AddVertex (-door_width, floor, length);
+
+	// right
+	sector->rooms[0]->walls[4]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[4]->wall.AddVertex (width, floor, length); sector->rooms[0]->walls[4]->wall.AddVertex (width, ceiling, length);
+	sector->rooms[0]->walls[4]->wall.AddVertex (width, ceiling, -length); sector->rooms[0]->walls[4]->wall.AddVertex (width, floor, -length);
+
+	// back
+	sector->rooms[0]->walls[5]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[5]->wall.AddVertex (width, floor, -length); sector->rooms[0]->walls[5]->wall.AddVertex (width, ceiling, -length);
+	sector->rooms[0]->walls[5]->wall.AddVertex (-width, ceiling, -length); sector->rooms[0]->walls[5]->wall.AddVertex (-width, floor, -length);
+
+	// ramp
+	sector->rooms[0]->walls[6]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[6]->wall.AddVertex (0, floor, -8); sector->rooms[0]->walls[6]->wall.AddVertex (-7, ceiling/2, -8);
+	sector->rooms[0]->walls[6]->wall.AddVertex (-7, ceiling/2, -5); sector->rooms[0]->walls[6]->wall.AddVertex (0, floor, -5);
+
+	// ramp left
+	sector->rooms[0]->walls[7]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[7]->wall.AddVertex (-10, floor, -8); sector->rooms[0]->walls[7]->wall.AddVertex (-10, ceiling/2, -8);
+	sector->rooms[0]->walls[7]->wall.AddVertex (-7, ceiling/2, -8); sector->rooms[0]->walls[7]->wall.AddVertex (0, floor, -8);
+
+	// ramp right
+	sector->rooms[0]->walls[8]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[8]->wall.AddVertex (0, floor, -5); sector->rooms[0]->walls[8]->wall.AddVertex (-7, ceiling/2, -5);
+	sector->rooms[0]->walls[8]->wall.AddVertex (-10, ceiling/2, -5); sector->rooms[0]->walls[8]->wall.AddVertex (-10, floor, -5);
+
+	// shelf top
+	sector->rooms[0]->walls[9]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[9]->wall.AddVertex (-10, ceiling/2, -8); sector->rooms[0]->walls[9]->wall.AddVertex (-10, ceiling/2, 6);
+	sector->rooms[0]->walls[9]->wall.AddVertex (-7, ceiling/2, 6); sector->rooms[0]->walls[9]->wall.AddVertex (-7, ceiling/2, -8);
+
+	// shelf front
+	sector->rooms[0]->walls[10]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[10]->wall.AddVertex (-7, floor, 6); sector->rooms[0]->walls[10]->wall.AddVertex (-7, ceiling/2, 6);
+	sector->rooms[0]->walls[10]->wall.AddVertex (-10, ceiling/2, 6); sector->rooms[0]->walls[10]->wall.AddVertex (-10, floor, 6);
+
+	// shelf right
+	sector->rooms[0]->walls[11]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[11]->wall.AddVertex (-7, floor, -5); sector->rooms[0]->walls[11]->wall.AddVertex (-7, ceiling/2, -5);
+	sector->rooms[0]->walls[11]->wall.AddVertex (-7, ceiling/2, 6); sector->rooms[0]->walls[11]->wall.AddVertex (-7, floor, 6);
+
+	// front upper
+	sector->rooms[0]->walls[12]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[12]->wall.AddVertex (-door_width, floor+4, length); sector->rooms[0]->walls[12]->wall.AddVertex (-door_width, ceiling, length);
+	sector->rooms[0]->walls[12]->wall.AddVertex (door_width, ceiling, length); sector->rooms[0]->walls[12]->wall.AddVertex (door_width, floor+4, length);
+
+	// front right
+	sector->rooms[0]->walls[13]->wall = *(new csPoly3D (4));
+	sector->rooms[0]->walls[13]->wall.AddVertex (door_width, floor, length); sector->rooms[0]->walls[13]->wall.AddVertex (door_width, ceiling, length);
+	sector->rooms[0]->walls[13]->wall.AddVertex (width, ceiling, length); sector->rooms[0]->walls[13]->wall.AddVertex (width, floor, length);
+
+	// allocate 24 lights for the main room
+	sector->rooms[0]->lights = (chLightStructPtr*) malloc (18 * sizeof (chLightStruct));
+	for (int i = 0; i < 18; i++) {
+		sector->rooms[0]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
+		sector->rooms[0]->lights[i]->color = csColor (1, 1, 1);
+		sector->rooms[0]->lights[i]->scale = 9.0;
+	}
+
+	double delta = 1.0;
+	for (int i = 0; i < 2; i++) {
+		sector->rooms[0]->lights[0+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, -length+delta);
+		sector->rooms[0]->lights[1+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, 0);
+		sector->rooms[0]->lights[2+i*9]->location = csVector3 (-width+delta, i*ceiling/2 + 2, length-delta);
+		sector->rooms[0]->lights[3+i*9]->location = csVector3 (0, i*ceiling/2 + 2, -length+delta);
+		sector->rooms[0]->lights[4+i*9]->location = csVector3 (0, i*ceiling/2 + 2, 0);
+		sector->rooms[0]->lights[5+i*9]->location = csVector3 (0, i*ceiling/2 + 2, length-delta);
+		sector->rooms[0]->lights[6+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, -length+delta);
+		sector->rooms[0]->lights[7+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, 0);
+		sector->rooms[0]->lights[8+i*9]->location = csVector3 (width-delta, i*ceiling/2 + 2, length-delta);
+	}
+
+	// allocate 1 door for main room
+	sector->rooms[0]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
+	sector->rooms[0]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+	strcpy (sector->rooms[0]->doors[0]->strDoorTexture, "floor_text");
+	strcpy (sector->rooms[0]->doors[0]->strRoomName, "connector");
+	sector->rooms[0]->doors[0]->alpha = 0;
+	sector->rooms[0]->doors[0]->txtSize = csVector3 (1, 1, 1);
+	sector->rooms[0]->doors[0]->door = *(new csPoly3D (4));
+	sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (-door_width, floor+4, length-2*door_delta);
+	sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor+4, length-2*door_delta); sector->rooms[0]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta);
+
+	// allocate one outer door in this room
+	sector->rooms[0]->outer_doors = (chOuterDoorStructPtr*) malloc (sector->rooms[0]->numOuterDoors * sizeof (chOuterDoorStruct));
+	sector->rooms[0]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
+	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorName, "sector2");
+	strcpy (sector->rooms[0]->outer_doors[0]->strTargetSectorSource, "www.default.com/s2");
+	sector->rooms[0]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+	sector->rooms[0]->outer_doors[0]->door->alpha = 0;
+	strcpy (sector->rooms[0]->outer_doors[0]->door->strDoorTexture, "door_text");
+	strcpy (sector->rooms[0]->outer_doors[0]->door->strRoomName, "main");
+	sector->rooms[0]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
+	sector->rooms[0]->outer_doors[0]->door->door = *(new csPoly3D (4));
+	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 + 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 + 1);
+	sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor+3, length/2 - 1); sector->rooms[0]->outer_doors[0]->door->door.AddVertex (width-0.01, floor, length/2 - 1);
+	strcpy (sector->rooms[0]->outer_doors[0]->strDoorName, "door1");
+
+	sector->rooms[0]->outer_doors[1] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
+	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorName, "sector5");
+	strcpy (sector->rooms[0]->outer_doors[1]->strTargetSectorSource, "www.default.com/s5");
+	sector->rooms[0]->outer_doors[1]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+	sector->rooms[0]->outer_doors[1]->door->alpha = 0;
+	strcpy (sector->rooms[0]->outer_doors[1]->door->strDoorTexture, "door_text");
+	strcpy (sector->rooms[0]->outer_doors[1]->door->strRoomName, "main");
+	sector->rooms[0]->outer_doors[1]->door->txtSize = csVector3 (2, 3, 1);
+	sector->rooms[0]->outer_doors[1]->door->door = *(new csPoly3D (4));
+	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (door_width-2, floor+3, -length+0.01);
+	sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor+3, -length+0.01); sector->rooms[0]->outer_doors[1]->door->door.AddVertex (-door_width+2, floor, -length+0.01);
+	strcpy(sector->rooms[0]->outer_doors[1]->door->strRoomName, "default");
+	strcpy (sector->rooms[0]->outer_doors[1]->strDoorName, "default");
+
+
+	// allocate one object for main room
+	sector->rooms[0]->numObjects = 1;
+	sector->rooms[0]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
+	sector->rooms[0]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
+	strcpy (sector->rooms[0]->objects[0]->strObjectModel, "user");
+	strcpy (sector->rooms[0]->objects[0]->strObjectName, "tool");
+	sector->rooms[0]->objects[0]->intObjectType = ENTITY_TYPE_USER;
+	sector->rooms[0]->objects[0]->location = csVector3 (-1, 2, -1);
+	sector->rooms[0]->objects[0]->rotation = csVector3 (0, 0, 0);
+	sector->rooms[0]->objects[0]->scale = csVector3 (1, 1, 1);
+
+	// create second (connector) room
+	// allocate 6 walls for the connector
+	sector->rooms[1]->walls = (chWallStructPtr*) malloc (6 * sizeof (chWallStruct));
+	for (int i = 0; i < 6; i++) {
+		sector->rooms[1]->walls[i] = (chWallStructPtr) malloc (sizeof (chWallStruct));
+		sector->rooms[1]->walls[i]->txtSize = csVector3 (1, 1, 1);
+		strcpy(sector->rooms[1]->walls[i]->strWallTexture, "wall_text");
+	}
+
+	// ceiling
+	sector->rooms[1]->walls[0]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[0]->wall.AddVertex (-door_width, ceiling-5, length);
+	sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[0]->wall.AddVertex (door_width, ceiling-5, 2*length);
+	strcpy (sector->rooms[1]->walls[0]->strWallTexture, "ceil_text");
+
+	// floor
+	sector->rooms[1]->walls[1]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[1]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[1]->wall.AddVertex (-door_width, floor, 2*length);
+	sector->rooms[1]->walls[1]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[1]->wall.AddVertex (door_width, floor, length);
+	strcpy (sector->rooms[0]->walls[1]->strWallTexture, "floor_text");
+
+	// left
+	sector->rooms[1]->walls[2]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, length);
+	sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, ceiling-5, 2*length); sector->rooms[1]->walls[2]->wall.AddVertex (-door_width, floor, 2*length);
+
+	// front
+	sector->rooms[1]->walls[3]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, floor, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (-door_width, ceiling-5, 2*length);
+	sector->rooms[1]->walls[3]->wall.AddVertex (door_width, ceiling-5, 2*length); sector->rooms[1]->walls[3]->wall.AddVertex (door_width, floor, 2*length);
+
+	// right
+	sector->rooms[1]->walls[4]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, 2*length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, 2*length);
+	sector->rooms[1]->walls[4]->wall.AddVertex (door_width, ceiling-5, length); sector->rooms[1]->walls[4]->wall.AddVertex (door_width, floor, length);
+
+	// back
+	sector->rooms[1]->walls[5]->wall = *(new csPoly3D (4));
+	sector->rooms[1]->walls[5]->wall.AddVertex (door_width, floor, length); sector->rooms[1]->walls[5]->wall.AddVertex (door_width, ceiling-5, length);
+	sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, ceiling-5, length); sector->rooms[1]->walls[5]->wall.AddVertex (-door_width, floor, length);
+
+	// allocate 8 lights for the connector room
+	sector->rooms[1]->lights = (chLightStructPtr*) malloc (12 * sizeof (chLightStruct));
+	for (int i = 0; i < 12; i++) {
+		sector->rooms[1]->lights[i] = (chLightStructPtr) malloc (sizeof (chLightStruct));
+		sector->rooms[1]->lights[i]->color = csColor (1, 1, 1);
+		sector->rooms[1]->lights[i]->scale = 4.0;
+	}
+
+	for (int i = 0; i < 2; i++) {
+		sector->rooms[1]->lights[0+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, length+delta);
+		sector->rooms[1]->lights[1+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, 2*length-delta);
+		sector->rooms[1]->lights[2+i*4]->location = csVector3 (door_width-delta, i*2 + 3, length+delta);
+		sector->rooms[1]->lights[3+i*4]->location = csVector3 (door_width-delta, i*2 + 3, 2*length-delta);
+		sector->rooms[1]->lights[2+i*4]->location = csVector3 (-door_width+delta, i*2 + 3, length+length/2);
+		sector->rooms[1]->lights[3+i*4]->location = csVector3 (door_width-delta, i*2 + 3, length+length/2);
+	}
+
+	// allocate 1 door for connector room
+	sector->rooms[1]->doors = (chDoorStructPtr*) malloc (sizeof (chDoorStruct));
+	sector->rooms[1]->doors[0] = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+	strcpy (sector->rooms[1]->doors[0]->strDoorTexture, "door_text");
+	strcpy (sector->rooms[1]->doors[0]->strRoomName, "main");
+	sector->rooms[1]->doors[0]->alpha = 0;
+	sector->rooms[1]->doors[0]->txtSize = csVector3 (1, 1, 1);
+	sector->rooms[1]->doors[0]->door = *(new csPoly3D (4));
+	sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (door_width, floor+10, length-2*door_delta);
+	sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor+10, length-2*door_delta); sector->rooms[1]->doors[0]->door.AddVertex (-door_width, floor, length-2*door_delta);
+
+	// allocate one object for connector room
+	sector->rooms[1]->numObjects = 1;
+	sector->rooms[1]->objects = (chObjectStructPtr*) malloc (sizeof (chObjectStruct));
+	sector->rooms[1]->objects[0] = (chObjectStructPtr) malloc (sizeof (chObjectStruct));
+	strcpy (sector->rooms[1]->objects[0]->strObjectModel, "user");
+	strcpy (sector->rooms[1]->objects[0]->strObjectName, "object");
+	sector->rooms[1]->objects[0]->intObjectType = ENTITY_TYPE_OBJECT;
+	sector->rooms[1]->objects[0]->location = csVector3 (door_width-3, floor+2, length*3/2);
+	sector->rooms[1]->objects[0]->rotation = csVector3 (0, 0, 0);
+	sector->rooms[1]->objects[0]->scale = csVector3 (1, 1, 1);
+
+	// set the number of outer doors
+	sector->rooms[1]->numOuterDoors = 1;
+	// allocate one outer door in this room
+	sector->rooms[1]->outer_doors = (chOuterDoorStructPtr*) malloc (sizeof (chOuterDoorStruct));
+	sector->rooms[1]->outer_doors[0] = (chOuterDoorStructPtr) malloc (sizeof (chOuterDoorStruct));
+	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorName, "sector1");
+	strcpy (sector->rooms[1]->outer_doors[0]->strTargetSectorSource, "www.default.com/s1");
+	sector->rooms[1]->outer_doors[0]->door = (chDoorStructPtr) malloc (sizeof (chDoorStruct));
+	sector->rooms[1]->outer_doors[0]->door->alpha = 0;
+	strcpy (sector->rooms[1]->outer_doors[0]->door->strDoorTexture, "door_text");
+	strcpy (sector->rooms[1]->outer_doors[0]->door->strRoomName, "main");
+	sector->rooms[1]->outer_doors[0]->door->txtSize = csVector3 (2, 3, 1);
+	sector->rooms[1]->outer_doors[0]->door->door = *(new csPoly3D (4));
+	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (-door_width+2, floor+3, length*2-0.01);
+	sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor+3, length*2-0.01); sector->rooms[1]->outer_doors[0]->door->door.AddVertex (door_width-2, floor, length*2-0.01);
+	strcpy (sector->rooms[1]->outer_doors[0]->strDoorName, "door2");
+
+	return sector;
 }

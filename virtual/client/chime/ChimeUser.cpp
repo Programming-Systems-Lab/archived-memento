@@ -74,14 +74,18 @@ bool ChimeUser::SetupUser (iMeshWrapper *mesh, iCamera *camera)
  *****************************************************************/
 bool ChimeUser::PlaceUser (csVector3 const &location, iSector* room)
 {
+	if (!room)
+		return false;
+	
 	// Place mesh representing the user
 	if (chUserMesh) {
 		chUserMesh->GetMovable()->SetSector(room);
 		chUserMesh->GetMovable()->SetPosition(room, location);
 	}
-
-	// Create colliders, now that user is placed
-	driver ->GetCollider ()->CreateUserCollider ();
+	
+	// Update user camera
+	chUserCamera->SetSector (room);
+	chUserCamera->GetTransform ().SetOrigin (location);
 
 	return true;
 }
@@ -105,7 +109,7 @@ bool ChimeUser::MoveUser (csVector3 const direction, float fps, bool checkVertic
 	// Update current sector if necessary
 	if (chUserCamera->GetSector () != driver->GetCurrentSector ()->GetCurrentRoom ())
 	{
-		driver->GetCurrentSector ()->SetCurrentRoom (chUserCamera->GetSector ());
+		driver->UpdateCurrentSector (chUserCamera->GetSector ());
 		if (chUserMesh)
 			chUserMesh->GetMovable ()->SetSector (chUserCamera->GetSector ());
 	}
@@ -147,4 +151,16 @@ bool ChimeUser::RotateUser (csVector3 const direction, float angle)
 		chUserMesh->GetMovable ()->UpdateMove ();
 	
 	return true;
+}
+
+/*****************************************************************
+ * Prints user's 3D coordinates and sector location
+ * to console. Used for debugging purposes.
+ *****************************************************************/
+void ChimeUser::PrintUserLocation ()
+{
+	if (chUserCamera)
+        printf("User location: %f, %f, %f\nUser in room: %s\n", chUserCamera->GetTransform ().GetOrigin ().x,
+        chUserCamera->GetTransform ().GetOrigin ().y, chUserCamera->GetTransform ().GetOrigin ().z,
+		chUserCamera->GetSector ()->QueryObject ()->GetName ());
 }

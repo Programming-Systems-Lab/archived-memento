@@ -96,17 +96,38 @@ int ChimeNeighbors::GetQueueSize ()
 
 
 /*****************************************************************
- * FindSector: returns the sector with given name and URL
+ * FindSector: returns the sector with given name and Source
  * or NULL is such sector is not in the queue
  *****************************************************************/
-ChimeSector* ChimeNeighbors::FindSector (char *strSectorName, char *strSectorURL)
+ChimeSector* ChimeNeighbors::FindSector (char *strSectorName, char *strSectorSource)
 {
 	ChimeSector *sector = NULL;
 	ChimeSector *temp;
 	for (int i = 0; i < queue->Length (); i++)
 	{
 		temp = (ChimeSector*) queue->Get (i);
-		if (temp != NULL && temp->IsThisSector (strSectorName, strSectorURL))
+		if (temp != NULL && temp->IsThisSector (strSectorName, strSectorSource))
+		{
+			sector = temp;
+			return sector;
+		}
+	}
+	return sector;
+}
+
+
+/*****************************************************************
+ * FindSector: returns the sector that hosts given room
+ * or NULL is such sector is not in the queue
+ *****************************************************************/
+ChimeSector* ChimeNeighbors::FindSector (iSector* room)
+{
+	ChimeSector *sector = NULL;
+	ChimeSector *temp;
+	for (int i = 0; i < queue->Length (); i++)
+	{
+		temp = (ChimeSector*) queue->Get (i);
+		if (temp->IsRoomInThisSector (room))
 		{
 			sector = temp;
 			return sector;

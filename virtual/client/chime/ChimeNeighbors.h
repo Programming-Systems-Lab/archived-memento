@@ -33,7 +33,8 @@ public:
   int  GetQueueSize ();															// return the size of the queue
 
   bool AddSector (ChimeSector *sector);											// add a ChimeSector pointer to the queue
-  ChimeSector* FindSector (char *strSectorName, char *strSectorURL);			// find a sector with these parameters, or return NULL if not found
+  ChimeSector* FindSector (char *strSectorName, char *strSectorSource);			// find a sector with these parameters, or return NULL if not found
+  ChimeSector* FindSector (iSector *room);										// find a sector that hosts given room
   bool FreeQueue ();															// release all ChimeSector objects
 };
 

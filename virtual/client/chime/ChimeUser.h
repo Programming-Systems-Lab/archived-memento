@@ -40,6 +40,9 @@ public:
   bool PlaceUser (csVector3 const &location, iSector* room);					//place user in a room
   bool MoveUser (csVector3 const direction, float fps, bool checkVertical);		//move user
   bool RotateUser (csVector3 const direction, float angle);						//rotate user
+
+  // Debugging function
+  void PrintUserLocation ();													//prints user's 3D coordinates and sector name
 };
 
 #endif // __ChimeUser_H__

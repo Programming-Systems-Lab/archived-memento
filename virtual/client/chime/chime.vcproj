@@ -150,10 +150,19 @@
 				RelativePath="ChimeApp.cpp">
 			</File>
 			<File
+				RelativePath="ChimeChatWindow.cpp">
+			</File>
+			<File
 				RelativePath="ChimeCollider.cpp">
 			</File>
 			<File
 				RelativePath="ChimeEngineView.cpp">
+			</File>
+			<File
+				RelativePath="ChimeHistoryWindow.cpp">
+			</File>
+			<File
+				RelativePath="ChimeModularWindow.cpp">
 			</File>
 			<File
 				RelativePath="ChimeNeighbors.cpp">
@@ -171,6 +180,9 @@
 				RelativePath="ChimeSectorObject.cpp">
 			</File>
 			<File
+				RelativePath="ChimeSectorUser.cpp">
+			</File>
+			<File
 				RelativePath="ChimeSystemDriver.cpp">
 			</File>
 			<File
@@ -182,6 +194,9 @@
 			Filter="h;hpp;hxx;hm;inl;inc">
 			<File
 				RelativePath="ChimeApp.h">
+			</File>
+			<File
+				RelativePath="ChimeCodeBase.h">
 			</File>
 			<File
 				RelativePath="ChimeCollider.h">
@@ -217,6 +232,9 @@
 			</File>
 			<File
 				RelativePath="ChimeUser.h">
+			</File>
+			<File
+				RelativePath="ChimeWindowToolkit.h">
 			</File>
 		</Filter>
 		<Filter

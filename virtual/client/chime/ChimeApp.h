@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include "csws/csws.h"
 
+#include "ChimeCodeBase.h"
+
 /******************************************
  * Class definition for ChimeApp          *
  ******************************************/

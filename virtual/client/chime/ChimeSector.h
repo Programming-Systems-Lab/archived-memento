@@ -30,19 +30,19 @@ class ChimeSector
 private:
 
   //CHIME sector variables
-  iSector *chCurrentRoom, *chPreviousRoom;							// pointers to the current room and the previous room from previous sector
-  char *strSectorName, *strSectorURL;								// sector name and URL comprise sector title
-  csStrVector *strRoomNames;										// names of all the rooms in this sector
+  csVector *chRooms;												// list of all rooms in this sector
+  iSector *chCurrentRoom, *chEntranceRoom;							// pointers to the current room and the previous room from previous sector
+  char *strSectorName, *strSectorSource;							// sector name and Source comprise sector title
   csVector *chActiveEntities;										// holds references to active objects and doors inside this sector
   csVector3 csDefaultLocation;										// default location
 
   //Constructor
-  ChimeSector (char *strISectorName, char *strISectorURL);
+  ChimeSector (char *strISectorName, char *strISectorSource);
 
   /************************** Sector building functions *************************************/
 
   //Build this sector from a given sector definition
-  bool BuildSector (chSectorStructPtr sectorStruct);
+  bool BuildSector (chSectorStructPtr sectorStruct, char *strRegionName);
 
   //Build this sector from a given room definition
   iSector* BuildRoom (chRoomStructPtr roomStruct);
@@ -76,7 +76,10 @@ private:
   iPolygon3D* AddOuterDoor (iThingState *walls, csPoly3D const &vertices,
 						iMaterialWrapper *txt, csVector3 const &txtSize,
 						char *strDoorName, char *strDoorTargetName, 
-						char *strDoorTargetURL, char *strDoorTexture);
+						char *strDoorTargetSource, char *strDoorTexture);
+
+  //Create the name of the region using sector parameters
+  static void GetRegionName (char* strSectorName, char* strSectorSource, char* strRegionName);
 
 
 public:
@@ -87,7 +90,7 @@ public:
   /************************** Static sector building functions *************************************/
   //Build the whole sector from XML file description
   static ChimeSector* SetupSector (csVector3 &origin, csVector3 const &rotation, 
-	  char *strSectorXMLFile, char *strISectorName, char *strISectorURL, ChimeSector* iPreviousSector);
+	  char *strSectorXMLFile, char *strISectorName, char *strISectorSource, ChimeSector* iPreviousSector);
 
   /************************** Accessing functions *************************************/
   //Return the room user is currently in
@@ -99,6 +102,9 @@ public:
   //Get the default room
   iSector* GetDefaultRoom ();
 
+  //Fill in region name for this sector
+  void GetRegionName (char *strRegionName);
+
   //Return the starting location for the default room
   csVector3 GetDefaultLocation ();
 
@@ -108,11 +114,31 @@ public:
   //Return the list of active entities in this sector
   csVector* GetActiveEntities ();
 
-  //Return true if this is the sector with given name and URL
-  bool IsThisSector (char *iSectorName, char *iSectorURL);
+  //Find a particular entity
+  ChimeSectorEntity* FindEntity (char *strEntityName, int iEntityType);
+
+  //Find all entities of given type
+  csVector* FindAllEntities (int iEntityType);
+
+  //Return true if this is the sector with given name and Source
+  bool IsThisSector (char *iSectorName, char *iSectorSource);
+
+  //Find room based on room name
+  iSector* FindRoom (char *strRoomName);
+
+  //Return true if given room belongs to this sector
+  bool IsRoomInThisSector (iSector *room);
 
   //Fill this sector's attributes
-  void GetSectorTitle (char *strName, char *strURL);
+  void GetSectorTitle (char *strName, char *strSource);
+
+  //Find the door that leads to the entrance sector
+  ChimeSectorDoor* FindEntranceDoor ();
+
+  //Update the entity with given name and type
+  void UpdateObject (char *strObjectName, int iObjectType, 
+	  char *strObjectSource=NULL, char *strObjectModel=NULL, char *strObjectMaterial=NULL,
+	  csVector3* vecObjectLocation=NULL, char *strObjectRoom=NULL);
 
 };
 

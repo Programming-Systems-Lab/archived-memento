@@ -3,7 +3,7 @@
 	Author: Mark Galagan @ 2003
 
 	Defines a container for an active object.
-	Used to associate meshes with door entities,
+	Used to associate meshes with object entities,
 	as well as storing attributes associated with
 	active objects and defining utility functions
 	that operate on said attributes.
@@ -21,10 +21,12 @@ extern ChimeSystemDriver *driver;
 /*****************************************************************
  * Constructor: creates a new container for given object mesh
  *****************************************************************/
-ChimeSectorActiveObject::ChimeSectorActiveObject (char *iObjectName, iMeshWrapper *iMesh, 
-									  csVector3 *iObjectLocation, iSector *iObjectRoom, 
-									  char *iObjectModel)
-	: ChimeSectorObject (iObjectName, iMesh, iObjectLocation, iObjectRoom, iObjectModel)
+ChimeSectorActiveObject::ChimeSectorActiveObject (char *iObjectName, char *iObjectSource, 
+												  iMeshWrapper *iMesh, csVector3 *iObjectLocation, 
+												  iSector *iObjectRoom, char *iObjectModel, 
+												  char *iObjectMaterial)
+	: ChimeSectorObject (iObjectName, iObjectSource, iMesh, iObjectLocation, iObjectRoom, 
+	iObjectModel, iObjectMaterial, ENTITY_TYPE_ACTIVE_OBJECT)
 {
 	return;
 }
@@ -58,7 +60,6 @@ void ChimeSectorActiveObject::HandleMouseMove (csVector2 old_pos, csVector2 new_
 	csVector3 center (mesh_box.GetCenter ());
 	center.y = mesh_box.MaxY ();
 	csObjectLabelCenter->Set (center);
-
 }
 
 
