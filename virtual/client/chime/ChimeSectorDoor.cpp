@@ -144,13 +144,10 @@ bool ChimeSectorDoor::ConnectDoorToTarget (bool doConnect, iSector* target = NUL
             rot_angle.y = norm.z / norm.Norm ();
 		else
 			rot_angle.y = 0;
-		if (abs (rot_angle.y) == 1)
-			rot_angle.y = 0;
-		else
-            rot_angle.y = acos (rot_angle.y);
 
+		// find actual angle
+		rot_angle.y = acos (rot_angle.y);
 		rot_angle.y = -rot_angle.y;
-		printf("Rotation angle is %f\n", rot_angle.y);
 
 		// load the sector into the system
 		ChimeSector *targetSector = driver->LoadNewSector (strTargetName, strTargetURL,
@@ -190,7 +187,10 @@ bool ChimeSectorDoor::OpenDoor ()
         // create the portal
 		csDoorPolygon->CreatePortal (csTargetRoom);
 		// make this door invisible
-		SetDoorVisible (false);
+		csDoorPolygon->SetAlpha (100);
+		//SetDoorVisible (false);
+
+		//csDoorPolygon->GetTexture ()->GetMaterialHandle ()->Prepare ();
 		return true;
 	}
 

@@ -255,6 +255,8 @@ ChimeSector* ChimeSector::SetupSector(csVector3 &origin, csVector3 const &rotati
 		}
 	}
 
+	//Update engine
+	driver->csEngine->Prepare ();
 
 	if (!sector->GetDefaultRoom ())
 		return NULL;
@@ -401,8 +403,8 @@ iSector* ChimeSector::BuildRoom (chRoomStructPtr roomStruct)
 
 		// add this object to the list of active objects
 		if (objectMesh)
-			chActiveEntities->Push (new ChimeSectorObject (object->strObjectName, object->intObjectType, 
-			objectMesh, &object->location, room, object->strObjectModel));
+			chActiveEntities->Push (new ChimeSectorObject (object->strObjectName, objectMesh, 
+			&(object->location), room, object->strObjectModel));
 	}
 
 	// add outer doors
@@ -435,7 +437,7 @@ chSectorStructPtr ChimeSector::ParseSectorDefinition (char *strFileName)
 	
 	// allocate space for a new sector
 	chSectorStructPtr sector = (chSectorStructPtr) malloc (sizeof (chSectorStruct));
-	sector->defaultLocation = csVector3 (0, 5, 0);
+	sector->defaultLocation = csVector3 (0, 1, 0);
 	strcpy (sector->strSectorName, "default");
 
 	// allocate space for three new rooms
@@ -965,12 +967,11 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 	}
 
 	//adjust origin, based on the overlap of two doors
-	printf("Origin: %f, %f, %f\n", origin.x, origin.y, origin.z);
-	printf("\nMatrix...\n%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n", rot_matrix.m11, rot_matrix.m12, rot_matrix.m13, rot_matrix.m21, rot_matrix.m22, rot_matrix.m23, rot_matrix.m31, rot_matrix.m32, rot_matrix.m33);
 	csVector3 rot3 = rot_matrix * (*(defaultDoor->door->door.GetVertex (defaultDoor->door->door.GetVertexCount () - 1)));
-	printf("Rot3: %f, %f, %f\n", rot3.x, rot3.y, rot3.z);
 	csVector3 start (origin - rot3);
-	printf("Start: %f, %f, %f\n", start.x, start.y, start.z);
+	if (start.x > 0) start.x += 0.1; else start.x += -0.1;
+	if (start.y > 0) start.y += 0.1; else start.y += -0.1;
+	if (start.z > 0) start.z += 0.1; else start.z += -0.1;
 
 	//------- rotate all vectors using given rotation matrix -------//
 	sector->defaultLocation = rot_matrix * sector->defaultLocation;
@@ -984,6 +985,7 @@ void ChimeSector::ProcessSectorDefinition (chSectorStructPtr sector, csVector3 c
 			{
 				*sector->rooms[i]->walls[j]->wall.GetVertex (k) = rot_matrix * (*sector->rooms[i]->walls[j]->wall.GetVertex (k));
                 *sector->rooms[i]->walls[j]->wall.GetVertex (k) += start;
+				printf("Room %d. Wall %d. Vertex %d: %f, %f, %f\n", i, j, k, sector->rooms[i]->walls[j]->wall.GetVertex (k)->x, sector->rooms[i]->walls[j]->wall.GetVertex (k)->y, sector->rooms[i]->walls[j]->wall.GetVertex (k)->z);
 			}
 		}
 

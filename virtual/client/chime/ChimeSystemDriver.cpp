@@ -125,18 +125,8 @@ ChimeSector* ChimeSystemDriver::LoadNewSector (char *strSectorName, char *strSec
 	// build empty sectors
 	// fill this sector with objects and doors
 	// attach sectors to outer doors
-	new_sector = ChimeSector::SetupSector (csVector3 (iSectorOrigin), iSectorRotation, 
+	new_sector = ChimeSector::SetupSector (csVector3 (iSectorOrigin - csVector3 (0, 0, 0.2)), iSectorRotation, 
 		"none", strSectorName, strSectorURL, chCurrentSector ? chCurrentSector : NULL);
-
-	iSector* r = new_sector->GetDefaultRoom ();
-	iMeshList* m = r->GetMeshes ();
-	printf("Room %s\n", r->QueryObject ()->GetName ());
-	for (int i = 0; i < m->GetCount (); i++)
-	{
-		iMeshWrapper* mesh = (iMeshWrapper*) m->Get (i);
-		csVector3 v = mesh->GetMovable ()->GetTransform ().GetOrigin ();
-		printf("Mesh '%s': %f, %f, %f\n", mesh->QueryObject ()->GetName (), v.x, v.y, v.z);
-	}
 
 	return new_sector;
 }
@@ -416,7 +406,7 @@ bool ChimeSystemDriver::EventHandler (iEvent& ev)
 bool ChimeSystemDriver::ReadInitialSector ()
 {
   // Set up the CHIME sector
-  chCurrentSector = ChimeSector::SetupSector (csVector3 (0, 0, 0), csVector3 (0, 0, 0), "none", "sector0", "www.default.com/", NULL);
+  chCurrentSector = ChimeSector::SetupSector (csVector3 (0, 0, -10), csVector3 (0, 0, 0), "none", "sector0", "www.default.com/", NULL);
   chNeighborQueue->AddSector (chCurrentSector);
 
   //------------------ Set up 3D views of this system --------------------------------//
@@ -628,9 +618,6 @@ bool ChimeSystemDriver::InitializeEnvironment ()
     return false;
   }
   chUser->PlaceUser(chCurrentSector->GetDefaultLocation(), chCurrentSector->GetDefaultRoom());
-
-  // Prepare the csEngine to render all the created environment
-  csEngine->Prepare ();
 
   return true;
 }
