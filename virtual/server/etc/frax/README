@@ -1,0 +1,14 @@
+=================
+Frax 2.0 - README
+ Mark Ayzenshtat
+=================
+
+To run the oracle:
+  - At a command prompt, run "start rmiregistry".
+  - Run oracle.bat.
+
+To run the GUI front end:
+  - Run frax-gui.bat.
+
+To run the command-line front end:
+  - Run frax.bat.
