@@ -472,6 +472,7 @@ public class KAONInterfacer {
 		System.out.println("\tNumber of Association Rules: " + rules.length);
 		DependentEvolutionStrategyImpl dependentEvolutionStrategy=new DependentEvolutionStrategyImpl(connection);
 		dependentEvolutionStrategy.setEvolutionStrategy(oimodel, new EvolutionParameters());
+		System.out.println("\tCreated Evolution Strategy.");
 
 		try {
 			//Set all OI Models to default Evolution Parameters - HACK!!!!
@@ -481,6 +482,7 @@ public class KAONInterfacer {
 				OIModel oimodelTemp=(OIModel)iterator.next();
 				dependentEvolutionStrategy.setEvolutionStrategy(oimodelTemp, new EvolutionParameters());
 			}
+			System.out.println("\tSet OIModel Evolution Strategy.");
 		} catch (Exception e) {
 			System.out.println(e);
 		}
@@ -490,21 +492,30 @@ public class KAONInterfacer {
 			try {
 				oimodel.suspendEvents();
 				String languageURI=KAONVocabularyAdaptor.INSTANCE.getLanguageURI(language);
+				System.out.println("\tApplying Changes to OIModel...");
 				for (int i=0;i<rules.length;i++) {
+					System.out.println("\tCurrent Association Rule: " + (i+1));
 					List list;
 					try {
+						//System.out.println("\tDEBUG: Entering try statement within for.");
 						Concept conclusion = (Concept)rules[i].getConclusion();
 						Concept premise = (Concept)rules[i].getPremise();
+						//System.out.println("\tDEBUG: Computing Requested Changes.");
 						list=dependentEvolutionStrategy.computeRequestedChanges(Collections.singletonList(new AddSubConcept(oimodel,null,conclusion,premise)));
 					}
 					catch (KAONException evolutionError) {
+						//System.out.println("\tDEBUG: Exception for failed relation thrown.");
 						failedRelations.add(rules[i]);
+						//System.out.println("\tDEBUG: Continuing.");
 						continue;
 					}
+					//System.out.println("\tDEBUG: Applying Changes");
 					oimodel.applyChanges(list);
+
 				}
 			}
 			finally {
+				//System.out.println("\tDEBUG: Entering finally statement.");
 				oimodel.resumeEvents();
 			}
 		}
