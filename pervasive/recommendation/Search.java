@@ -3,7 +3,7 @@ package psl.memento.pervasive.recommendation;
 /**
  * This is the interface for an algorithm responsible for finding suggestions from keywords/text analysis
  */
-public interface Search extends Runnable {
+public interface Search extends Runnable, FeedbackCallback {
 
 	/**
 	 * This signals the analysis algorithm for the most recent suggestions. 

@@ -31,6 +31,8 @@ public interface ConversationSuggestionEngine extends SuggestionEngine {
 	/**
 	 * Stop this ConversationSuggestionEngine from operating (aka get ir ready for garbage collection). 
 	 * Suggestions are no longer available at this point.
+	 * 
+	 * We aren't sure if this works
 	 */
 	public void stop();
 }

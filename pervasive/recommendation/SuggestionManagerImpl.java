@@ -19,13 +19,14 @@ public class SuggestionManagerImpl
 	implements
 		SuggestionManager,
 		SuggestionManagerKeywordCallback,
-		SuggestionManagerSuggestionCallback {
+		SuggestionManagerSuggestionCallback,
+		FeedbackCallback {
 
 	// How long to wait before signalling KFs and Searches
 	private final int _SIGNAL_WAIT = 10000;
-	
+
 	// How long to wait for a ConversationLog before getting into the main part of the run() thread
-	private final int _START_WAIT = 1000;	
+	private final int _START_WAIT = 1000;
 
 	// Keep track of recent suggestions (used as part of the getSuggestionsSinceLast() call)
 	private Object _suggestionsSync;
@@ -193,7 +194,17 @@ public class SuggestionManagerImpl
 	 */
 	public void signal(SuggestionContainer sc) {
 		_history.addSuggestionContainer(sc);
-		if (sc.size() == 0) return;
+
+		// the following commented out loop allows us to change the Feedback for a particular Suggestion to come back to this manager
+		/*
+		 		 for (int i = 0; i < sc.size(); i++) {
+			Suggestion s = sc.get(i);
+			s.setFeedbackCallback(this);
+		}
+		*/
+
+		if (sc.size() == 0)
+			return;
 		synchronized (_suggestionCallbacks) {
 			for (int i = 0; i < _suggestionCallbacks.size(); i++) {
 				SuggestionCallback sca =
@@ -281,5 +292,12 @@ public class SuggestionManagerImpl
 			Search s = (Search) _searches.get(i);
 			s.stop();
 		}
+	}
+
+	/* 
+	 * what do do if we get feedback on a Suggestion, right now nothing.
+	 */
+	public void signal(Feedback f, Suggestion suggestion) {
+		// what do do if we get feedback on a Suggestion, right now nothing.		
 	}
 }

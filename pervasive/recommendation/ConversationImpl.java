@@ -35,7 +35,7 @@ public class ConversationImpl implements Conversation {
 	 * Create a conversation. Note that creator is not automatically added to the conversation as a participant.
 	 */
 	public ConversationImpl(User creator) throws GenericException {
-		_state = new ConversationState(ConversationState.init);
+		_state = new ConversationState(ConversationState.constructed);
 		_users = new ArrayList();
 		_log = new ConversationLog();
 		_logs = new HashMap();
@@ -51,6 +51,10 @@ public class ConversationImpl implements Conversation {
 			e.printStackTrace();
 			throw new GenericException("Creation Unsuccessful");
 		}
+	}
+
+	public void init() {
+		_state.changeTo(ConversationState.init);
 	}
 
 	/**

@@ -1,6 +1,5 @@
 package psl.memento.pervasive.recommendation.keywordfinder.jebara;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +11,7 @@ import psl.memento.pervasive.recommendation.Keyword;
 import psl.memento.pervasive.recommendation.KeywordContainer;
 import psl.memento.pervasive.recommendation.KeywordFinder;
 import psl.memento.pervasive.recommendation.KeywordFinderConfiguration;
+import psl.memento.pervasive.recommendation.Relevance;
 import psl.memento.pervasive.recommendation.exception.GenericException;
 
 /**
@@ -102,7 +102,8 @@ public class impKeywordFinder implements KeywordFinder {
 				new Keyword(
 					(String)topics2.get(0),
 					new Context(),
-					Keyword.NO_DELAY));
+					Keyword.NO_DELAY,
+					new Relevance()));
 			} catch (GenericException ge) {
 				ge.printStackTrace();
 			}

@@ -23,6 +23,8 @@ public class ConversationSuggestionEngineImpl implements ConversationSuggestionE
 	 * Constructor
 	 */
 	public ConversationSuggestionEngineImpl(SuggestionEngineConfiguration cc) {
+		
+		// needs to support configuration files
 		_suggestionManager = new SuggestionManagerImpl(cc);
 		_startManager = new StartManagerImpl();
 

@@ -34,7 +34,7 @@ public class SearchTestImpl extends SearchSimpleImpl {
 			Suggestion s =
 				new TextSuggestion(
 					"suggestion: " + k.getKeyword(),
-					new Relevance(Relevance.NO_DELAY),
+					new Relevance(),
 					this);
 			// add the suggestion to the return container
 			try {

@@ -6,14 +6,17 @@ package psl.memento.pervasive.recommendation;
  */
 public class ConversationState {
 
+	// conversation has been consturcted (0)
+	public static final ConversationState constructed = new ConversationState(0);
+
 	// conversation is being initialized (1)
-	public static final ConversationState init = new ConversationState(0);
+	public static final ConversationState init = new ConversationState(1);
 
 	// conversation is started and ongoing (2)
-	public static final ConversationState started = new ConversationState(1);
+	public static final ConversationState started = new ConversationState(2);
 
 	// conversation is ended (3)
-	public static final ConversationState ended = new ConversationState(2);
+	public static final ConversationState ended = new ConversationState(3);
 
 	// internal representation of the state as an integer, still we only ever compare objects to the constants above so this is of no matter
 	private int _state;

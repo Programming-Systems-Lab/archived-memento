@@ -15,6 +15,7 @@ import psl.memento.pervasive.recommendation.Keyword;
 import psl.memento.pervasive.recommendation.KeywordContainer;
 import psl.memento.pervasive.recommendation.KeywordFinder;
 import psl.memento.pervasive.recommendation.KeywordFinderConfiguration;
+import psl.memento.pervasive.recommendation.Relevance;
 import psl.memento.pervasive.recommendation.exception.GenericException;
 import psl.memento.pervasive.recommendation.keywordfinder.centroid.trainer.Centroid;
 import psl.memento.pervasive.recommendation.keywordfinder.centroid.trainer.VectorMath;
@@ -152,7 +153,7 @@ public class implKeywordFinder implements KeywordFinder {
 		while (stKeywords.hasMoreTokens()) {
 			// System.out.println("JAVA KF: RETURN KEYWORDS NOW");
 			try {
-				kc.add(new Keyword(stKeywords.nextToken(), new Context(), Keyword.NO_DELAY));
+				kc.add(new Keyword(stKeywords.nextToken(), new Context(), Keyword.NO_DELAY, new Relevance()));
 				kc.close();
 			} catch (GenericException e) {
 				e.printStackTrace();

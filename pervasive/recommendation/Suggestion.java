@@ -4,7 +4,7 @@ package psl.memento.pervasive.recommendation;
  * A bare suggestion, which is simply a Relevance object and a timestamp. Should really be considered as a class to extend
  * for real Suggestion implementations (such as LinkSuggestion, etc)
  */
-public class Suggestion {
+public class Suggestion  {
 	
 	// how relevant this Suggestion is to the ongoing conversation
 	protected Relevance _relevance;
@@ -15,6 +15,8 @@ public class Suggestion {
 	// timestamp of when this suggestion was created
 	private long _timestamp;
 	
+	private FeedbackCallback _feedbackcallback;
+	
 	/**
 	 * Constructor
 	 * The Search is passed so that it may receive feedback about how good a suggestion is.
@@ -23,6 +25,7 @@ public class Suggestion {
 		_relevance = r;
 		_timestamp = System.currentTimeMillis();
 		_search = s;
+		_feedbackcallback = s;
 	}
 	
 	/**
@@ -40,6 +43,10 @@ public class Suggestion {
 	}
 	
 	public void feedback(Feedback f) {
-		_search.signal(f, this);
+		_feedbackcallback.signal(f, this);
+	}
+	
+	public void setFeedbackCallback(FeedbackCallback fc) {
+		_feedbackcallback = fc;
 	}
 }

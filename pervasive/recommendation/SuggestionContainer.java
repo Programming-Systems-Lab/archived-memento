@@ -11,7 +11,7 @@ import psl.memento.pervasive.recommendation.util.NoRemoveIterator;
  */
 public class SuggestionContainer {
 
-	// stores the suggestions
+	// stores the suggestion
 	private ArrayList _suggestions;
 
 	// reference to the component that should be notified when this container is closed
@@ -70,5 +70,13 @@ public class SuggestionContainer {
 	 */
 	public int size() {
 		return _suggestions.size();
+	}
+
+	/**
+	 * @param i
+	 * @return
+	 */
+	public Suggestion get(int i) {
+		return (Suggestion) _suggestions.get(i);
 	}
 }

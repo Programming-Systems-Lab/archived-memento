@@ -51,7 +51,7 @@ public interface Conversation extends EventSupport {
 	 */
 	public void addConversationMessage(ConversationMessage cm)
 		throws GenericException;
-
+		
 	/**
 	 * Get the generalConversationSuggestionEngine associated with this Conversation. Note that in order to 
 	 * have access to the generalConversationSuggestionEngine, one must have a User Profile that gives access

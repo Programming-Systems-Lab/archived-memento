@@ -7,6 +7,7 @@ import psl.memento.pervasive.recommendation.ConversationLogMessageStream;
 import psl.memento.pervasive.recommendation.ConversationMessage;
 import psl.memento.pervasive.recommendation.Keyword;
 import psl.memento.pervasive.recommendation.KeywordFinderConfiguration;
+import psl.memento.pervasive.recommendation.Relevance;
 import psl.memento.pervasive.recommendation.exception.GenericException;
 import psl.memento.pervasive.recommendation.util.KeywordFinderSimpleImpl;
 
@@ -51,7 +52,8 @@ public class KeywordFinderTestImpl extends KeywordFinderSimpleImpl {
 				new Keyword(
 					"mirrorKFkeyword: " + _counter++ +" " + _messages.get(0),
 					new Context(),
-					Keyword.NO_DELAY);
+					Keyword.NO_DELAY,
+					new Relevance());
 			// add the keyword to the return container
 			try {
 				_returnData.add(kw);

@@ -25,14 +25,18 @@ public class Keyword {
 	// delay from the timstamp for when the timestamp was most relevant to the conversation
 	private long _delay;
 
+	// how relevant this keyword is to the ongoing conversation
+	private Relevance _relevance;
+
 	/** 
 	 * Constructor, @see psl.memento.pervasive.recommendation.Keyword class description for more information.
 	 */
-	public Keyword(String s, Context c, long delay) {
+	public Keyword(String s, Context c, long delay, Relevance r) {
 		_keyword = s;
 		_context = c;
 		_timestamp = System.currentTimeMillis();
 		_delay = delay;
+		_relevance = r;
 	}
 
 	/**
