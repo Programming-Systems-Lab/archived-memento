@@ -6,11 +6,13 @@
 
 package psl.memento.server.vem.gui;
 
-import com.hp.hpl.mesa.rdf.jena.model.*;
-import com.hp.hpl.mesa.rdf.jena.rdb.*;
-import psl.memento.server.frax.*;
-import psl.memento.server.frax.vocabulary.*;
-import java.net.*;
+import java.net.URI;
+
+import psl.memento.server.frax.Frax;
+import psl.memento.server.frax.FraxConfiguration;
+import psl.memento.server.frax.XMLFraxConfiguration;
+
+import com.hp.hpl.mesa.rdf.jena.model.Model;
 
 /**
  *

@@ -65,12 +65,12 @@ public class VemService {
     {
 	LocatableWorldObjectView o = new LocatableWorldObjectView();
 	
-	o.setX(ro.xloc);
-	o.setY(ro.yloc);
-	o.setZ(ro.zloc);
-	o.setWidth(ro.width);
-	o.setHeight(ro.height);
-	o.setLength(ro.length);
+	o.setX(ro.getXloc());
+	o.setY(ro.getYloc());
+	o.setZ(ro.getZloc());
+	o.setWidth(ro.getWidth());
+	o.setHeight(ro.getHeight());
+	o.setLength(ro.getLength());
 	
 	return o;
     }

@@ -13,63 +13,51 @@ import java.awt.Polygon;
  * @author  vlad
  */
 public class Room {
-    
-    public int height, length, width;
-    public Polygon plan;
-    
-    /** Creates a new instance of Room */
-    public Room(int w, int l, int h) {
-        setHeight(h);
-        setWidth(w);
-	setLength(l);
-    }
-    
-    /** Getter for property height.
-     * @return Value of property height.
-     *
-     */
-    public int getHeight() {
-        return this.height;
-    }
-    
-    /** Setter for property height.
-     * @param height New value of property height.
-     *
-     */
-    public void setHeight(int height) {
-        this.height = height;
-    }
-    
-    /** Getter for property width.
-     * @return Value of property width.
-     *
-     */
-    public int getWidth() {
-        return this.width;
-    }
-    
-    /** Setter for property width.
-     * @param width New value of property width.
-     *
-     */
-    public void setWidth(int width) {
-        this.width = width;
-    }
-    
-    /** Getter for property length.
-     * @return Value of property length.
-     *
-     */
-    public int getLength() {
-	return length;
-    }
-    
-    /** Setter for property length.
-     * @param length New value of property length.
-     *
-     */
-    public void setLength(int length) {
-	this.length = length;
-    }
-    
+
+	private int height;
+	private int length;
+	private int width;
+	private Polygon plan;
+
+	/** Creates a new instance of Room */
+	public Room(int w, int l, int h) {
+		setHeight(h);
+		setWidth(w);
+		setLength(l);
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setLength(int length) {
+		this.length = length;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setPlan(Polygon plan) {
+		this.plan = plan;
+	}
+
+	public Polygon getPlan() {
+		return plan;
+	}
+
+
+
 }

@@ -1,12 +1,17 @@
 package psl.memento.server.vem.gui;
 
-import javax.swing.*;
+import java.awt.Color;
 import java.io.File;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
-import psl.memento.server.vem.*;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import psl.memento.server.vem.Layout;
+import psl.memento.server.vem.SimpleLayout;
 
 /*
  * RoomViewer.java

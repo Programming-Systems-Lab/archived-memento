@@ -17,7 +17,7 @@ import java.util.*;
 public class SimpleLayout implements Layout {
     
     // future version will make this var (cell size) dynamic
-    public static final int delta = 20;
+    public final int delta = 20;
     
     // cells
     public int gran_x, gran_y;
@@ -49,7 +49,7 @@ public class SimpleLayout implements Layout {
 	cells = new boolean[gran_x][gran_y];
 	
 	// do floor plan
-	floorPlan = dr.mRoom.plan;
+	floorPlan = dr.mRoom.getPlan();
 	if (floorPlan != null)
 	    applyFloorPlan();
     }
@@ -71,10 +71,10 @@ public class SimpleLayout implements Layout {
 	while (iter.hasNext()) {
 	    ro = (RoomObject) iter.next();
 	    
-	    if (!testAndOccupy(ro.xloc, ro.yloc, ro.width, ro.length))
+	    if (!testAndOccupy(ro.getXloc(), ro.getYloc(), ro.getWidth(), ro.getLength()))
 		;//return false;
 	    else
-		ro.placed = true;
+		ro.setPlaced(true);
 	}
 	
 	return true;
@@ -139,12 +139,12 @@ public class SimpleLayout implements Layout {
 	    foundPosition = false;  // find position for room object
 	    for (xtmp = delta; xtmp < rx; xtmp += delta*(spacing+1)) {
 		for (ytmp = delta; ytmp < ry; ytmp += delta*(spacing+1)) {
-		    if (testAndOccupy(xtmp, ytmp, ro.width, ro.length)) {
+		    if (testAndOccupy(xtmp, ytmp, ro.getWidth(), ro.getLength())) {
 			foundPosition = true;
 			placedCount++;
-			ro.xloc = xtmp;
-			ro.yloc = ytmp;
-			ro.placed = true;
+			ro.setXloc(xtmp);
+			ro.setYloc(ytmp);
+			ro.setPlaced(true);
 			break;
 		    }
 		}

@@ -39,7 +39,7 @@ public class ExampleFrame extends javax.swing.JFrame {
         // position it at location (10, 10, 10)
         RoomObject ro = new RoomObject(30, 30, 30, 200, 250, 10); 
         // set the object's type (optional)
-        ro.type = "table";
+        ro.setType("table");
         
         // add the object to the room
         dr.addRoomObject(ro);

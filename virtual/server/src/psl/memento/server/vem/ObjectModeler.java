@@ -6,6 +6,8 @@
 
 package psl.memento.server.vem;
 
+import psl.memento.server.frax.vocabulary.Vocab;
+
 /**
  *
  * @author  vlad
@@ -14,5 +16,5 @@ package psl.memento.server.vem;
 public interface ObjectModeler {
     
     public RoomObject createRoomObjectView(Object iVocab, String iName);
-    public Object[] getVocabsToSearch();
+    public Vocab[] getVocabsToSearch();
 }

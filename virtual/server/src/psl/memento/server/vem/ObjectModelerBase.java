@@ -6,12 +6,15 @@
 
 package psl.memento.server.vem;
 
-import java.util.*;
-import java.net.*;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-import psl.memento.server.vem.util.*;
-import psl.memento.server.frax.vocabulary.*;
-import com.hp.hpl.mesa.rdf.jena.model.*;
+import psl.memento.server.vem.util.ModelResourceFile;
+import psl.memento.server.vem.util.ResourceFile;
+import psl.memento.server.vem.util.ResourceFileManager;
+
+import com.hp.hpl.mesa.rdf.jena.model.Property;
 
 /**
  *
@@ -100,7 +103,7 @@ public abstract class ObjectModelerBase {
 		    /* System.out.println(iName); */
 		}
 	
-		ro.type = type;
+		ro.setType(type);
 		return ro;
 	    }
 	}

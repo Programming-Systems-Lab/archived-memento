@@ -6,9 +6,7 @@
 
 package psl.memento.server.vem.util;
 
-import java.awt.Toolkit;
-import java.awt.Image;
-import java.io.*;
+import java.io.IOException;
 
 /**
  *	Class for representing a raster image.

@@ -6,9 +6,11 @@ package psl.memento.server.vem;
  * Created on November 11, 2002, 11:09 PM
  */
 
-import java.util.*;
 import java.awt.Rectangle;
-import java.awt.Polygon;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Advanced layout class
@@ -36,10 +38,10 @@ public class AdvancedLayout extends SimpleLayout implements Layout {
 		Hashtable types = new Hashtable();
 		for (int i=0; i<numObjs; i++) {
 			ro = (RoomObject) dr.mObjs.get(i);
-			objects = (List)types.get(ro.type);
+			objects = (List)types.get(ro.getType());
 			if (objects == null) {
 				objects = new LinkedList();
-				types.put(ro.type, objects);
+				types.put(ro.getType(), objects);
 			}
 			objects.add(ro);
 		}
@@ -83,15 +85,15 @@ public class AdvancedLayout extends SimpleLayout implements Layout {
 			foundPosition = false;  // find position for room object
 			for (xtmp = startX; xtmp < limitX; xtmp += delta) {
 				for (ytmp = startY; ytmp < limitY; ytmp += delta) {
-					if (testAndOccupy(xtmp, ytmp, ro.width, ro.length)) {
+					if (testAndOccupy(xtmp, ytmp, ro.getWidth(), ro.getLength())) {
 						foundPosition = true;
 						placedCount++;
-						ro.xloc = xtmp;
-						ro.yloc = ytmp;
-						ro.placed = true;
+						ro.setXloc(xtmp);
+						ro.setYloc(ytmp);
+						ro.setPlaced(true);
 						
-						if (xtmp + ro.width > maxX) maxX = xtmp + ro.width;
-						if (ytmp + ro.length > maxY) maxY = ytmp + ro.length;
+						if (xtmp + ro.getWidth() > maxX) maxX = xtmp + ro.getWidth();
+						if (ytmp + ro.getLength() > maxY) maxY = ytmp + ro.getLength();
 						
 						//System.out.println("placed: " + xtmp + ", " + ytmp + ", " + ro.width + ", " + ro.length);
 						break;

@@ -12,36 +12,112 @@ package psl.memento.server.vem;
  */
 public class RoomObject implements Comparable {
     
-    public int xloc, yloc, zloc;
-    public int length, width, height;
-    public String type;
-    public boolean fixed;
-    public boolean placed;
+    private int xloc;
+    private int yloc;
+    private int zloc;
+    private int length;
+    private int width;
+    private int height;
+    private String type;
+    private boolean fixed;
+    private boolean placed;
     
     /** Creates a new instance of RoomObject */
     public RoomObject() {
-	placed = false;
-        fixed = false;        
+	setPlaced(false);
+        setFixed(false);        
     }
     
     public RoomObject(int dx, int dy, int dz)
     {
         this();
-        width = dx;
-        length = dy;
-        height = dz;
+        setWidth(dx);
+        setLength(dy);
+        setHeight(dz);
     }
     
     public RoomObject(int dx, int dy, int dz, int xloc, int yloc, int zloc)
     {
         this(dx, dy, dz);
-        this.xloc = xloc;
-        this.yloc = yloc;
-        this.zloc = zloc;
-        this.fixed = true;
+        setXloc(xloc);
+        setYloc(yloc);
+        setZloc(zloc);
+        setFixed(true);
     }
     
     public int compareTo(Object o) {
-	return type.compareTo(((RoomObject)o).type);
+	return getType().compareTo(((RoomObject)o).getType());
     }
+
+	public void setXloc(int xloc) {
+		this.xloc = xloc;
+	}
+
+	public int getXloc() {
+		return xloc;
+	}
+
+	public void setYloc(int yloc) {
+		this.yloc = yloc;
+	}
+
+	public int getYloc() {
+		return yloc;
+	}
+
+	public void setZloc(int zloc) {
+		this.zloc = zloc;
+	}
+
+	public int getZloc() {
+		return zloc;
+	}
+
+	public void setLength(int length) {
+		this.length = length;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setFixed(boolean fixed) {
+		this.fixed = fixed;
+	}
+
+	public boolean isFixed() {
+		return fixed;
+	}
+
+	public void setPlaced(boolean placed) {
+		this.placed = placed;
+	}
+
+	public boolean isPlaced() {
+		return placed;
+	}
 }

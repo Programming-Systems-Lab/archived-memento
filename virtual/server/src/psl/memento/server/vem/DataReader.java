@@ -6,12 +6,15 @@ package psl.memento.server.vem;
  * Created on November 6, 2002, 7:09 PM
  */
 
-import java.util.*;
-import java.awt.Rectangle;
 import java.awt.Polygon;
-import java.net.URI;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 
-import com.hp.hpl.mesa.rdf.jena.model.*;
+import com.hp.hpl.mesa.rdf.jena.model.Container;
+import com.hp.hpl.mesa.rdf.jena.model.Model;
+import com.hp.hpl.mesa.rdf.jena.model.NodeIterator;
+import com.hp.hpl.mesa.rdf.jena.model.Property;
+import com.hp.hpl.mesa.rdf.jena.model.RDFNode;
 
 /**
  *
@@ -40,7 +43,7 @@ public class DataReader {
     public void setRoom(Polygon poly, int dz) {
 	Rectangle b = poly.getBounds();
 	mRoom = new Room(b.width, b.height, DEFAULT_ROOM_HEIGHT);
-	mRoom.plan = poly;
+	mRoom.setPlan(poly);
     }
     
     public void setRoom(int dx, int dy, int dz) {
@@ -48,7 +51,7 @@ public class DataReader {
     }
     
     public void addRoomObject(RoomObject ro) {
-	if (ro.fixed) {
+	if (ro.isFixed()) {
 	    mFixedObjs.add(ro);
 	} else {
 	    mObjs.add(ro);
