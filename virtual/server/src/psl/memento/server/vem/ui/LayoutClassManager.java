@@ -4,12 +4,14 @@
  * Created on November 12, 2002, 12:03 AM
  */
 
-package psl.memento.server.vem.gui;
+package psl.memento.server.vem.ui;
 
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.event.ActionEvent;
 
-import psl.memento.server.vem.*;
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
+
+import psl.memento.server.vem.layout.Layout;
 
 /**
  *
@@ -31,7 +33,7 @@ public class LayoutClassManager implements java.awt.event.ActionListener {
     
     public void addOption(AbstractButton b, String className) {
 	group.add(b);
-	className = "psl.memento.server.vem." + className;
+	className = "psl.memento.server.vem.layout." + className;
 	
 	b.setActionCommand(className);
 	b.addActionListener(this);

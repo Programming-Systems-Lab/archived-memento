@@ -4,7 +4,7 @@
  * Created on November 27, 2002, 1:10 AM
  */
 
-package psl.memento.server.vem.gui;
+package psl.memento.server.vem.ui;
 
 import psl.memento.server.vem.*;
 

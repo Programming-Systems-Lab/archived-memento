@@ -4,11 +4,14 @@
  * Created on November 6, 2002, 7:08 PM
  */
 
-package psl.memento.server.vem;
+package psl.memento.server.vem.layout;
 
 import java.awt.Rectangle;
 import java.awt.Polygon;
 import java.util.*;
+
+import psl.memento.server.vem.DataReader;
+import psl.memento.server.vem.RoomObject;
 
 /**
  *
@@ -40,8 +43,8 @@ public class SimpleLayout implements Layout {
     }
     
     public void setParameters() {
-	this.rx = dr.mRoom.getWidth();
-	this.ry = dr.mRoom.getLength();
+	this.rx = dr.getRoom().getWidth();
+	this.ry = dr.getRoom().getLength();
 	
 	// set cell variables
 	gran_x = rx / delta;
@@ -49,7 +52,7 @@ public class SimpleLayout implements Layout {
 	cells = new boolean[gran_x][gran_y];
 	
 	// do floor plan
-	floorPlan = dr.mRoom.getPlan();
+	floorPlan = dr.getRoom().getPlan();
 	if (floorPlan != null)
 	    applyFloorPlan();
     }
@@ -65,7 +68,7 @@ public class SimpleLayout implements Layout {
     }
     
     protected boolean placeFixedObjects() {
-	Iterator iter = dr.mFixedObjs.iterator();
+	Iterator iter = dr.getFixedObjs().iterator();
 	RoomObject ro;
 	
 	while (iter.hasNext()) {
@@ -104,23 +107,23 @@ public class SimpleLayout implements Layout {
      */
     protected boolean doObjects(int max) {
 	int spacing;
-	int numObjs = dr.mObjs.size();
+	int numObjs = dr.getObjs().size();
 	int result = numObjs;
 	boolean tmpcells[][] = new boolean[gran_x][gran_y];
 	
 	for (spacing = 0; spacing <= max; spacing++) {
 	    copyCells(tmpcells, cells);
-	    result = placeObjectsInGrid(dr.mObjs.iterator(), spacing, -1);
+	    result = placeObjectsInGrid(dr.getObjs().iterator(), spacing, -1);
 	    copyCells(cells, tmpcells);
 	    if (result < numObjs) break;
 	}
 	
 	spacing--;  // roll back to last working spacing
 	if (spacing >= 0) {  // means that at least the minimal spacing worked
-	    placeObjectsInGrid(dr.mObjs.iterator(), spacing, -1);
+	    placeObjectsInGrid(dr.getObjs().iterator(), spacing, -1);
 	    return true;
 	} else {    // place minimum number of objects
-	    placeObjectsInGrid(dr.mObjs.iterator(), spacing, result);
+	    placeObjectsInGrid(dr.getObjs().iterator(), spacing, result);
 	    return false;
 	}
     }

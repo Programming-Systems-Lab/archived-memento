@@ -1,4 +1,6 @@
-package psl.memento.server.vem;
+package psl.memento.server.vem.layout;
+
+import psl.memento.server.vem.DataReader;
 
 /*
  * AbstractLayout.java

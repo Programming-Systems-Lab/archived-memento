@@ -1,4 +1,4 @@
-package psl.memento.server.vem;
+package psl.memento.server.vem.layout;
 
 /*
  * AdvancedLayout.java
@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import psl.memento.server.vem.RoomObject;
+
 /**
  * Advanced layout class
  *
@@ -24,7 +26,7 @@ public class AdvancedLayout extends SimpleLayout implements Layout {
 	}
 	
 	protected boolean doObjects(int max) {
-		int numObjs = dr.mObjs.size();
+		int numObjs = dr.getObjs().size();
 		RoomObject ro;
 		List objects;
 		String type;
@@ -37,7 +39,7 @@ public class AdvancedLayout extends SimpleLayout implements Layout {
 		
 		Hashtable types = new Hashtable();
 		for (int i=0; i<numObjs; i++) {
-			ro = (RoomObject) dr.mObjs.get(i);
+			ro = (RoomObject) dr.getObjs().get(i);
 			objects = (List)types.get(ro.getType());
 			if (objects == null) {
 				objects = new LinkedList();

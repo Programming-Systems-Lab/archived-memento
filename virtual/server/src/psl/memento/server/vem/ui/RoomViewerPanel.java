@@ -4,9 +4,10 @@
  * Created on November 27, 2002, 12:18 AM
  */
 
-package psl.memento.server.vem.gui;
+package psl.memento.server.vem.ui;
 
 import psl.memento.server.vem.*;
+import psl.memento.server.vem.layout.*;
 
 /**
  *  This is a utility class for programs wanting to integrate the room viewer

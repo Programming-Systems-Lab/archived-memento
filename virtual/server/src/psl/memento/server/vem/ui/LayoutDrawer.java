@@ -1,4 +1,4 @@
-package psl.memento.server.vem.gui;
+package psl.memento.server.vem.ui;
 
 /*
  * LayoutDrawer.java
@@ -10,6 +10,7 @@ import java.awt.*;
 import java.util.*;
 
 import psl.memento.server.vem.*;
+import psl.memento.server.vem.layout.*;
 
 
 /**
@@ -56,7 +57,7 @@ public class LayoutDrawer {
 	
 	// do doors
 	g.setColor(Color.black);
-	Iterator iter = layout.dr.mDoors.iterator();
+	Iterator iter = layout.dr.getDoors().iterator();
 	while (iter.hasNext()) {
 	    d = (Door) iter.next();
 	    off = d.mOffset;
@@ -85,8 +86,8 @@ public class LayoutDrawer {
 	// draw objects
 	ArrayList tmp = new ArrayList();
 	Color color;
-	tmp.addAll(layout.dr.mObjs);
-	tmp.addAll(layout.dr.mFixedObjs);
+	tmp.addAll(layout.dr.getObjs());
+	tmp.addAll(layout.dr.getFixedObjs());
 	iter = tmp.iterator();
 	while (iter.hasNext()) {
 	    ro = (RoomObject) iter.next();
@@ -127,7 +128,7 @@ public class LayoutDrawer {
 	}
 	
 	public double getSpaceUsageRatio() {
-		Iterator iter = layout.dr.mObjs.iterator();
+		Iterator iter = layout.dr.getObjs().iterator();
 		return (double)(getAreaUsedByObjects(iter)) / (double)(layout.rx*layout.ry);
 	}
 	

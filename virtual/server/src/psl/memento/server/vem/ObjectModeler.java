@@ -14,7 +14,6 @@ import psl.memento.server.frax.vocabulary.Vocab;
  */
 
 public interface ObjectModeler {
-    
     public RoomObject createRoomObjectView(Object iVocab, String iName);
     public Vocab[] getVocabsToSearch();
 }

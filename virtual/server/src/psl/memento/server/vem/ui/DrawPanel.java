@@ -1,4 +1,4 @@
-package psl.memento.server.vem.gui;
+package psl.memento.server.vem.ui;
 
 import javax.swing.JPanel;
 import java.awt.*;
