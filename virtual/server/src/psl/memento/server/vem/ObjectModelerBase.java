@@ -19,7 +19,7 @@ import com.hp.hpl.mesa.rdf.jena.model.*;
  */
 public abstract class ObjectModelerBase {
     
-    ResourceFileManager rfm = ResourceFileManager.getInstance();    
+    protected ResourceFileManager rfm = ResourceFileManager.getInstance();    
     
     protected Hashtable viewMap = new Hashtable();    
     protected LinkedList rules = new LinkedList();
@@ -29,35 +29,35 @@ public abstract class ObjectModelerBase {
     protected static final String MATCH_END = "$";
     protected static final String MATCH_ALL = ".*";
     
-    public void addRule(ModelerRule iRule) {
+    protected void addRule(ModelerRule iRule) {
 	rules.addLast(iRule);
     }
     
-    public void addRule(String pattern, String type) {
+    protected void addRule(String pattern, String type) {
 	addRule(new ModelerRule(pattern, type));
     }
     
-    public void addRuleContains(String str, String type) {
+    protected void addRuleContains(String str, String type) {
 	addRule(ModelerRule.escape(str), type);
     }
     
-    public void addRuleStartsWith(String str, String type) {
+    protected void addRuleStartsWith(String str, String type) {
 	addRule(MATCH_START + ModelerRule.escape(str), type);
     }
     
-    public void addRuleEndsWith(String str, String type) {
+    protected void addRuleEndsWith(String str, String type) {
 	addRule(ModelerRule.escape(str) + MATCH_END, type);
     }
     
-    public void addRuleMatchAll(String type) {
+    protected void addRuleMatchAll(String type) {
 	addRule(MATCH_ALL, type);
     }
     
-    public void setView(String type, ResourceFile file) {
+    protected void setView(String type, ResourceFile file) {
 	viewMap.put(type, file);
     }
     
-    public ResourceFile getView(String type) {
+    protected ResourceFile getView(String type) {
 	return (ResourceFile) viewMap.get(type);
     }
     

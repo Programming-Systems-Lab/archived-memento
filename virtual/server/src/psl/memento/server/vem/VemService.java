@@ -12,14 +12,28 @@ import psl.memento.server.world.view.*;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
 
 /**
+ *  FIXME: only single threaded will work
  *
  * @author  vlad
  */
 public class VemService {
     
-    /** Creates a new instance of VemService */
-    public VemService() {
-
+    protected final static ObjectModeler kDefaultObjectModeler =
+	new DefaultObjectModeler();
+    
+    protected final static Layout kDefaultLayout =
+	new AdvancedLayout();
+ 
+    public SectorView createSectorView(Model m) {
+	return createSectorView(m, kDefaultObjectModeler, kDefaultLayout);
+    }
+    
+    public SectorView createSectorView(Model m, Layout layout) {
+	return createSectorView(m, kDefaultObjectModeler, layout);
+    }
+    
+    public SectorView createSectorView(Model m, ObjectModeler om) {
+	return createSectorView(m, om, kDefaultLayout);
     }
     
     public SectorView createSectorView(Model m, ObjectModeler om, Layout layout)
