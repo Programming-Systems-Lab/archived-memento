@@ -1,19 +1,23 @@
 package psl.memento.server.frax;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
+import java.net.*;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.logging.Logger;
 
-import org.apache.commons.logging.*;
+import psl.memento.server.frax.util.MiscUtils;
 
 /**
  *
  * @author  Mark Ayzenshtat
  */
 public class OracleImpl extends UnicastRemoteObject implements Oracle {
+  static {
+    MiscUtils.configureLogging();
+  }
+  
   private static final String kObjectName = "psl-frax-oracle";
   
   private static final String kErrorCouldntResolveOracle =
@@ -23,7 +27,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
   private static final String kWarningCouldNotSetDefaultConfig =
     "Could not set the default configuration: ";
   
-  private static Log sLog = LogFactory.getLog(OracleImpl.class);
+  private static Logger sLog = Logger.getLogger("psl.memento.server.frax");
   
   private static FraxConfiguration sConfig;
   private static String sRMIString;
@@ -32,7 +36,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
     try {
       Frax.getInstance().setConfiguration(new XMLFraxConfiguration());
     } catch (Exception ex) {      
-      sLog.warn(kWarningCouldNotSetDefaultConfig + ex);
+      sLog.warning(kWarningCouldNotSetDefaultConfig + ex);
     }
     
     sConfig = Frax.getInstance().getConfiguration();
@@ -42,7 +46,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
     sb.append("//").append(sConfig.getOracleHostName()).append(':')
       .append(sConfig.getOraclePort()).append('/').append(kObjectName);
     
-    sRMIString = sb.toString();
+    sRMIString = sb.toString();    
   }
   
   public static void main(String[] args) {
@@ -151,32 +155,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
    * extractor class, along with any of its dependencies
    */
   public void registerExtractor(ClassBundle iBundle) throws RemoteException {
-    try {
-      String className = iBundle.getClassName();
-
-      String classFileName = className.replace('.', '/') + ".class";
-      URL u = ClassLoader.getSystemResource("etc/frax/acquired/");
-      File acquiredDir = new File(new URI(u.toString()));
-      File classFile = new File(acquiredDir,  classFileName);      
-      classFile.getParentFile().mkdirs();
-      classFile.createNewFile();
-      FileOutputStream fos = new FileOutputStream(classFile);
-      fos.write(iBundle.getClassByteData());
-      fos.close();
-
-      String[] depNames = iBundle.getDependenciesNames();
-      byte[][] depData = iBundle.getDependencyByteData();
-      for (int i = 0; i < depNames.length; i++) {
-        File f = new File(acquiredDir, depNames[i]);
-        f.getParentFile().mkdirs();
-        f.createNewFile();
-        fos = new FileOutputStream(f);
-        fos.write(depData[i]);
-        fos.close();
-      }
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
+    Frax.getInstance().registerExtractor(iBundle);
   }
 
   /**
@@ -190,6 +169,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
    * plug class, along with any of its dependencies
    */
   public void registerPlug(ClassBundle iBundle) throws RemoteException {
+    Frax.getInstance().registerPlug(iBundle);
   }
   
   /**
@@ -227,7 +207,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
   public ClassBundle getExtractor(String iScheme) throws RemoteException {
     try {
       return ClassBundle.getInstance(Frax.getInstance().getConfiguration()
-        .getExtractorClass(iScheme));
+        .getExtractorClass(iScheme), iScheme);
     } catch (Exception ex) {
       return null;
     }
@@ -244,7 +224,7 @@ public class OracleImpl extends UnicastRemoteObject implements Oracle {
   public ClassBundle getPlug(String iType) throws RemoteException {
     try {
       return ClassBundle.getInstance(Frax.getInstance().getConfiguration()
-        .getPlugClass(iType));
+        .getPlugClass(iType), iType);
     } catch (Exception ex) {
       return null;
     }

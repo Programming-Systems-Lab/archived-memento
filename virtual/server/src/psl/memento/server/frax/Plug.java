@@ -4,17 +4,22 @@ package psl.memento.server.frax;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.logging.Logger;
 
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.model.Resource;
-import org.apache.commons.logging.*;
 import psl.memento.server.frax.FraxException;
+import psl.memento.server.frax.util.MiscUtils;
 
 public abstract class Plug implements Serializable {
+  static {
+    MiscUtils.configureLogging();
+  }
+  
   private static final String kWarningCouldNotInstantiatePlug = 
     "Could not instantiate plug class: ";
   
-  private static Log sLog = LogFactory.getLog(Plug.class);
+  private static Logger sLog = Logger.getLogger("psl.memento.server.frax");
   
  	protected Plug() {
     // make direct instantiation by non-subclasses impossible
@@ -34,8 +39,6 @@ public abstract class Plug implements Serializable {
    * plug that handles the given content type can be found
    */
   public static Plug getInstance(String iContentType) {
-    // right now we create an object for every call of this method
-    // FIXME: optimize this
     Class plugClass;    
 
     plugClass = Frax.getInstance().getConfiguration()
@@ -50,7 +53,7 @@ public abstract class Plug implements Serializable {
     try {
       plug = (Plug) plugClass.newInstance();      
     } catch (Exception ex) {      
-      sLog.warn(kWarningCouldNotInstantiatePlug + plugClass);
+      sLog.warning(kWarningCouldNotInstantiatePlug + plugClass);
     }
     
     return plug;

@@ -1,8 +1,11 @@
 package psl.memento.server.frax.util;
 
 // jdk imports
+import java.io.*;
 import java.text.DateFormat;
+import java.net.*;
 import java.util.*;
+import java.util.logging.*;
 
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.model.*;
@@ -10,11 +13,108 @@ import psl.memento.server.frax.*;
 import psl.memento.server.frax.vocabulary.ResourceVocab;
 
 public class MiscUtils {
-	private static DateFormat sDateFormat;  
+  private static final URL[] kZeroURLs = new URL[0];
+  
+  private static DateFormat sDateFormat;
+  private static boolean sLoggingConfigured;
+  private static ClassLoader sClassLoader;
 
+  static {
+    sLoggingConfigured = false;
+    sClassLoader = ClassLoader.getSystemClassLoader();
+    rebuildClassLoaderPaths();
+/*    
+    try {
+      System.out.println(Arrays.asList(((URLClassLoader) sClassLoader).getURLs()));
+      System.out.println();      
+      Class c = sClassLoader.loadClass("psl.memento.server.frax.FTPExtractor");      
+      c.newInstance();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      System.exit(1);
+    }
+ */
+  }
+  
 	private MiscUtils() {
 		// prevent instantiation
 	}
+  
+  public static void configureLogging() {
+    if (!sLoggingConfigured) {
+      try {
+        Handler logHandler = new FileHandler("frax-log.txt");
+        logHandler.setFormatter(new SimpleFormatter());
+        
+        Logger logger = Logger.getLogger("psl.memento.server.frax");
+        
+        // add our own log handler
+        logger.addHandler(logHandler);
+        logger.setLevel(Level.ALL);
+      } catch (IOException ex) {
+        System.out.println("WARNING: Could not configure logger: " +
+          ex.getMessage());
+      } finally {
+        sLoggingConfigured = true;
+      }
+    }
+  }
+  
+  public static ClassLoader getFraxClassLoader() {
+    return sClassLoader;
+  }
+  
+  public static void rebuildClassLoaderPaths() {
+    synchronized (sClassLoader) {
+      URL acquiredURL = sClassLoader.getResource("etc/frax/acquired/");
+      if (acquiredURL != null) {
+        List urls = new ArrayList();
+
+        urls.add(acquiredURL);
+
+        try {
+          File acquiredDir = new File(new URI(acquiredURL.toString()));
+          File depsDir = new File(acquiredDir, "deps");
+          if (depsDir.exists()) {
+            addToURLListRecursively(urls, depsDir);
+          }
+        } catch (URISyntaxException ex) {
+          // log exception
+        } catch (MalformedURLException ex) {
+        // log exception
+        }        
+
+        sClassLoader
+          = URLClassLoader.newInstance((URL[]) urls.toArray(kZeroURLs));
+      }
+    }
+  }
+  
+  private static void addToURLListRecursively(List iURLs, File iFile)
+      throws MalformedURLException {
+    File[] contents = iFile.listFiles();
+    for (int i = 0; i < contents.length; i++) {
+      if (contents[i].isFile()) {        
+        iURLs.add(contents[i].toURI().toURL());        
+      } else {
+        addToURLListRecursively(iURLs, contents[i]);
+      }
+    }
+  }
+  
+  public static String concatenateDeps(String[] iDeps) {
+    StringBuffer sb = new StringBuffer();
+    
+    for (int i = 0; i < iDeps.length; i++) {
+      sb.append(iDeps[i]).append('|');
+    }
+    
+    if (sb.length() > 0) {
+      sb.deleteCharAt(sb.length() - 1);
+    }
+    
+    return sb.toString();
+  }
   
   public static String getMIMEType(Resource iResource) {
     try {

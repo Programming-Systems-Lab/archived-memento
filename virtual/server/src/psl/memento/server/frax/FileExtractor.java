@@ -14,7 +14,7 @@ import psl.memento.server.frax.util.MiscUtils;
 import psl.memento.server.frax.vocabulary.ResourceVocab;
 import psl.memento.server.frax.vocabulary.FileVocab;
 
-class FileExtractor extends Extractor {
+public class FileExtractor extends Extractor {
   private static final String kErrorBadFileURI =
     "A file URI cannot have authority, query, or fragment components.";
 

@@ -14,7 +14,7 @@ import psl.memento.server.dataserver.sql.*;
 import psl.memento.server.frax.FraxException;
 import psl.memento.server.frax.vocabulary.DatabaseVocab;
 
-class DatabaseExtractor extends Extractor {
+public class DatabaseExtractor extends Extractor {
   private static final String kErrorBadJdbcURL =
     "Badly formatted JDBC URL: ";
   private static final String kNoSuchCoupler =
@@ -73,7 +73,7 @@ class DatabaseExtractor extends Extractor {
             break;          
           } catch (Exception ex) {
             // couldn't resolve the vendor coupler class, instantiate it,
-            // or use it to handle the URI -- move on to the next one
+            // or use it to handle the URI -- move on to the next one            
             continue;
           }
         }
@@ -95,14 +95,21 @@ class DatabaseExtractor extends Extractor {
           throw new FraxException(kErrorBadJdbcURL + iURI);
         }
         String subProtocol = uriString.substring(index + 1, index2);
-        String driverClassName = (String) vendorMap.get(subProtocol);
+        String vcClassName = (String) vendorMap.get(subProtocol);
         
-        if (driverClassName == null) {          
+        if (vcClassName == null) {
           throw new FraxException(kNoSuchCoupler + subProtocol);
         }
         
-        cs = new JdbcOneConnectionSource(driverClassName);        
-        conn = cs.obtainConnection(iURI.toString());
+        try {
+          vc = (VendorCoupler) Class.forName(vcClassName).newInstance();          
+        } catch (Exception ex) {          
+          // couldn't resolve the vendor coupler class or instantiate it          
+          throw new FraxException(kNoSuchCoupler + subProtocol);
+        }
+        
+        cs = new JdbcOneConnectionSource(vc);
+        conn = cs.obtainConnection(uriString);
       }
       
       // extract the metadata
@@ -133,7 +140,7 @@ class DatabaseExtractor extends Extractor {
         md.getDatabaseProductVersion());
       iTarget.addProperty(DatabaseVocab.kDriverName.getProperty(),
         md.getDriverName());
-      iTarget.addProperty(DatabaseVocab.kDriverName.getProperty(),
+      iTarget.addProperty(DatabaseVocab.kDriverVersion.getProperty(),
         md.getDriverVersion());
 
       ResultSet rs = md.getCatalogs();
@@ -158,7 +165,8 @@ class DatabaseExtractor extends Extractor {
       iTarget.addProperty(DatabaseVocab.kCatalogs.getProperty(),
         catalogsSeq);
     } catch (SQLException ex) {
-      throw new FraxException(kErrorDatabase, ex);
+      System.out.println(ex);
+      throw new FraxException(kErrorDatabase, ex);      
     } catch (RDFException ex) {
       throw new FraxException(kErrorAddingProperty, ex);
     } finally {

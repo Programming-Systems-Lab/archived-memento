@@ -17,11 +17,13 @@ import psl.memento.server.frax.FraxException;
 import psl.memento.server.frax.vocabulary.ResourceVocab;
 import psl.memento.server.frax.vocabulary.HTTPVocab;
 
-class HTTPExtractor extends Extractor {
+public class HTTPExtractor extends Extractor {
   private static final String kErrorCantCreateURL =
     "Could not create a URL object out of: ";
   private static final String kErrorHttp =
     "HTTP error.";
+  private static final String kErrorCantAuthenticate =
+    "Authentication data missing.  Please prepend username:password to URI.";
   private static final String kErrorCantGetResource =
     "Could not retrieve resource.  HTTP status code: ";
   
@@ -53,31 +55,59 @@ class HTTPExtractor extends Extractor {
       throws FraxException {
     try {      
       HttpClient httpClient = new HttpClient();
-      
+            
+      String userInfo = iURI.getUserInfo();
+      if (userInfo != null) {
+        int index = userInfo.indexOf(':');
+        String userName;
+        String password;
+        if (index == -1) {
+          userName = userInfo;
+          password = "";
+        } else {
+          userName = userInfo.substring(0, index);
+          if (index + 1 >= userInfo.length()) {
+            password = "";
+          } else {
+            password = userInfo.substring(index + 1);
+          }
+        }
+        
+        HttpState state = httpClient.getState();      
+        Credentials c = new UsernamePasswordCredentials(userName, password);
+        state.setCredentials(null, c);
+      }
+
       URL u = iURI.toURL();
-      httpClient.startSession(u);
+      httpClient.startSession(u);      
       String path = u.getFile();
+      
       if (path == null || path.trim().equals("")) {
         path = "/";
       }      
+      
       HttpMethod method = new GetMethod(path);
       int responseCode = httpClient.executeMethod(method);
       
       // if the response status code is not 2xx, it is a failure,
       // and we're not interested in the metadata      
       if ((responseCode / 100) != 2) {
+        if (responseCode == 401) {
+          throw new FraxException(kErrorCantAuthenticate);
+        }
+        
         throw new FraxException(kErrorCantGetResource + responseCode);
       }
       
       extractMetadataFromHeaders(method, iTarget);
       
       InputStream stream = method.getResponseBodyAsStream();
-      httpClient.endSession();
+      httpClient.endSession();      
       
       return stream;
     } catch (MalformedURLException ex) {
       throw new FraxException(kErrorCantCreateURL + iURI, ex);
-    } catch (IOException ex) {
+    } catch (IOException ex) {      
       throw new FraxException(kErrorHttp, ex);
     } catch (HttpException ex) {
       throw new FraxException(kErrorHttp, ex);

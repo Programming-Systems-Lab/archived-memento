@@ -1,9 +1,13 @@
 package psl.memento.server.frax;
 
 import java.io.*;
-import java.util.List;
+import java.net.*;
+import java.util.*;
+
+import psl.memento.server.frax.util.MiscUtils;
 
 public class ClassBundle implements Serializable {
+  private String mLabel;
   private String mClassName;
   private byte[] mClassByteData;
   private String[] mDependenciesNames;
@@ -12,7 +16,8 @@ public class ClassBundle implements Serializable {
   private ClassBundle() {
   }
   
-  public static ClassBundle getInstance(Class iClass) throws FraxException {
+  public static ClassBundle getInstance(Class iClass, String iLabel)
+      throws FraxException {
     if (iClass == null) {
       return null;
     }
@@ -22,11 +27,15 @@ public class ClassBundle implements Serializable {
     try {   
       ClassBundle c = new ClassBundle();
       
+      c.setLabel(iLabel);
+      
       String name = iClass.getName();
       c.setClassName(name);
 
-      String classFile = name.replace('.', '/') + ".class";
-      ClassLoader cl = iClass.getClassLoader();
+      String classFile = name.replace('.', '/') + ".class";      
+      
+      ClassLoader cl = MiscUtils.getFraxClassLoader();
+      
       c.setClassByteData(getResourceBytes(cl, classFile));
       
       List deps = config.getDependencies(name);
@@ -43,7 +52,7 @@ public class ClassBundle implements Serializable {
     } catch (IOException ex) {
       throw new FraxException(
         "Error getting byte data for class " + iClass, ex);
-    }    
+    }
   }
   
   private static byte[] getResourceBytes(ClassLoader iCL, String iPath)
@@ -63,6 +72,14 @@ public class ClassBundle implements Serializable {
     is.close();
 
     return os.toByteArray();
+  }
+  
+  public String getLabel() {
+    return mLabel;
+  }
+  
+  public void setLabel(String iLabel) {
+    mLabel = iLabel;
   }
   
   public String getClassName() {

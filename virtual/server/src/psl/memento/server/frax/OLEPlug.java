@@ -14,7 +14,7 @@ import org.apache.poi.poifs.eventfilesystem.*;
 import psl.memento.server.frax.FraxException;
 import psl.memento.server.frax.vocabulary.DocumentVocab;
 
-class OLEPlug extends Plug {
+public class OLEPlug extends Plug {
   private static final String kErrorAddingProperty =
     "Error adding RDF Property object.";
   

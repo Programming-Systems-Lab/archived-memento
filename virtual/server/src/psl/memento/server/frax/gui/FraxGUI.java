@@ -5,19 +5,24 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.model.*;
 import com.hp.hpl.mesa.rdf.jena.common.prettywriter.*;
-import org.apache.commons.logging.*;
 import psl.memento.server.frax.*;
+import psl.memento.server.frax.util.MiscUtils;
 
 public class FraxGUI implements ActionListener {
+  static {
+    MiscUtils.configureLogging();
+  }
+  
   private static Font kProgramFont = new Font("Monospaced", Font.PLAIN, 12);
   private static int kMaxHistorySize = 20;
   
-  private static Log sLog = LogFactory.getLog(FraxGUI.class);
+  private static Logger sLog = Logger.getLogger("psl.memento.server.frax");
   
   private static final String kWarningCouldNotSetDefaultConfig =
     "Could not set the default configuration: ";
@@ -34,6 +39,9 @@ public class FraxGUI implements ActionListener {
   private JMenuItem mMenuBuilderDB;
   private JMenuItem mOptionsMenuItem;
   private JFileChooser mExtractFileChooser;
+  private OptionsDialog mOptionsDialog;
+  private FTPAddressBuilderDialog mFTPAddressBuilderDialog;
+  private DBAddressBuilderDialog mDBAddressBuilderDialog;
   
   public static void main(String[] args) {
     new FraxGUI();
@@ -42,7 +50,7 @@ public class FraxGUI implements ActionListener {
   private FraxGUI() {
     mSplashWindow = new JWindow();
     
-    JLabel splashImageLabel = new JLabel(new ImageIcon("etc/frax/frax1.gif"));
+    JLabel splashImageLabel = new JLabel(new ImageIcon(ClassLoader.getSystemResource("etc/frax/frax1.gif")));
     splashImageLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));        
     mSplashWindow.getContentPane().add(splashImageLabel, BorderLayout.CENTER);
     
@@ -63,14 +71,18 @@ public class FraxGUI implements ActionListener {
             
     try {
       mFrax.setConfiguration(new XMLFraxConfiguration());
-    } catch (Exception ex) {      
-      sLog.warn(kWarningCouldNotSetDefaultConfig + ex);
+    } catch (Exception ex) {            
+      sLog.warning(kWarningCouldNotSetDefaultConfig + ex);
     }
+    
+    FraxConfiguration config = Frax.getInstance().getConfiguration();
+    config.setUseMetadataCache(true);
+    config.setExtractContentMetadata(true);
     
     // synch with the oracle
     loadProgress.setValue(2);
     loadProgress.setString("Synchronizing with oracle");
-    
+        
     try {
       mFrax.synchWithOracle();
     } catch (FraxException ex) {
@@ -82,7 +94,7 @@ public class FraxGUI implements ActionListener {
     // load persistent RDF model (metadata cache)
     loadProgress.setValue(3);
     loadProgress.setString("Initializing metadata cache");
-        
+            
     mFrax.loadPersistentModel();    
     
     // create the GUI
@@ -101,6 +113,13 @@ public class FraxGUI implements ActionListener {
     mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     
     buildMenus();
+    
+    mOptionsDialog = new OptionsDialog(mFrame, true);
+    mFTPAddressBuilderDialog = new FTPAddressBuilderDialog(mFrame, true, this);
+    mDBAddressBuilderDialog = new DBAddressBuilderDialog(mFrame, true, this);
+    centerOnScreen(mOptionsDialog);
+    centerOnScreen(mFTPAddressBuilderDialog);
+    centerOnScreen(mDBAddressBuilderDialog);
     
     java.awt.Container contentPane = mFrame.getContentPane();
     
@@ -164,6 +183,10 @@ public class FraxGUI implements ActionListener {
     menu.add(mOptionsMenuItem);
   }
   
+  public JComboBox getAddressTextCombo() {
+    return mAddressPanel.mAddressText;
+  }
+  
   public void actionPerformed(ActionEvent iEvent) {
     Object source = iEvent.getSource();
     
@@ -174,7 +197,13 @@ public class FraxGUI implements ActionListener {
           getSelectedFile().toURI().toString());
       }
     } else if (mOptionsMenuItem.equals(source)) {
-      // display options window
+      mOptionsDialog.reloadSchemesList();
+      mOptionsDialog.reloadTypesList();
+      mOptionsDialog.setVisible(true);
+    } else if (mMenuBuilderFTP.equals(source)) {
+      mFTPAddressBuilderDialog.setVisible(true);
+    } else if (mMenuBuilderDB.equals(source)) {
+      mDBAddressBuilderDialog.setVisible(true);
     }
   }
   
@@ -183,8 +212,7 @@ public class FraxGUI implements ActionListener {
     private JLabel mAddressLabel;
     private JComboBox mAddressText;
     private JButton mExtractButton;
-    private JButton mStopButton;
-    private JCheckBox mUseCache;
+    private JButton mStopButton;    
     private ExtractionThread mCurrentExtractionThread;
     
     public AddressPanel(FraxGUI iFraxGUI) {
@@ -207,20 +235,16 @@ public class FraxGUI implements ActionListener {
       addressPanel.add(mAddressText, BorderLayout.CENTER);
       add(addressPanel, BorderLayout.CENTER);
       
-      mUseCache = new JCheckBox("Use metadata cache", true);
-      mUseCache.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
-      add(mUseCache, BorderLayout.SOUTH);
-      
       JPanel buttonPanel = new JPanel();
       buttonPanel.setLayout(new BorderLayout());      
       add(buttonPanel, BorderLayout.EAST);
-      
-      mExtractButton = new JButton("Extract", new ImageIcon("etc/frax/Export24.gif"));
+            
+      mExtractButton = new JButton("Extract", new ImageIcon(ClassLoader.getSystemResource("etc/frax/Export24.gif")));
       mExtractButton.addActionListener(this);
       mExtractButton.setToolTipText("Extract metadata.");      
       buttonPanel.add(mExtractButton, BorderLayout.WEST);
       
-      mStopButton = new JButton("Stop", new ImageIcon("etc/frax/Stop24.gif"));
+      mStopButton = new JButton("Stop", new ImageIcon(ClassLoader.getSystemResource("etc/frax/Stop24.gif")));
       mStopButton.addActionListener(this);
       mStopButton.setToolTipText("Stop the extraction.");      
       mStopButton.setEnabled(false);
@@ -274,8 +298,7 @@ public class FraxGUI implements ActionListener {
       mStopButton.setEnabled(true);
       mFraxGUI.mResultsText.setText("");      
       
-      mCurrentExtractionThread = new ExtractionThread(uriString,
-        mUseCache.isSelected(), this);
+      mCurrentExtractionThread = new ExtractionThread(uriString, this);
       mCurrentExtractionThread.start();
     }
     
@@ -292,7 +315,7 @@ public class FraxGUI implements ActionListener {
     }
   }
   
-  private static void centerOnScreen(Component iC) {
+  static void centerOnScreen(Component iC) {
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     Dimension cSize = iC.getSize();
     
@@ -302,17 +325,14 @@ public class FraxGUI implements ActionListener {
   
   private static class ExtractionThread extends Thread {
     private String mURI;
-    private AddressPanel mP;
-    private boolean mUseCache;
+    private AddressPanel mP;    
     private boolean mRunning;
     
-    public ExtractionThread(String iURI, boolean iUseCache,
-        AddressPanel iP) {
+    public ExtractionThread(String iURI, AddressPanel iP) {
       super();
       
       mURI = iURI;
-      mP = iP;
-      mUseCache = iUseCache;
+      mP = iP;      
     }
     
     public void run() {
@@ -330,8 +350,15 @@ public class FraxGUI implements ActionListener {
             "URI must be absolute (scheme element must be present)");
         }
         
-        Model m = Frax.getInstance()
-          .extractMetadata(uri, true, true, mUseCache);        
+        FraxConfiguration config = Frax.getInstance().getConfiguration();                
+        
+        Model m = Frax.getInstance().extractMetadata(uri,
+          config.getExtractContentMetadata(),
+          config.getUseOracleForExtractors(),
+          config.getUseOracleForPlugs(),
+          config.getUseMetadataCache());
+        
+        long timeTotal = System.currentTimeMillis() - timeStarted;
 
         if (!mRunning) {
           return;
@@ -343,9 +370,7 @@ public class FraxGUI implements ActionListener {
         
         if (!mRunning) {
           return;
-        }
-        
-        long timeTotal = System.currentTimeMillis() - timeStarted;
+        }        
         
         mP.mFraxGUI.mResultsText.setText(sw.toString());        
         mP.mFraxGUI.mStatusLabel.setText("Done (" +

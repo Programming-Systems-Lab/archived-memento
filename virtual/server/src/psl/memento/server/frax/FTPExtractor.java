@@ -17,7 +17,7 @@ import psl.memento.server.frax.util.MiscUtils;
 import psl.memento.server.frax.vocabulary.FileVocab;
 import psl.memento.server.frax.vocabulary.ResourceVocab;
 
-class FTPExtractor extends Extractor {
+public class FTPExtractor extends Extractor {
   private static final String kDefaultPassword = "frax@";
   private static final String kErrorFtp =
     "FTP error.";
@@ -52,7 +52,7 @@ class FTPExtractor extends Extractor {
       throws FraxException {    
     Ftp ftp = null;
     try {
-      FtpConnect connectInfo = FtpConnect.newConnect(iURI.toString());      
+      FtpConnect connectInfo = FtpConnect.newConnect(iURI.toString());
       completeConnectInfoFromURI(connectInfo, iURI);
       
       ftp = new Ftp();
@@ -86,10 +86,12 @@ class FTPExtractor extends Extractor {
       if (filePath == "") {
         f = dir;
       } else {
-        CoFile[] dirContents = dir.listCoFiles();      
-        for (int i = 0; i < dirContents.length; i++) {
-          if (filePath.equals(dirContents[i].getName())) {
-            f = dirContents[i];
+        CoFile[] dirContents = dir.listCoFiles();
+        if (dirContents != null) {
+          for (int i = 0; i < dirContents.length; i++) {
+            if (filePath.equals(dirContents[i].getName())) {
+              f = dirContents[i];
+            }
           }
         }
       }

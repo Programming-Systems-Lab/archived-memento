@@ -1,19 +1,18 @@
 package psl.memento.server.frax;
 
 // jdk imports
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
+import java.net.*;
 import java.rmi.RemoteException;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.common.SelectorImpl;
 import com.hp.hpl.mesa.rdf.jena.mem.ModelMem;
 import com.hp.hpl.mesa.rdf.jena.model.*;
 import com.hp.hpl.mesa.rdf.jena.rdb.*;
-import org.apache.commons.logging.*;
 import psl.memento.server.dataserver.sql.*;
 import psl.memento.server.frax.FraxException;
 import psl.memento.server.frax.util.MiscUtils;
@@ -28,6 +27,10 @@ import com.hp.hpl.mesa.rdf.jena.model.Statement;
  * @author Mark Ayzenshtat
  */
 public final class Frax {
+  static {
+    MiscUtils.configureLogging();
+  }
+  
   private static final String kErrorNullConfiguration =
     "Configuration is null.";
   private static final String kErrorNoConfigurationSet =
@@ -42,13 +45,18 @@ public final class Frax {
     "Error creating RDF Resource object.";
   private static final String kErrorCouldNotInstantiateCoupler =
     "Could not instantiate vendor coupler class: ";
+  private static final String kErrorWhileRegisteringExtractor =
+    "Error occurred while trying to register extractor: ";
+  private static final String kErrorWhileRegisteringPlug =
+    "Error occurred while trying to register plug: ";
   private static final String kWarningCouldNotInitMetadataCache =
     "Could not initialize metadata cache: ";
   private static final String kInfoPersistentModelLoaded =
     "Persistent RDF model loaded for metadata cache.";
   
-  private static Log sLog = LogFactory.getLog(Frax.class);
-  private static Frax sInstance;  
+  public static final float kVersion = 2.0f;
+  private static Logger sLog = Logger.getLogger("psl.memento.server.frax");
+  private static Frax sInstance;
   
   private FraxConfiguration mConfiguration;
   private Oracle mOracle;
@@ -91,7 +99,7 @@ public final class Frax {
       String cacheJenaDBType = config.getMetadataCacheJenaDBType();      
       
       if (cacheVendor == null || cacheLoc == null || cacheJenaDBType == null) {
-        sLog.warn(kWarningCouldNotInitMetadataCache +
+        sLog.warning(kWarningCouldNotInitMetadataCache +
           "Missing configuration data.");
         return;
       }
@@ -115,19 +123,19 @@ public final class Frax {
       
       sLog.info(kInfoPersistentModelLoaded);
     } catch (SQLException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache + ex);
+      sLog.warning(kWarningCouldNotInitMetadataCache + ex);
     } catch (URISyntaxException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache + ex);
+      sLog.warning(kWarningCouldNotInitMetadataCache + ex);
     } catch (RDFException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache + ex);      
+      sLog.warning(kWarningCouldNotInitMetadataCache + ex);      
     } catch (InstantiationException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache +
+      sLog.warning(kWarningCouldNotInitMetadataCache +
         kErrorCouldNotInstantiateCoupler + ex);
     } catch (IllegalAccessException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache +
+      sLog.warning(kWarningCouldNotInitMetadataCache +
         kErrorCouldNotInstantiateCoupler + ex);
     } catch (ClassNotFoundException ex) {
-      sLog.warn(kWarningCouldNotInitMetadataCache +
+      sLog.warning(kWarningCouldNotInitMetadataCache +
         kErrorCouldNotInstantiateCoupler + ex);
     }
   }
@@ -154,7 +162,7 @@ public final class Frax {
    * @exception IllegalStateException if the FraxConfiguration has not been set
    */
   public Model extractMetadata(URI iURI) throws FraxException {
-    return extractMetadata(iURI, false, false, true);
+    return extractMetadata(iURI, true, false, false, true);
   }  
 
   /**
@@ -186,10 +194,9 @@ public final class Frax {
    * @exception IllegalArgumentException if the supplied URI is not absolute
    * @exception IllegalStateException if the FraxConfiguration has not been set
    */
-  public Model extractMetadata(URI iURI, boolean iUseOracleForExtractors,
-      boolean iUseOracleForPlugs, boolean iUseCacheIfExists)
-      throws FraxException {
-    
+  public Model extractMetadata(URI iURI, boolean iExtractContentMetadata,
+      boolean iUseOracleForExtractors, boolean iUseOracleForPlugs,
+      boolean iUseCacheIfExists) throws FraxException {    
     if (iURI == null) {
       throw new NullPointerException(kErrorNullURI);
     }
@@ -207,10 +214,38 @@ public final class Frax {
     
     if (extractor == null) {
       if (iUseOracleForExtractors) {
-        // TODO: look for extractor on oracle server -- if found,
-        //       use it, otherwise, throw an exception
-        throw new FraxException(kErrorNoExtractorObjectFound + scheme);
-      } else {      
+        // look for extractor on oracle server -- if found,
+        // use it, otherwise, throw an exception        
+        ClassBundle cb = null;
+        
+        try {
+          cb = mOracle.getExtractor(scheme);
+        } catch (RemoteException ex) {
+          sLog.warning("Could not access oracle: " + ex);          
+          throw new FraxException(kErrorNoExtractorObjectFound + scheme);
+        }
+        
+        if (cb == null) {
+          // appropriate extractor not found on oracle server          
+          throw new FraxException(kErrorNoExtractorObjectFound + scheme);
+        }
+
+        // save the extractor we got from the oracle
+        // with the local Frax instance
+        boolean success = registerExtractor(cb);
+        if (!success) {          
+          throw new FraxException(kErrorNoExtractorObjectFound + scheme);
+        }
+
+        // now that the extractor has been saved, try retrieving it again
+        extractor = Extractor.getInstance(scheme);
+
+        if (extractor == null) {
+          // just in case
+          sLog.fine("Extractor from oracle was not saved properly.");          
+          throw new FraxException(kErrorNoExtractorObjectFound + scheme);
+        }        
+      } else {        
         throw new FraxException(kErrorNoExtractorObjectFound + scheme);
       }
     }
@@ -233,16 +268,7 @@ public final class Frax {
           
           Model m = mPersistentModel.query(
             new MiscUtils.SubjectSelector(subjects));
-          
-          ////////////////////          
-/*          
-          Model m = mPersistentModel.query(new SelectorImpl(r, null,
-            (RDFNode) null));          
 
-          Model mCopy = new ModelMem();
-          mCopy.add(m);          
-          addStatementsRecursively(mCopy, m);  
-*/          
           return m;
         }
       }
@@ -258,15 +284,39 @@ public final class Frax {
     InputStream contentStream = extractor.extractSchemeMetadata(iURI, r);
     
     // extract content metadata, if necessary    
-    if (contentStream != null) {
+    if (iExtractContentMetadata && contentStream != null) {
       String mimeType = MiscUtils.getMIMEType(r);      
       if (mimeType != null) {
         Plug plug = Plug.getInstance(mimeType);
         
         if (plug == null) {
           if (iUseOracleForPlugs) {
-            // TODO: look for plug on oracle server -- if found, use it,
-            //       otherwise do not extract any content metadata
+            // look for plug on oracle server -- if found, use it,
+            // otherwise do not extract any content metadata
+            ClassBundle cb2 = null;
+
+            try {
+              cb2 = mOracle.getPlug(mimeType);
+              
+              if (cb2 != null) {
+                // appropriate plug found on oracle server --
+                // save it with the local Frax instance
+                boolean success = registerPlug(cb2);
+                if (success) {                  
+                  // now that the plug has been saved, try retrieving it again
+                  plug = Plug.getInstance(mimeType);
+
+                  if (plug != null) {
+                    plug.extractContentMetadata(contentStream, r);
+                  } else {
+                    sLog.fine("Plug from oracle was not saved properly: " +
+                      mimeType);
+                  }
+                }
+              }
+            } catch (RemoteException ex) {
+              sLog.warning("Could not access oracle: " + ex);              
+            }
           }
         } else {
           plug.extractContentMetadata(contentStream, r);
@@ -282,11 +332,6 @@ public final class Frax {
       for (ResIterator i = mCopy.listSubjects(); i.hasNext(); ) {
         r.addProperty(ResourceVocab.kStatements.getProperty(), i.next());
       }
-/*
-      for (StmtIterator i = mCopy.listStatements(); i.hasNext(); ) {
-        r.addProperty(ResourceVocab.kStatements.getProperty(), i.next());
-      }
-*/
     } catch (RDFException ex) {
       // do nothing
     }
@@ -366,21 +411,113 @@ public final class Frax {
       String[] types = config.getLocalTypes();    
       String[] unhandledSchemes = mOracle.getUnhandledSchemes(schemes);
       String[] unhandledTypes = mOracle.getUnhandledTypes(types);
-
-      for (int i = 0; i < unhandledSchemes.length; i++) {
-        mOracle.registerExtractor(ClassBundle.getInstance(
-          config.getExtractorClass(unhandledSchemes[i])));
-      }
-
-      for (int i = 0; i < unhandledTypes.length; i++) {
-        mOracle.registerPlug(ClassBundle.getInstance(
-          config.getPlugClass(unhandledTypes[i])));
-      }
       
-      mOracle.registerExtractor(ClassBundle.getInstance(config.getExtractorClass("ftp")));
+      Set extractors = new HashSet();
+      for (int i = 0; i < unhandledSchemes.length; i++) {
+        extractors.add(config.getExtractorClass(unhandledSchemes[i]));
+      }
+      for (Iterator i = extractors.iterator(); i.hasNext(); ) {
+        Class c = (Class) i.next();
+        mOracle.registerExtractor(ClassBundle.getInstance(
+          c, config.getSchemeString(c.getName())));
+      }
+
+      Set plugs = new HashSet();
+      for (int i = 0; i < unhandledTypes.length; i++) {
+        plugs.add(config.getPlugClass(unhandledTypes[i]));
+      }
+      for (Iterator i = plugs.iterator(); i.hasNext(); ) {
+        Class c = (Class) i.next();
+        mOracle.registerPlug(ClassBundle.getInstance(
+          c, config.getTypeString(c.getName())));
+      }
+    
+      //mOracle.registerExtractor(ClassBundle.getInstance(config.getExtractorClass("ftp"), "ftp"));
     } catch (RemoteException ex) {
       throw new FraxException("RMI error.", ex);
     }
+  }
+  
+/**
+   * Registers a local extractor with the oracle server.  Calling this method
+   * will push the byte data for the extractor class, along with any of its
+   * dependencies, to the oracle server.  Since this can potentially add up
+   * to a lot of data, call <code>getUnhandledSchemes</code> first to narrow
+   * down the number of class bundles you need to push.
+   *
+   * @param iBundle the class bundle that contains the byte data for the
+   * extractor class, along with any of its dependencies
+   */
+  public boolean registerExtractor(ClassBundle iBundle) {
+    try {
+      registerCommon(iBundle);
+      
+      Frax.getInstance().getConfiguration().addExtractor(
+        iBundle.getClassName(), iBundle.getLabel(),
+        MiscUtils.concatenateDeps(iBundle.getDependenciesNames()));
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      sLog.fine(kErrorWhileRegisteringExtractor + ex);
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Registers a local plug with the oracle server.  Calling this method
+   * will push the byte data for the plug class, along with any of its
+   * dependencies, to the oracle server.  Since this can potentially add up
+   * to a lot of data, call <code>getUnhandledTypes</code> first to narrow
+   * down the number of class bundles you need to push.
+   *
+   * @param iBundle the class bundle that contains the byte data for the
+   * plug class, along with any of its dependencies
+   */
+  public boolean registerPlug(ClassBundle iBundle) {
+    try {
+      registerCommon(iBundle);
+      
+      Frax.getInstance().getConfiguration().addPlug(
+        iBundle.getClassName(), iBundle.getLabel(),
+        MiscUtils.concatenateDeps(iBundle.getDependenciesNames()));
+    } catch (Exception ex) {
+      sLog.fine(kErrorWhileRegisteringPlug + ex);
+      return false;
+    }
+    
+    return true;
+  }
+  
+  private void registerCommon(ClassBundle iBundle) throws Exception {
+    String className = iBundle.getClassName();
+
+    String classFileName = className.replace('.', '/') + ".class";
+    File acquiredDir = new File("etc/frax/acquired/");
+    File classFile = new File(acquiredDir, classFileName);      
+
+    classFile.getParentFile().mkdirs();
+    classFile.createNewFile();
+    FileOutputStream fos = new FileOutputStream(classFile);
+    fos.write(iBundle.getClassByteData());
+    fos.close();
+
+    String[] depNames = iBundle.getDependenciesNames();
+    byte[][] depData = iBundle.getDependencyByteData();
+    for (int i = 0; i < depNames.length; i++) {
+      File f = new File(acquiredDir, "deps/" + depNames[i]);
+      f.getParentFile().mkdirs();
+      f.createNewFile();
+      fos = new FileOutputStream(f);
+      fos.write(depData[i]);
+      fos.close();
+    }
+
+    MiscUtils.rebuildClassLoaderPaths();
+  }
+  
+  public static void main(String[] args) {
+    new FraxCommandLineTool(args);
   }
   
   private static class FraxShutdownHook extends Thread {    
@@ -391,5 +528,5 @@ public final class Frax {
     public void run() {
       Frax.getInstance().shutDown();
     }
-  }
+  }  
 }

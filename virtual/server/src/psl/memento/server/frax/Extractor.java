@@ -4,11 +4,12 @@ package psl.memento.server.frax;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.logging.Logger;
 
 // non-jdk imports
 import com.hp.hpl.mesa.rdf.jena.model.Resource;
-import org.apache.commons.logging.*;
 import psl.memento.server.frax.FraxException;
+import psl.memento.server.frax.util.MiscUtils;
 
 /**
  * An extractor knows how to extract metadata from a resource that is
@@ -17,12 +18,16 @@ import psl.memento.server.frax.FraxException;
  * @author Mark Ayzenshtat
  */
 public abstract class Extractor implements Serializable {
+  static {
+    MiscUtils.configureLogging();
+  }
+  
   protected static final String kErrorAddingProperty =
     "Error adding RDF Property object.";
   private static final String kWarningCouldNotInstantiateExtractor = 
     "Could not instantiate extractor class: ";
   
-  private static Log sLog = LogFactory.getLog(Extractor.class);
+  private static Logger sLog = Logger.getLogger("psl.memento.server.frax");
   
  	protected Extractor() {
     // make direct instantiation by non-subclasses impossible    
@@ -42,8 +47,6 @@ public abstract class Extractor implements Serializable {
    * extractor that handles the given scheme can be found
    */
   public static Extractor getInstance(String iScheme) {
-    // right now we create an object for every call of this method
-    // FIXME: optimize this
     Class extractorClass;    
 
     extractorClass = Frax.getInstance().getConfiguration()
@@ -51,14 +54,14 @@ public abstract class Extractor implements Serializable {
     
     if (extractorClass == null) {
       return null;
-    }
-        
+    }    
+
     Extractor extractor = null;
     
     try {
       extractor = (Extractor) extractorClass.newInstance();
     } catch (Exception ex) {      
-      sLog.warn(kWarningCouldNotInstantiateExtractor + extractorClass);
+      sLog.warning(kWarningCouldNotInstantiateExtractor + extractorClass);      
     }
     
     return extractor;

@@ -13,7 +13,7 @@ import psl.memento.server.frax.FraxException;
 import psl.memento.server.frax.util.ImageInfo;
 import psl.memento.server.frax.vocabulary.ImageVocab;
 
-class ImagePlug extends Plug {
+public class ImagePlug extends Plug {
   private static final String kErrorBadImageData =
     "Could not extract metadata because of bad data or an unknown format.";
   private static final String kErrorAddingProperty =
