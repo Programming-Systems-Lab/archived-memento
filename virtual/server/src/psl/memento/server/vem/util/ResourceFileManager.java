@@ -14,7 +14,7 @@ import java.io.*;
  * Class for managing resource files such as 3DS files and images.
  *
  * @author  Vladislav Shchogolev
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ResourceFileManager
 {
@@ -116,10 +116,14 @@ public class ResourceFileManager
 	/**
 	 *	Given a resourceID, returns the associated ResourceFile.
 	 */
-	public ResourceFile getResourceFile(int iResourceID)
+	public ResourceFile getRF(int iResourceID)
 	{
 		return (ResourceFile)
 		mResourceFiles.get(getHashKey(iResourceID));
+	}
+	
+	public ResourceFile getRF(String name) {
+	    return null;
 	}
 	
 	/**
