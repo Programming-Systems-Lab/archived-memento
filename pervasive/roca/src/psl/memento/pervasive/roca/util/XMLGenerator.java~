@@ -35,8 +35,9 @@ public class XMLGenerator {
     if (((roomURL = room.getRoomURL()) != null) && (!roomURL.equals(""))) {
       Element elemRoomURL = new Element("RoomURL");
       elemRoomURL.addContent(roomURL);
-      elemCompleteRoom.addContent(elemRoomURL);
     }
+    
+    elemCompleteRoom.addContent(elemRoomURL);
     
     Element elemRoomBoundaries = new Element("RoomBoundaries");
     

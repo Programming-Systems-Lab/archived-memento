@@ -23,7 +23,7 @@ public class Door {
    */
   public Door(String iDoorURL, String iWall, String iSide) {
     mDoorURL = iDoorURL;
-    mPosition = determinePosition(iWall, iSide);
+    mPosition = determinePosition(iSide, iWall);
   }
   
   /** Determines coordinate position of door based on the wall and the side of

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="MainGUI.java">
+        <attr name="class_dependency_java.awt.event.ActionListener" stringvalue="MainGUI"/>
+        <attr name="class_dependency_javax.swing.JComponent" stringvalue="MainGUI"/>
+    </fileobject>
+    <fileobject name="ObjectTab.java">
+        <attr name="class_dependency_javax.swing.event.ChangeListener" stringvalue="ObjectTab.SliderListener"/>
+        <attr name="class_dependency_java.awt.event.ActionListener" stringvalue="ObjectTab.ButtonListener;ObjectTab.ComboBoxListener"/>
+        <attr name="class_dependency_javax.swing.event.ListSelectionListener" stringvalue="ObjectTab.ListListener"/>
+    </fileobject>
+    <fileobject name="RoomTab.java">
+        <attr name="class_dependency_java.awt.event.ActionListener" stringvalue="RoomTab"/>
+    </fileobject>
+    <fileobject name="PreviewTab.java">
+        <attr name="class_dependency_javax.swing.JPanel" stringvalue="PreviewTab"/>
+        <attr name="class_dependency_java.awt.event.ActionListener" stringvalue="PreviewTab"/>
+    </fileobject>
+</attributes>

@@ -13,7 +13,7 @@ public class MainGUI extends JComponent implements ActionListener {
   
   private RoomTab roomTab = new RoomTab();
   private ObjectTab objectTab = new ObjectTab();
-  private SummaryTab summaryTab = new SummaryTab();
+  //private SummaryTab summaryTab = new SummaryTab();
   private PreviewTab previewTab = new PreviewTab();
   
   public Component createComponents() {
@@ -23,7 +23,7 @@ public class MainGUI extends JComponent implements ActionListener {
     
     tabbedPane.addTab("Room Information", roomTab.getMainPanel());
     tabbedPane.addTab("Object Information", objectTab.getMainPanel());
-    tabbedPane.addTab("Summary", summaryTab.getMainPanel());
+    //tabbedPane.addTab("Summary", summaryTab.getMainPanel());
     tabbedPane.addTab("Preview", previewTab.getMainPanel());
     
     JPanel pane = new JPanel();
@@ -117,7 +117,7 @@ public class MainGUI extends JComponent implements ActionListener {
     objectTab.clearFields();
     objectTab.clearCurrentObjectList();
     
-    summaryTab.clearTextBox();
+    //summaryTab.clearTextBox();
   }
   
   public static void main(String[] args) {

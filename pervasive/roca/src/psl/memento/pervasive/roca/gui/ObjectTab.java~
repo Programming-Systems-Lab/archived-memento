@@ -782,7 +782,7 @@ public class ObjectTab {
     room.removeAllPhysicalObjects();
     room.removeAllPervasiveObjects();
     room.removeAllStationaryObjects();
-     
+    
     listModel.clear();
   }
   
