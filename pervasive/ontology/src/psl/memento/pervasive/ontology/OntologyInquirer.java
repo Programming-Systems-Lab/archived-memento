@@ -1,6 +1,7 @@
 package psl.memento.pervasive.ontology;
 
 import java.util.*;
+import de.fzi.wim.texttoonto.common.*;
 
 public class OntologyInquirer {
 	private Ontology ontology;
@@ -10,12 +11,17 @@ public class OntologyInquirer {
 	}
 
 	public List areRelated(String premise, String conclusion, int depth) {
-		OntologyNode node = ontology.getNode(premise);
+		//Get the stems of the conclusion and the premise
+		StemmerEN stemmer = new StemmerEN();
+		String premiseStem = stemmer.getWordStem(premise);
+		String conclusionStem = stemmer.getWordStem(conclusion);
+
+		OntologyNode node = ontology.getNode(premiseStem);
 		if (node == null) return null;
 		else {
 			ArrayList list = new ArrayList();
 			list.add(node);
-			return areRelated(node, conclusion, depth, list);
+			return areRelated(node, conclusionStem, depth, list);
 		}
 	}
 
