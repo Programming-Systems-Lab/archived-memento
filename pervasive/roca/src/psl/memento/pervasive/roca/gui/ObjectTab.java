@@ -2,28 +2,39 @@ package psl.memento.pervasive.roca.gui;
 
 import psl.memento.pervasive.roca.room.*;
 import psl.memento.pervasive.roca.data.*;
+import psl.memento.pervasive.roca.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
+/**
+ * ObjectTab.java
+ *
+ * @author Kristina Holst
+ */
 public class ObjectTab {
-  
+  private static ObjectTab theObjectTab;
   private JPanel mainPanel;
   private JTabbedPane positionTabbedPane;
   private JScrollPane scrollPane;
   private JLabel objectPreviewLabel, widthLabel, lengthLabel, heightLabel, LRSliderLabel, UDSliderLabel;
+  //private JLabel[] frontViewRotationLabels, sideViewRotationLabels;
   private JComboBox objectSelector, directionSelector, userPositionSelector, userHeightSelector;
   private JComboBox cornerSelector, wallSelector, objectHeightSelector, objectClassSelector;
   private JRadioButton cornerRadioButton, wallRadioButton, middleRadioButton;
   private JTextField distanceField, directionField, inclineField;
-  private JButton createButton, getDataButton, addButton, clearButton, editButton, removeButton, clearListButton;
+  private JButton getDataButton, addButton, clearButton, editButton, removeButton, clearListButton;
+  //private JButton sideViewLeftRotateButton, sideViewRightRotateButton, frontViewLeftRotateButton, frontViewRightRotateButton;
   private DefaultListModel listModel;
   private JList objectList;
   private JSlider scaleSlider, LRSlider, UDSlider;
   private double widthValue, lengthValue, heightValue;
   private static final int FIELD_LENGTH = 8;
+  private static final double INCHES_TO_METERS = 1/39.37, FEET_TO_METERS = .3048;
+  private static final int FRONT = 0, BEHIND = 1, LEFT = 2, RIGHT = 3, ABOVE = 4, UNDER = 5;
+  private static final int SIMPLE = 0, GRAPHICAL = 1, PRECISE = 2;
   private static String[] objectClassStrings = {"Active", "Pervasive", "Physical", "Stationary", "All"};
   private static String[] userPositionStrings = {"middle", "NW corner", "NE corner", "SW corner",
   "SE corner"};
@@ -34,9 +45,10 @@ public class ObjectTab {
   "3/4 height of room", "Ceiling"};
   private static final String[] zeroStrings = new String[0];
   private HashMap activeMap, pervasiveMap, physicalMap, stationaryMap;
+  private RoomObject currentObject;
   
   /** Builds the tab */
-  public ObjectTab() {
+  protected ObjectTab() {
     // Set up combo box to determine which list of objects to show
     objectClassSelector = new JComboBox(objectClassStrings);
     objectClassSelector.setSelectedIndex(1);
@@ -55,7 +67,7 @@ public class ObjectTab {
     heightValue = 12.34;
     
     // Set up initial labels
-    objectPreviewLabel = new JLabel(new javax.swing.ImageIcon("etc/images/" + currentObject + ".gif"));
+    objectPreviewLabel = new JLabel(new ImageIcon(ClassLoader.getSystemResource("images/" + currentObject + ".gif")));
     widthLabel = new JLabel(String.valueOf(widthValue));
     lengthLabel = new JLabel(String.valueOf(lengthValue));
     heightLabel = new JLabel(String.valueOf(heightValue));
@@ -66,8 +78,6 @@ public class ObjectTab {
     inclineField = new JTextField(FIELD_LENGTH);
     
     // Set up buttons
-    createButton = new JButton("Create New Object");
-    createButton.addActionListener(new ButtonListener());
     getDataButton = new JButton("Get Data");
     getDataButton.addActionListener(new ButtonListener());
     addButton = new JButton("Add to List");
@@ -81,6 +91,17 @@ public class ObjectTab {
     clearListButton = new JButton("Clear List");
     clearListButton.addActionListener(new ButtonListener());
     
+    /*
+     sideViewLeftRotateButton = new JButton(new ImageIcon(ClassLoader.getSystemResource("images/leftarrow.gif")));
+    sideViewLeftRotateButton.addActionListener(new ButtonListener());
+    sideViewRightRotateButton = new JButton(new ImageIcon(ClassLoader.getSystemResource("images/rightarrow.gif")));
+    sideViewRightRotateButton.addActionListener(new ButtonListener());
+    frontViewLeftRotateButton = new JButton(new ImageIcon(ClassLoader.getSystemResource("images/leftarrow.gif")));
+    frontViewLeftRotateButton.addActionListener(new ButtonListener());
+    frontViewRightRotateButton = new JButton(new ImageIcon(ClassLoader.getSystemResource("images/rightarrow.gif")));
+    frontViewRightRotateButton.addActionListener(new ButtonListener());
+     */
+    
     JPanel objectSelectorSubPanel1 = new JPanel();
     objectSelectorSubPanel1.add(new JLabel("   List: "));
     objectSelectorSubPanel1.add(objectClassSelector);
@@ -89,17 +110,12 @@ public class ObjectTab {
     objectSelectorSubPanel2.add(new JLabel("Object: "));
     objectSelectorSubPanel2.add(objectSelector);
     
-    JPanel objectSelectorSubPanel3 = new JPanel();
-    objectSelectorSubPanel3.add(createButton);
-    
     // Set up object selector panel with combo box and label
     JPanel objectSelectorPanel = new JPanel();
     objectSelectorPanel.setLayout(new BoxLayout(objectSelectorPanel, BoxLayout.Y_AXIS));
     objectSelectorPanel.setBorder(BorderFactory.createEmptyBorder(0,0,10,30));
     objectSelectorPanel.add(objectSelectorSubPanel1);
     objectSelectorPanel.add(objectSelectorSubPanel2);
-    objectSelectorPanel.add(Box.createRigidArea(new Dimension(1,5)));
-    objectSelectorPanel.add(objectSelectorSubPanel3);
     
     // Labels
     JPanel objectScalingSubPanel1 = new JPanel();
@@ -163,14 +179,14 @@ public class ObjectTab {
     
     /*
      * All the following code makes the tabbed panel for the user to select
-     * either the "simple" or "precise" way of determining an object's position.
+     * either the "simple", "graphical" or "precise" way of determining an object's position.
      */
     
     cornerRadioButton = new JRadioButton("In a corner", true);
     wallRadioButton = new JRadioButton("Middle of a wall", false);
     middleRadioButton = new JRadioButton("Middle of the room", false);
     
-    javax.swing.ButtonGroup group = new javax.swing.ButtonGroup();
+    ButtonGroup group = new ButtonGroup();
     group.add(cornerRadioButton);
     group.add(wallRadioButton);
     group.add(middleRadioButton);
@@ -240,21 +256,30 @@ public class ObjectTab {
     precisePosSubPanel2.add(directionField);
     precisePosSubPanel2.add(new JLabel("  Incline: "));
     precisePosSubPanel2.add(inclineField);
-    precisePosSubPanel2.add(Box.createRigidArea(new Dimension(3, 1)));
-    precisePosSubPanel2.add(getDataButton);
+    //precisePosSubPanel2.add(Box.createRigidArea(new Dimension(3, 1)));
+    //precisePosSubPanel2.add(getDataButton);
     
     JPanel precisePosPanel = new JPanel();
     precisePosPanel.setLayout(new GridLayout(0, 1));
     precisePosPanel.add(precisePosSubPanel1);
     precisePosPanel.add(precisePosSubPanel2);
     
+    JPanel labelPanel = new JPanel();
+    labelPanel.setLayout(new GridLayout(0, 1));
+    labelPanel.add(new JLabel("(Upon clicking \"Add to List\", the view will switch"));
+    labelPanel.add(new JLabel("to the Preview tab for object placement)"));
+    
+    JPanel graphicalPosPanel = new JPanel();
+    graphicalPosPanel.add(labelPanel);
+    
     positionTabbedPane = new javax.swing.JTabbedPane();
     positionTabbedPane.setTabPlacement(javax.swing.JTabbedPane.TOP);
     positionTabbedPane.setPreferredSize(new Dimension(500, 105));
     positionTabbedPane.addTab("Simple Position Finder", simplePosPanel);
+    positionTabbedPane.addTab("Graphical Position Finder", graphicalPosPanel);
     positionTabbedPane.addTab("Precise Position Finder", precisePosPanel);
     
-    String[] directionStrings = {"North", "Northeast", "East", "Southeast", "South", "Southwest", "West", "Northwest"};
+    String[] directionStrings = {"North", "East", "South", "West"};
     
     // Set up combo box for choosing the direction the object is facing
     directionSelector = new JComboBox(directionStrings);
@@ -272,8 +297,8 @@ public class ObjectTab {
     // Create slider
     LRSlider = new JSlider(JSlider.HORIZONTAL, -180, 180, 0);
     LRSlider.addChangeListener(new SliderListener());
-    LRSlider.setMajorTickSpacing(60);
-    LRSlider.setMinorTickSpacing(15);
+    LRSlider.setMajorTickSpacing(90);
+    LRSlider.setSnapToTicks(true);
     LRSlider.setPaintTicks(true);
     LRSlider.setPaintLabels(true);
     
@@ -290,8 +315,8 @@ public class ObjectTab {
     // Create slider
     UDSlider = new JSlider(JSlider.HORIZONTAL, -180, 180, 0);
     UDSlider.addChangeListener(new SliderListener());
-    UDSlider.setMajorTickSpacing(60);
-    UDSlider.setMinorTickSpacing(15);
+    UDSlider.setMajorTickSpacing(90);
+    UDSlider.setSnapToTicks(true);
     UDSlider.setPaintTicks(true);
     UDSlider.setPaintLabels(true);
     
@@ -300,6 +325,62 @@ public class ObjectTab {
     rotationSubPanel3.setLayout(new BoxLayout(rotationSubPanel3, BoxLayout.Y_AXIS));
     rotationSubPanel3.add(UDSliderLabel);
     rotationSubPanel3.add(UDSlider);
+    
+/*
+    JPanel upperRotationSubPanel2 = new JPanel();
+    upperRotationSubPanel2.add(frontViewLeftRotateButton);
+    upperRotationSubPanel2.add(new JLabel("Rotate"));
+    upperRotationSubPanel2.add(frontViewRightRotateButton);
+ 
+    frontViewRotationLabels = new JLabel[4];
+ 
+    frontViewRotationLabels[0] = new JLabel("Top");
+    frontViewRotationLabels[0].setHorizontalAlignment(SwingConstants.CENTER);
+    frontViewRotationLabels[1] = new JLabel("Right");
+    frontViewRotationLabels[2] = new JLabel("Bottom");
+    frontViewRotationLabels[2].setHorizontalAlignment(SwingConstants.CENTER);
+    frontViewRotationLabels[3] = new JLabel("Left");
+ 
+    JPanel lowerRotationSubPanel2 = new JPanel();
+    lowerRotationSubPanel2.setLayout(new BorderLayout());
+    lowerRotationSubPanel2.add(frontViewRotationLabels[0], BorderLayout.NORTH);
+    lowerRotationSubPanel2.add(frontViewRotationLabels[1], BorderLayout.EAST);
+    lowerRotationSubPanel2.add(frontViewRotationLabels[2], BorderLayout.SOUTH);
+    lowerRotationSubPanel2.add(frontViewRotationLabels[3], BorderLayout.WEST);
+    lowerRotationSubPanel2.add(new JLabel(new ImageIcon(ClassLoader.getSystemResource("images/frontview.gif"))), BorderLayout.CENTER);
+ 
+    JPanel rotationSubPanel2 = new JPanel();
+    rotationSubPanel2.setLayout(new BoxLayout(rotationSubPanel2, BoxLayout.Y_AXIS));
+    rotationSubPanel2.add(upperRotationSubPanel2);
+    rotationSubPanel2.add(lowerRotationSubPanel2);
+ 
+    JPanel upperRotationSubPanel3 = new JPanel();
+    upperRotationSubPanel3.add(sideViewLeftRotateButton);
+    upperRotationSubPanel3.add(new JLabel("Rotate"));
+    upperRotationSubPanel3.add(sideViewRightRotateButton);
+ 
+    sideViewRotationLabels = new JLabel[4];
+ 
+    sideViewRotationLabels[0] = new JLabel("Top");
+    sideViewRotationLabels[0].setHorizontalAlignment(SwingConstants.CENTER);
+    sideViewRotationLabels[1] = new JLabel("Right");
+    sideViewRotationLabels[2] = new JLabel("Bottom");
+    sideViewRotationLabels[2].setHorizontalAlignment(SwingConstants.CENTER);
+    sideViewRotationLabels[3] = new JLabel("Left");
+ 
+    JPanel lowerRotationSubPanel3 = new JPanel();
+    lowerRotationSubPanel3.setLayout(new BorderLayout());
+    lowerRotationSubPanel3.add(sideViewRotationLabels[0], BorderLayout.NORTH);
+    lowerRotationSubPanel3.add(sideViewRotationLabels[1], BorderLayout.EAST);
+    lowerRotationSubPanel3.add(sideViewRotationLabels[2], BorderLayout.SOUTH);
+    lowerRotationSubPanel3.add(sideViewRotationLabels[3], BorderLayout.WEST);
+    lowerRotationSubPanel3.add(new JLabel(new ImageIcon(ClassLoader.getSystemResource("images/sideview.gif"))), BorderLayout.CENTER);
+ 
+    JPanel rotationSubPanel3 = new JPanel();
+    rotationSubPanel3.setLayout(new BoxLayout(rotationSubPanel3, BoxLayout.Y_AXIS));
+    rotationSubPanel3.add(upperRotationSubPanel3);
+    rotationSubPanel3.add(lowerRotationSubPanel3);
+ */
     
     JPanel rotationPanel = new JPanel();
     rotationPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -318,7 +399,7 @@ public class ObjectTab {
     mainButtonPanel.add(addButton);
     mainButtonPanel.add(Box.createRigidArea(new Dimension(10,0)));
     mainButtonPanel.add(clearButton);
-    
+     
     // Set up list model
     listModel = new javax.swing.DefaultListModel();
     
@@ -343,9 +424,10 @@ public class ObjectTab {
     
     JPanel middlePanel = new JPanel();
     middlePanel.setLayout(new BoxLayout(middlePanel, BoxLayout.Y_AXIS));
-    middlePanel.setBorder(BorderFactory.createEmptyBorder(20,30,0,0));
-    middlePanel.add(positionTabbedPane);
+    middlePanel.setBorder(BorderFactory.createEmptyBorder(5, 30, 15, 0));
     middlePanel.add(rotationPanel);
+    middlePanel.add(positionTabbedPane);
+    middlePanel.add(Box.createRigidArea(new Dimension(0, 10)));
     middlePanel.add(mainButtonPanel);
     
     /* To get everything to stay aligned when window is maximized, we need to
@@ -354,12 +436,19 @@ public class ObjectTab {
     dummyPanel.setLayout(new BoxLayout(dummyPanel, BoxLayout.Y_AXIS));
     dummyPanel.add(topObjectPanel);
     dummyPanel.add(middlePanel);
-    dummyPanel.add(Box.createRigidArea(new Dimension(0,10)));
     dummyPanel.add(objectListPanel);
     
     // Set up main panel
     mainPanel = new JPanel();
     mainPanel.add(dummyPanel);
+  }
+  
+  public static ObjectTab getInstance() {
+    if (theObjectTab == null) {
+      theObjectTab = new ObjectTab();
+    }
+    
+    return theObjectTab;
   }
   
   
@@ -370,6 +459,9 @@ public class ObjectTab {
     return mainPanel;
   }
   
+  public RoomObject getCurrentObject() {
+    return currentObject;
+  }
   
   /** Opens pop-up window to display error message
    *  @param message the error message to be displayed
@@ -379,84 +471,270 @@ public class ObjectTab {
     error.showMessageDialog(null, message, "Alert", JOptionPane.INFORMATION_MESSAGE);
   }
   
-  
-  /** Opens a new window to let the user add a new 3D object to the database
-   *
-   *  MODIFY TO ACCOUNT FOR NEW SINGLE OBJECT PANEL DESIGN
-   */
-  private void createObject() {
-    JFrame addFrame = new JFrame("Create New Object");
-    
-    NewObjectWindow window = new NewObjectWindow("Active", objectSelector);
-    
-    addFrame.getContentPane().add(window.getMainPanel(), BorderLayout.CENTER);
-    addFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-    addFrame.pack();
-    addFrame.setVisible(true);
-  }
-  
-  
   /** Adds an object to the list of objects in the room */
-  private void addObject() {
+  private void beginAddObject() {
+    boolean positionSet = false;
+    
     /* Set the object's type */
     String type = (String)objectSelector.getSelectedItem();
     
     /* Set the object's category */
-    String category = determineObjectCategory(type);
+    String category = determineObjectCategoryForSelector(type);
     
     /* Set the object's size information */
     SizeData size = null;
     
     try {
-      size = new SizeData(Double.parseDouble(widthLabel.getText())* (1/39.37),
-      Double.parseDouble(lengthLabel.getText()) * (1/39.37), Double.parseDouble(heightLabel.getText()) * (1/39.37));
+      size = new SizeData(Double.parseDouble(widthLabel.getText()) * INCHES_TO_METERS,
+      Double.parseDouble(lengthLabel.getText()) * INCHES_TO_METERS, Double.parseDouble(heightLabel.getText()) * INCHES_TO_METERS);
     } catch (NumberFormatException ex) {
       errorPopUp("Invalid size values.");
       return;
     }
     
+    /* Set the object's rotation information */
+    RotationData rotation = setRotation();
+    
     /* Set the object's position information */
-    CartesianCoord position = null;
+    CartesianCoord position = new CartesianCoord();
+    
+    /* If there were no problems above, create the new RoomObject, excluding the position */
+    if ((type != null) && (size != null) && (rotation != null)) {
+      currentObject = new RoomObject(category, type, size, rotation);
+
+      SizeData positioningSize = new SizeData();
+      determineSpaceNeeded(positioningSize);
+      currentObject.setPlacingSize(positioningSize);
+      positionSet = placeObject(positioningSize, position);
+    }
+    
+    if (positionSet) {
+      if (position != null) {
+        finishAddObject(position);
+      }
+    } else {
+      // do nothing, RoomDrawer.newObjectPlaced() will call finishAddObject() later
+    }
+  }
+  
+  public void finishAddObject(CartesianCoord iPos) {
+    
+    if (iPos != null) {
+      SizeData size = currentObject.getPlacingSize();
+      if ((iPos = checkConflicts(size, iPos, true)) == null) {
+        errorPopUp("Object cannot be placed there -- not enough free space in surrounding area.");
+      } else {
+        currentObject.setPosition(iPos);
+        Room room = Room.getInstance();
+        String category = currentObject.getCategory();
+        
+        if (category.equalsIgnoreCase("pervasive")) {
+          room.addPervasiveObject(currentObject);
+        } else if (category.equalsIgnoreCase("physical")) {
+          room.addPhysicalObject(currentObject);
+        } else if (category.equalsIgnoreCase("active")) {
+          room.addActiveObject(currentObject);
+        } else if (category.equalsIgnoreCase("stationary")) {
+          room.addStationaryObject(currentObject);
+        }
+        
+        listModel.addElement(currentObject);
+        
+        objectList.setSelectedIndex(listModel.indexOf(currentObject));
+      }
+    }
+  }
+  
+  private boolean placeObject(SizeData iSize, CartesianCoord iPos) {
+    boolean notGraphical = false;
     
     /* Option 1: precise positioning selected */
-    if (positionTabbedPane.getSelectedIndex() == 1) {
+    if (positionTabbedPane.getSelectedIndex() == PRECISE) {
       if (distanceField.getText().equals("") || directionField.getText().equals("") ||
       inclineField.getText().equals("")) {
         errorPopUp("All fields must be filled before adding an object to the list.");
       } else {
-        position = setPrecisePosition();
+        CartesianCoord tempPos = setPrecisePosition();
+        iPos.setX(tempPos.getX());
+        iPos.setY(tempPos.getY());
+        iPos.setZ(tempPos.getZ());
+        notGraphical = true;
       }
       /* Option 2: simple positioning selected */
-    } else {
-      position = setSimplePosition();
+    } else if (positionTabbedPane.getSelectedIndex() == SIMPLE) {
+      CartesianCoord tempPos = setSimplePosition();
+      iPos.setX(tempPos.getX());
+      iPos.setY(tempPos.getY());
+      iPos.setZ(tempPos.getZ());
+      notGraphical = true;
+    } else if (positionTabbedPane.getSelectedIndex() == GRAPHICAL){
+      setGraphicalPosition(iSize);
+      notGraphical = false;
     }
     
-    /* Set the object's rotation information */
-    RotationData rotation = setRotation();
-    
-    /* If there were no problems above, create the new RoomObject and update the list */
-    if ((type != null) && (size != null) && (position != null) && (rotation != null)) {
-      RoomObject roomObject = new RoomObject(category, type, size, position, rotation);
-      
-      Room room = Room.getInstance();
-      
-      if (category.equalsIgnoreCase("pervasive")) {
-        room.addPervasiveObject(roomObject);
-      } else if (category.equalsIgnoreCase("physical")) {
-        room.addPhysicalObject(roomObject);
-      } else if (category.equalsIgnoreCase("active")) {
-        room.addActiveObject(roomObject);
-      } else if (category.equalsIgnoreCase("stationary")) {
-        room.addStationaryObject(roomObject);
-      }
-      
-      listModel.addElement(roomObject);
-      
-      objectList.setSelectedIndex(listModel.indexOf(roomObject));
-    }
+    return notGraphical;
   }
   
-  private String determineObjectCategory(String iType) {
+    /*
+     * true = search for conflicts and try to find available space nearby
+     * false = search for conflicts and stop if conflicts exist
+     */
+  private CartesianCoord checkConflicts(SizeData iSpaceNeeded, CartesianCoord iPosition, boolean iResolve) {
+    Room room = Room.getInstance();
+    LinkedList[] existingObjects = room.getAllObjects();
+    RoomObject obj;
+    
+    for (int i = 0; i < existingObjects.length; i++) {
+      if (existingObjects[i].size() > 0) {
+        ListIterator itr = existingObjects[i].listIterator(0);
+        
+        while (itr.hasNext() && iPosition != null) {
+          obj = (RoomObject)itr.next();
+          
+          if (iPosition.checkOverlap(iSpaceNeeded, obj)) {
+            if (iResolve) {
+              iPosition = findNeighboringFreeSpace(iSpaceNeeded, obj);
+            } else {
+              iPosition = null;
+            }
+          }
+        }
+      }
+    }
+    
+    return iPosition;
+  }
+  
+    /* If two objects overlap, we try to put the newer one either directly above, or below, or
+     * next to, etc., the other one.  Not the best way, since the object may be shifted
+     * from its original destination more than necessary, but this should only be a temporary
+     * fix anyway, until Vlad has written the real version.
+     */
+  private CartesianCoord findNeighboringFreeSpace(SizeData iSpaceNeeded, RoomObject iObstacle) {
+    CartesianCoord freeSpace = null, testPos;
+    CartesianCoord[] possibleDestinations = new CartesianCoord[6];
+    Room room = Room.getInstance();
+    SizeData size = iObstacle.getPlacingSize();
+    CartesianCoord pos = iObstacle.getPosition();
+    /* Add a slight buffer to distance objects from one another */
+    double buffer = .01;
+    boolean[] options = new boolean[6];
+    boolean doPopUp = false;
+    
+    // try in front of obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX(), pos.getY() + size.getLength() + buffer, pos.getZ()))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[FRONT] = true;
+        possibleDestinations[FRONT] = testPos;
+      } else {
+        options[FRONT] = false;
+      }
+    }
+    
+    // try behind obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX(), pos.getY() - iSpaceNeeded.getLength() - buffer, pos.getZ()))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[BEHIND] = true;
+        possibleDestinations[BEHIND] = testPos;
+      } else {
+        options[BEHIND] = false;
+      }
+    }
+    
+    // try above the obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX(), pos.getY(), pos.getZ() + size.getHeight() + buffer))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[ABOVE] = true;
+        possibleDestinations[ABOVE] = testPos;
+      } else {
+        options[ABOVE] = false;
+      }
+    }
+    
+    // try below the obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX(), pos.getY(), pos.getZ() - iSpaceNeeded.getHeight() - buffer))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[UNDER] = true;
+        possibleDestinations[UNDER] = testPos;
+      } else {
+        options[UNDER] = false;
+      }
+    }
+    
+    // try to the left of the obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX() - iSpaceNeeded.getWidth() - buffer, pos.getY(), pos.getZ()))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[LEFT] = true;
+        possibleDestinations[LEFT] = testPos;
+      } else {
+        options[LEFT] = false;
+      }
+    }
+    
+    // try to the right of the obstacle
+    if (room.canContain(iSpaceNeeded, testPos = new CartesianCoord(pos.getX() + size.getWidth() + buffer, pos.getY(), pos.getZ()))) {
+      if (checkConflicts(iSpaceNeeded, testPos, false) != null) {
+        options[RIGHT] = true;
+        possibleDestinations[RIGHT] = testPos;
+      } else {
+        options[RIGHT] = false;
+      }
+    }
+    
+    for (int i = 0; i < options.length; i++) {
+      if (options[i]) {
+        doPopUp = true;
+      }
+    }
+    
+    if (doPopUp) {
+      String selection = placementPopUp(options, iObstacle.getType());
+      
+      if (selection == null) {
+        freeSpace = null;
+      } else if (selection.startsWith("In front")) {
+        freeSpace = possibleDestinations[FRONT];
+      } else if (selection.startsWith("Behind")) {
+        freeSpace = possibleDestinations[BEHIND];
+      } else if (selection.startsWith("Above")) {
+        freeSpace = possibleDestinations[ABOVE];
+      } else if (selection.startsWith("Under")) {
+        freeSpace = possibleDestinations[UNDER];
+      } else if (selection.startsWith("Left")) {
+        freeSpace = possibleDestinations[LEFT];
+      } else if (selection.startsWith("Right")) {
+        freeSpace = possibleDestinations[RIGHT];
+      }
+    }
+    
+    return freeSpace;
+  }
+  
+  private String placementPopUp(boolean[] choices, String obstacle) {
+    LinkedList strings = new LinkedList();
+    
+    if (choices[FRONT])
+      strings.add("In front of the " + obstacle);
+    if (choices[BEHIND])
+      strings.add("Behind the " + obstacle);
+    if (choices[ABOVE])
+      strings.add("Above the " + obstacle);
+    if (choices[UNDER])
+      strings.add("Under the " + obstacle);
+    if (choices[LEFT])
+      strings.add("Left of the " + obstacle);
+    if (choices[RIGHT])
+      strings.add("Right of the " + obstacle);
+    
+    String[] values = (String[])strings.toArray(zeroStrings);
+    
+    JOptionPane option = new JOptionPane();
+    
+    return (String)option.showInputDialog(null, "There is a conflict with another object. Choose a new position:", "Conflict",
+    JOptionPane.INFORMATION_MESSAGE, null, values, values[0]);
+  }
+  
+  public String determineObjectCategoryForSelector(String iType) {
     String objectClass = (String)objectClassSelector.getSelectedItem();
     
     if (objectClass.equalsIgnoreCase("All")) {
@@ -474,9 +752,31 @@ public class ObjectTab {
     return objectClass;
   }
   
+  public String determineObjectCategoryForEditing(String iType) {
+    if ((activeMap == null) || (pervasiveMap == null) || (physicalMap == null)
+    || (stationaryMap == null)) {
+     initializeHashMaps(); 
+    }
+     
+    String objectClass = "";
+    
+      if (activeMap.containsKey(iType)) {
+        objectClass = "Active";
+      } else if (pervasiveMap.containsKey(iType)) {
+        objectClass = "Pervasive";
+      } else if (physicalMap.containsKey(iType)) {
+        objectClass = "Physical";
+      } else if (stationaryMap.containsKey(iType)) {
+        objectClass = "Stationary";
+      }
+    
+    return objectClass;
+  }
   
   /** Calculates the position of an object being added to the room, only called if
    *  user chooses precise positioning method
+   *  NOTE: To match with Vlad's code, this uses the convention that the upper left corner is (0,0)
+   *
    */
   private CartesianCoord setPrecisePosition() {
     double dist = 0.0, dir = 0.0, inc = 0.0;
@@ -514,36 +814,37 @@ public class ObjectTab {
   
   /** Calculates the position of an object being added to the room, only called if
    *  user chooses simple positioning method
+   *  NOTE: To match with Vlad's code, this uses the convention that the upper left corner is (0,0)
    *  @param iPosition the CartesianCoord that will store the requested positioning information
    */
   private CartesianCoord setSimplePosition() {
-    Room room = Room.getInstance();
+    psl.memento.pervasive.roca.room.Room room = psl.memento.pervasive.roca.room.Room.getInstance();
     
     CartesianCoord position = new CartesianCoord();
     
     double roomWidth = room.getSpanNSWalls(); // "width" defined as span of north wall
     double roomDepth = room.getSpanWEWalls(); // "depth" defined as span of west wall
     
-    /* Get object dimensions (1/39.37 used to convert from inches to meters) */
-    double objWidth = Double.parseDouble(widthLabel.getText()) * (1/39.37);
-    double objDepth = Double.parseDouble(lengthLabel.getText()) * (1/39.37);
+    /* Get object dimensions */
+    double objWidth = Double.parseDouble(widthLabel.getText()) * INCHES_TO_METERS;
+    double objDepth = Double.parseDouble(lengthLabel.getText()) * INCHES_TO_METERS;
     
     /* Object goes in a corner */
     if (cornerRadioButton.isSelected()) {
       String corner = (String)cornerSelector.getSelectedItem();
       
       if (corner.equalsIgnoreCase("nw")) {
-        position.setX(.5 * objWidth);
-        position.setY(roomDepth - (.5 * objDepth));
+        position.setX(0);
+        position.setY(0);
       } else if (corner.equalsIgnoreCase("ne")) {
-        position.setX(roomWidth - (.5 * objWidth));
-        position.setY(roomDepth - (.5 * objDepth));
+        position.setX(roomWidth - objWidth);
+        position.setY(0);
       } else if (corner.equalsIgnoreCase("sw")) {
-        position.setX(.5 * objWidth);
-        position.setY(.5 * objDepth);
+        position.setX(0);
+        position.setY(roomDepth - objDepth);
       } else if (corner.equalsIgnoreCase("se")) {
-        position.setX(roomWidth - (.5 * objWidth));
-        position.setY(.5 * objDepth);
+        position.setX(roomWidth - objWidth);
+        position.setY(roomDepth - objDepth);
       }
       
       /* Object goes against a wall, not in a corner */
@@ -551,40 +852,40 @@ public class ObjectTab {
       String wall = (String)wallSelector.getSelectedItem();
       
       if (wall.equalsIgnoreCase("north")) {
-        position.setX(.5 * roomWidth);
-        position.setY(roomDepth - (.5 * objDepth));
+        position.setX((.5 * roomWidth) - (.5 * objWidth));
+        position.setY(0);
       } else if (wall.equalsIgnoreCase("south")) {
-        position.setX(.5 * roomWidth);
-        position.setY(.5 * objDepth);
+        position.setX((.5 * roomWidth) - (.5 * objWidth));
+        position.setY(roomDepth - objDepth);
       } else if (wall.equalsIgnoreCase("east")) {
-        position.setX(roomWidth - (.5 * objWidth));
-        position.setY(.5 * roomDepth);
+        position.setX(roomWidth - objWidth);
+        position.setY((.5 * roomDepth) - (.5 * objDepth));
       } else if (wall.equalsIgnoreCase("west")) {
-        position.setX(.5 * objWidth);
-        position.setY(.5 * roomDepth);
+        position.setX(0);
+        position.setY((.5 * roomDepth) - (.5 * objDepth));
       }
       
       /* Object goes in middle of the room */
     } else {
-      position.setX(.5 * roomWidth);
-      position.setY(.5 * roomDepth);
+      position.setX((.5 * roomWidth) - (.5 * objWidth));
+      position.setY((.5 * roomDepth) - (.5 * objDepth));
     }
     
     /* Determine how high off the floor to place the object */
     String chosenHeight = (String)objectHeightSelector.getSelectedItem();
     double roomHeight = room.getHeight();
-    double objHeight = Double.parseDouble(heightLabel.getText()) * (1/39.37);
+    double objHeight = Double.parseDouble(heightLabel.getText()) * INCHES_TO_METERS;
     
     if (chosenHeight.equalsIgnoreCase("floor"))
-      position.setZ(.5 * objHeight);
+      position.setZ(0);
     else if (chosenHeight.equalsIgnoreCase("1/4 height of room"))
-      position.setZ(.25 * roomHeight);
+      position.setZ((.25 * roomHeight) - (.5 * objHeight));
     else if (chosenHeight.equalsIgnoreCase("1/2 height of room"))
-      position.setZ(.5 * roomHeight);
+      position.setZ((.5 * roomHeight) - (.5 * objHeight));
     else if (chosenHeight.equalsIgnoreCase("3/4 height of room"))
-      position.setZ(.75 * roomHeight);
+      position.setZ((.75 * roomHeight) - (.5 * objHeight));
     else if (chosenHeight.equalsIgnoreCase("ceiling"))
-      position.setZ(roomHeight - (.5 * objHeight));
+      position.setZ(roomHeight - objHeight);
     
     return position;
   }
@@ -599,15 +900,14 @@ public class ObjectTab {
   private CartesianCoord determineUsersPositionInRoom(String iPosition, String iHeight) {
     CartesianCoord userPosition = new CartesianCoord();
     
-    Room room = Room.getInstance();
+    psl.memento.pervasive.roca.room.Room room = psl.memento.pervasive.roca.room.Room.getInstance();
     
     double roomWidth = room.getSpanNSWalls();  // "width" defined as span of north wall
     double roomDepth = room.getSpanWEWalls();  // "depth" defined as span of west wall
     
     /* Determine the height at which the measuring device is held */
     try {
-      /* .3048 is conversion rate from feet to meters */
-      userPosition.setZ(Double.parseDouble(iHeight) * .3048);
+      userPosition.setZ(Double.parseDouble(iHeight) * FEET_TO_METERS);
       /* Error should never occur, since value of iHeight comes from a ComboBox containing only int's */
     } catch(NumberFormatException ex) {
       System.out.println("Error parsing device height");
@@ -635,49 +935,103 @@ public class ObjectTab {
   }
   
   
+  private void setGraphicalPosition(SizeData iSize) {
+    CartesianCoord position = null;
+    
+    JTabbedPane tabbedPane = (JTabbedPane)mainPanel.getParent();
+    tabbedPane.setSelectedIndex(3);
+    
+    RoomDrawer roomDrawer = RoomDrawer.getInstance();
+    roomDrawer.beginPlacingNewObject(iSize);
+  }
+  
   /** Calculates the rotation of an object being added to the room
    */
   private RotationData setRotation() {
     String dirFacing = (String)directionSelector.getSelectedItem();
-    int orientation = 0;
+    int yaw = 0;
     
     if (dirFacing.equalsIgnoreCase("North"))
-      orientation = RotationData.N;
-    else if (dirFacing.equalsIgnoreCase("Northeast"))
-      orientation = RotationData.NE;
+      yaw = RotationData.N;
+    //else if (dirFacing.equalsIgnoreCase("Northeast"))
+    //yaw = RotationData.NE;
     else if (dirFacing.equalsIgnoreCase("East"))
-      orientation = RotationData.E;
-    else if (dirFacing.equalsIgnoreCase("Southeast"))
-      orientation = RotationData.SE;
+      yaw = RotationData.E;
+    //else if (dirFacing.equalsIgnoreCase("Southeast"))
+    //yaw = RotationData.SE;
     else if (dirFacing.equalsIgnoreCase("South"))
-      orientation = RotationData.S;
-    else if (dirFacing.equalsIgnoreCase("Southwest"))
-      orientation = RotationData.SW;
+      yaw = RotationData.S;
+    //else if (dirFacing.equalsIgnoreCase("Southwest"))
+    //yaw = RotationData.SW;
     else if (dirFacing.equalsIgnoreCase("West"))
-      orientation = RotationData.W;
-    else if (dirFacing.equalsIgnoreCase("Northwest"))
-      orientation = RotationData.NW;
+      yaw = RotationData.W;
+    //else if (dirFacing.equalsIgnoreCase("Northwest"))
+    //yaw = RotationData.NW;
     
-    RotationData rotation = new RotationData(orientation, LRSlider.getValue(), UDSlider.getValue());
+    int roll = LRSlider.getValue();
+    
+    /* If roll value is negative, find its positive equivalent */
+    if (roll < 0) {
+      roll = 360 + roll;
+    }
+    
+    int pitch = UDSlider.getValue();
+    
+    if (pitch < 0) {
+      pitch = 360 + pitch;
+    }
+    
+    
+    RotationData rotation = new RotationData(yaw, roll, pitch);
     
     return rotation;
+  }
+  
+  private void determineSpaceNeeded(SizeData iSize) {
+    SizeData objSize = currentObject.getSize();
+    RotationData objRotation = currentObject.getRotation();
+    double width = objSize.getWidth(), length = objSize.getLength(), height = objSize.getHeight();
+    
+    iSize.setWidth(width);
+    iSize.setLength(length);
+    iSize.setHeight(height);
+    
+    if (objRotation.getYaw() == 90 || objRotation.getYaw() == 270) {
+      double temp = width;
+      width = length;
+      length = temp;
+      iSize.setWidth(width);
+      iSize.setLength(length);
+    }
+    
+    if (objRotation.getRoll() == 90 || objRotation.getRoll() == 270) {
+      double temp = width;
+      width = height;
+      height = temp;
+      iSize.setWidth(width);
+      iSize.setHeight(height);
+    }
+    
+    if (objRotation.getPitch() == 90 || objRotation.getPitch() == 270) {
+      double temp = height;
+      height = length;
+      length = temp;
+      iSize.setHeight(height);
+      iSize.setLength(length);
+    }
   }
   
   
   /** Sets all fields, sliders, etc. to the values set for a particular object previously
    *  added to the room, so that it may be edited
-   *
-   *  FINISH IMPLEMENTING &
-   *  MODIFY TO ACCOUNT FOR NEW SINGLE OBJECT PANEL DESIGN
    */
   private void editObject() {
     Room room = Room.getInstance();
     RoomObject roomObject = null;
     
     String type = ((RoomObject)objectList.getSelectedValue()).getType();
-    
-    String category = determineObjectCategory(type);
-    
+    String category = determineObjectCategoryForEditing(type);
+
     if (category.equalsIgnoreCase("pervasive")) {
       roomObject = room.getPervasiveObject((RoomObject)objectList.getSelectedValue());
     } else if (category.equalsIgnoreCase("physical")) {
@@ -689,10 +1043,11 @@ public class ObjectTab {
     }
     
     if (roomObject != null) {
-      /* Set list selector - IMPLEMENT */
+      /* Set list selector */
+      objectClassSelector.setSelectedItem(category);
       
       /* Set object selector */
-      objectSelector.setSelectedItem(roomObject.getType());
+      objectSelector.setSelectedItem(type);
       
       SizeData size = roomObject.getSize();
       
@@ -704,9 +1059,9 @@ public class ObjectTab {
       lengthLabel.repaint();
       heightLabel.repaint();
       
-      
-      /* Set position info - IMPLEMENT */
-      
+            /* Size slider should be set by dividing the object's width, length, and
+             * height by the default values and taking the average of these 3
+             */
       
       /* Set rotation selector and sliders */
       RotationData rotation = roomObject.getRotation();
@@ -756,7 +1111,18 @@ public class ObjectTab {
     
     /* Remove the object from the room */
     Room room = Room.getInstance();
-    room.removeActiveObject((RoomObject)objectList.getSelectedValue());
+    RoomObject roomObject = (RoomObject)objectList.getSelectedValue();
+    String category = roomObject.getCategory();
+    
+    if (category.equalsIgnoreCase("pervasive")) {
+      room.removePervasiveObject(roomObject);
+    } else if (category.equalsIgnoreCase("physical")) {
+      room.removePhysicalObject(roomObject);
+    } else if (category.equalsIgnoreCase("active")) {
+      room.removeActiveObject(roomObject);
+    } else if (category.equalsIgnoreCase("stationary")) {
+      room.removeStationaryObject(roomObject);
+    }
   }
   
   
@@ -782,7 +1148,7 @@ public class ObjectTab {
     room.removeAllPhysicalObjects();
     room.removeAllPervasiveObjects();
     room.removeAllStationaryObjects();
-     
+    
     listModel.clear();
   }
   
@@ -793,31 +1159,29 @@ public class ObjectTab {
       /* Will need to get real list of active objects from database,
        * but since that doesn't exist yet, use these values */
       return getDummyActiveObjects();
-      //return new String[] {"AR Object1", "AR Object2", "AR Object3"};
     } else if (iCategory.equalsIgnoreCase("pervasive")) {
       /* Will need to get real list of pervasive objects from database,
        * but since that doesn't exist yet, use these values */
-      //return new String[] {"Monitor", "Projector Screen", "Whiteboard"};
       return getDummyPervasiveObjects();
     } else if (iCategory.equalsIgnoreCase("physical")) {
       /* Will need to get real list of physical objects from database,
        * but since that doesn't exist yet, use these values */
-      //return new String[] {"Chair", "Desk", "Lamp"};
       return getDummyPhysicalObjects();
     } else if (iCategory.equalsIgnoreCase("stationary")) {
       /* Will need to get real list of stationary objects from database,
        * but since that doesn't exist yet, use these values */
-      //return new String[] {"Pillar", "Wall Projection"};
       return getDummyStationaryObjects();
     } else if (iCategory.equalsIgnoreCase("all")) {
       /* Will need to get real list of all objects from database,
        * but since that doesn't exist yet, use these values */
       return getAllDummyObjects();
-      //return new String[] {"AR Object1", "AR Object2", "AR Object3", "Chair", "Desk", "Lamp", "Monitor", "Pillar",
-      //"Projector Screen", "Wall Projection", "Whiteboard"};
     }
     
     return null;
+  }
+  
+  private void initializeHashMaps() {
+    getAllDummyObjects();
   }
   
   private String[] getDummyActiveObjects() {
@@ -883,29 +1247,52 @@ public class ObjectTab {
   /** Update the preview window to display a thumbnail of the currently selected object */
   private void updatePreviewWindow() {
     String objectName = (String)objectSelector.getSelectedItem();
-    objectPreviewLabel.setIcon(new ImageIcon("etc/images/" + objectName + ".gif"));
+    objectPreviewLabel.setIcon(new ImageIcon(ClassLoader.getSystemResource("images/" + objectName + ".gif")));
     
     // Get default width/length/height values from database and update size labels
   }
   
+  public void addObjectToListModel(RoomObject iRoomObject) {
+    listModel.addElement(iRoomObject); 
+    objectList.setSelectedIndex(listModel.indexOf(iRoomObject));
+  }
+  /*
+  private void rotateLeft(JLabel[] labels) {
+    String temp = labels[0].getText();
+   
+    for (int i = 0; i < labels.length - 1; i++) {
+      labels[i].setText(labels[i + 1].getText());
+    }
+   
+    labels[3].setText(temp);
+  }
+   
+  private void rotateRight(JLabel[] labels) {
+    String temp = labels[3].getText();
+   
+    for (int i = labels.length - 1; i > 0; i--) {
+      labels[i].setText(labels[i - 1].getText());
+    }
+   
+    labels[0].setText(temp);
+  }
+   */
   /** Listener for all buttons in the ObjectTab */
   class ButtonListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
       Object source = e.getSource();
       
-      if (source == createButton) {
-        createObject();
-      } else if (source == getDataButton) {
+      if (source == getDataButton) {
         
       /* NOT YET IMPLEMENTED
        * Retrieve data from hardware components, fill in text fields with retrieved values
        */
         
       } else if (source == addButton) {
-        Room room = Room.getInstance();
+        psl.memento.pervasive.roca.room.Room room = psl.memento.pervasive.roca.room.Room.getInstance();
         
         if (room.getHeight() > 0) {
-          addObject();
+          beginAddObject();
         } else {
           errorPopUp("You must set the room dimensions before adding any objects.");
         }
@@ -918,6 +1305,17 @@ public class ObjectTab {
       } else if (source == clearListButton) {
         clearCurrentObjectList();
       }
+      
+      /*else if (source == sideViewLeftRotateButton) {
+        rotateLeft(sideViewRotationLabels);
+      } else if (source == sideViewRightRotateButton) {
+        rotateRight(sideViewRotationLabels);
+      } else if (source == frontViewLeftRotateButton) {
+        rotateLeft(frontViewRotationLabels);
+      } else if (source == frontViewRightRotateButton) {
+        rotateRight(frontViewRotationLabels);
+      }
+       */
     }
   }
   

@@ -1,10 +1,11 @@
 package psl.memento.pervasive.roca.util;
 
 import org.jdom.*;
+import org.jdom.input.*;
 import org.jdom.output.*;
 import java.io.*;
 
-/** 
+/**
  * Handles writing and opening files.
  *
  * @author Kristina Holst
@@ -44,17 +45,41 @@ public class FileManager {
         ex.printStackTrace();
         
         
-      } 
+      }
     }
   }
   
   /** Loads Room from XML file */
-  public static void loadRoom(File file) {
-    System.out.println("load " + file.getName());
+  public static boolean loadRoom(File file) {
+    boolean success = false;  // reports whether or not load was successful
+    Document doc = null;
+    SAXBuilder sax = new SAXBuilder();
     
-    /*
-     * set summary tab's text area
-     * add objects to menus at bottom of all object tabs
-     */
+    try {
+      doc = sax.build(file);
+    } catch (JDOMException ex) {
+      return false;
+    }
+    
+    if (doc != null) {
+      RoomBuilder roomBuilder = new RoomBuilder();
+      success = roomBuilder.buildRoomFromDoc(doc);
+    }
+    
+    return success;
   }
+  
+  /** Loads Room from XML Document */
+  public static boolean loadRoom(Document doc) {
+    boolean success = false;
+    
+    if (doc != null) {
+      RoomBuilder roomBuilder = new RoomBuilder();
+      success = roomBuilder.buildRoomFromDoc(doc);
+    }
+    
+    return success; 
+  }
+  
+  
 }

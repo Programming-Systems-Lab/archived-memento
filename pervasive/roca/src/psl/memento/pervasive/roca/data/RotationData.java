@@ -47,4 +47,8 @@ public class RotationData {
   public int getPitch() {
     return mPitch;
   }
+  
+  public String toString() {
+    return "yaw: " + mYaw + ", roll: " + mRoll + ", pitch: " + mPitch;
+  }
 }

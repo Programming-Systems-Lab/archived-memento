@@ -11,6 +11,7 @@ public class Door {
   
   private String mDoorURL;
   private CartesianCoord mPosition;
+  private String mWall;
   
   /* Default values for the size of the door, given in meters. */
   private static final int WIDTH = 1;
@@ -23,7 +24,12 @@ public class Door {
    */
   public Door(String iDoorURL, String iWall, String iSide) {
     mDoorURL = iDoorURL;
+    mWall = iWall;
     mPosition = determinePosition(iWall, iSide);
+  }
+  
+  public Door() {
+
   }
   
   /** Determines coordinate position of door based on the wall and the side of
@@ -43,13 +49,13 @@ public class Door {
     
     if (iSide.equalsIgnoreCase("left side") && iWall.equalsIgnoreCase("north")) {
       x = .5 * WIDTH;
-      y = widthWEWalls;
+      y = 0;
     } else if (iSide.equalsIgnoreCase("right side") && iWall.equalsIgnoreCase("north")) {
       x = widthNSWalls - (.5 * WIDTH);
-      y = widthWEWalls;
+      y = 0;
     } else if (iSide.equalsIgnoreCase("middle") && iWall.equalsIgnoreCase("north")) {
       x = .5 * widthNSWalls;
-      y = widthWEWalls;
+      y = 0;
     } else if (iSide.equalsIgnoreCase("left side") && iWall.equalsIgnoreCase("east")) {
       x = widthNSWalls;
       y = widthWEWalls - (.5 * WIDTH);
@@ -61,13 +67,13 @@ public class Door {
       y = .5 * widthWEWalls;
     } else if (iSide.equalsIgnoreCase("left side") && iWall.equalsIgnoreCase("south")) {
       x = widthNSWalls - (.5 * WIDTH);
-      y = 0;
+      y = widthWEWalls;
     } else if (iSide.equalsIgnoreCase("right side") && iWall.equalsIgnoreCase("south")) {
       x = .5 * WIDTH;
-      y = 0;
+      y = widthWEWalls;
     } else if (iSide.equalsIgnoreCase("middle") && iWall.equalsIgnoreCase("south")) {
       x = .5 * widthNSWalls;
-      y = 0;
+      y = widthWEWalls;
     } else if (iSide.equalsIgnoreCase("left side") && iWall.equalsIgnoreCase("west")) {
       x = 0;
       y = .5 * WIDTH;
@@ -97,5 +103,23 @@ public class Door {
   
   public CartesianCoord getPosition() {
     return mPosition;
+  }
+  
+  public void setWall(String iWall) {
+    mWall = iWall;
+  }
+  
+  public String getWall() {
+    return mWall;
+  }
+  
+  public boolean isSet() {
+    boolean set = false;
+    
+    if (mPosition != null) {
+      set = true;
+    }
+    
+    return set;
   }
 }

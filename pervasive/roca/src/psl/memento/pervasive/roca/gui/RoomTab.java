@@ -5,7 +5,13 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/**
+ * RoomTab.java
+ *
+ * @author Kristina Holst
+ */
 public class RoomTab extends JComponent implements ActionListener {
+  private static RoomTab theRoomTab;
   // Main groupings in the panel
   private JPanel mainPanel, URLPanel, northDataPanel, southDataPanel, westDataPanel, eastDataPanel;
   private JPanel upDataPanel, downDataPanel, northSouthPanel, eastWestPanel, upDownPanel, doorDataPanel, buttonPanel;
@@ -21,7 +27,7 @@ public class RoomTab extends JComponent implements ActionListener {
   private static final String[] doorWallChoices = {"North", "East", "South", "West"};
   
   
-  public RoomTab() {
+  protected RoomTab() {
     // Set up text fields
     doorLink = new JTextField(STRING_FIELD_LENGTH);
     roomLink = new JTextField(STRING_FIELD_LENGTH);
@@ -220,6 +226,14 @@ public class RoomTab extends JComponent implements ActionListener {
     mainPanel.add(dummyPanel);
   }
   
+  public static RoomTab getInstance() {
+    if (theRoomTab == null) {
+      theRoomTab = new RoomTab();
+    }
+    
+    return theRoomTab;
+  }
+  
   public Component getMainPanel() {
     return mainPanel;
   }
@@ -251,6 +265,11 @@ public class RoomTab extends JComponent implements ActionListener {
         
         if (response == JOptionPane.YES_OPTION) {
           room.clearRoom();
+          
+          ObjectTab objTab = ObjectTab.getInstance();
+          objTab.clearFields();
+          objTab.clearCurrentObjectList();
+          
           room = Room.getInstance();
           
         } else
@@ -278,8 +297,8 @@ public class RoomTab extends JComponent implements ActionListener {
       }
       
       room.setRoomDimensions(roomMeasurements);
-      room.setDoor(doorLink.getText(), (String)doorWallSelector.getSelectedItem(), 
-        (String)doorSideSelector.getSelectedItem());
+      room.setDoor(doorLink.getText(), (String)doorWallSelector.getSelectedItem(),
+      (String)doorSideSelector.getSelectedItem());
     }
     
     // Clear all text fields

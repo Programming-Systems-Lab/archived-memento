@@ -2,24 +2,36 @@ package psl.memento.pervasive.roca.gui;
 
 import psl.memento.pervasive.roca.data.*;
 import psl.memento.pervasive.roca.room.Room;
-import psl.memento.pervasive.roca.util.FileManager;
+import psl.memento.pervasive.roca.util.*;
+import psl.memento.pervasive.roca.vem.RoomViewerPanel;
+import org.jdom.*;
+import org.jdom.output.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.io.File;
 
-public class MainGUI extends JComponent implements ActionListener {
+/**
+ * MainGUI.java
+ *
+ * @author Kristina Holst
+ */
+public class MainGUI extends JComponent implements ActionListener, ChangeListener {
   private JFileChooser fc;
+  private JTabbedPane tabbedPane;
+  private static final int ROOM_INFO = 0, OBJ_INFO = 1, SUMMARY = 2, PREVIEW = 3;
   
-  private RoomTab roomTab = new RoomTab();
-  private ObjectTab objectTab = new ObjectTab();
+  private RoomTab roomTab = RoomTab.getInstance();
+  private ObjectTab objectTab = ObjectTab.getInstance();
   private SummaryTab summaryTab = new SummaryTab();
   private PreviewTab previewTab = new PreviewTab();
   
   public Component createComponents() {
-    JTabbedPane tabbedPane = new JTabbedPane();
+    tabbedPane = new JTabbedPane();
     tabbedPane.setTabPlacement(JTabbedPane.TOP);
-    tabbedPane.setPreferredSize(new Dimension(700,570));
+    tabbedPane.setPreferredSize(new Dimension(780,570));
+    tabbedPane.addChangeListener(this);
     
     tabbedPane.addTab("Room Information", roomTab.getMainPanel());
     tabbedPane.addTab("Object Information", objectTab.getMainPanel());
@@ -50,12 +62,12 @@ public class MainGUI extends JComponent implements ActionListener {
     menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
     menuItem.addActionListener(this);
     menu.add(menuItem);
-  /*  
+    
     menuItem = new JMenuItem("Load Room");
     menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
     menuItem.addActionListener(this);
     menu.add(menuItem);
-    */
+    
     menu.addSeparator();
     
     menuItem = new JMenuItem("Exit");
@@ -94,17 +106,43 @@ public class MainGUI extends JComponent implements ActionListener {
         FileManager.saveRoom(file);
       }
     } else if ((source.getText()).equals("Load Room")) {
+      boolean success = false;
       fc = new JFileChooser();
       
-      int returnVal = fc.showSaveDialog(this);
+      int returnVal = fc.showOpenDialog(this);
       
       if (returnVal == JFileChooser.APPROVE_OPTION) {
         File file = fc.getSelectedFile();
         
-        FileManager.loadRoom(file);
+        success = FileManager.loadRoom(file);
+      }
+      
+      if (!success) {
+        JOptionPane.showMessageDialog(null, "Invalid XML file.", "Error", JOptionPane.ERROR_MESSAGE);
       }
     } else if ((source.getText()).equals("Exit")) {
       System.exit(0);
+    }
+  }
+  
+  public void stateChanged(ChangeEvent e) {
+    int index = tabbedPane.getSelectedIndex();
+    
+    if (index == SUMMARY) {
+      summaryTab.clearTextBox();
+      JTextArea textBox = (JTextArea)summaryTab.getTextBox();
+      
+      Document doc = XMLGenerator.generateRoomXML();
+      
+      if (doc != null) {
+        XMLOutputter outputter = new XMLOutputter("   ", true);
+        
+        textBox.append(outputter.outputString(doc));
+      } else
+        textBox.append("No information has been set for the current room.");
+    } else if (index == PREVIEW) {
+      RoomDrawer roomDrawer = RoomDrawer.getInstance();
+      roomDrawer.createPreview(previewTab.getRoomPanel());
     }
   }
   
