@@ -1,9 +1,10 @@
 
 package psl.memento.pervasive.recommendation.keywordfinder.centroid;
 
-import psl.conversation.ConversationLogIterator;
-import psl.conversation.ConversationMessage;
-import psl.conversation.User;
+import psl.memento.pervasive.recommendation.ConversationLogMessageStream;
+import psl.memento.pervasive.recommendation.ConversationMessage;
+import psl.memento.pervasive.recommendation.User;
+
 
 /**
  * Singleton. 
@@ -23,10 +24,10 @@ public class TestDataGenerator {
 		return gen;
 	}
 
-	public ConversationLogIterator getConversation()
+	public ConversationLogMessageStream getConversation()
 	{
 		implConLogIterator it = new implConLogIterator();
-		User dummyUser = new User();
+		User dummyUser = User.getTestUser();
 		it.addMessage(new ConversationMessage(dummyUser, "British Sugar Plc was forced to shut its Ipswich sugar factory on Sunday " +
 			"afternoon due to an acute shortage of beet supplies, a spokesman said, responding to a Reuter inquiry " +
     		"Beet supplies have dried up at Ipswich due to a combination " +

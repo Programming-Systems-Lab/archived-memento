@@ -23,6 +23,19 @@ import psl.memento.pervasive.recommendation.util.NoRemoveIterator;
  */
 public class User implements EventSupport {
 
+	/**
+	 * Only for testing, try not to use
+	 */
+	public static User getTestUser() {
+		return new User();
+	}
+
+	/**
+	 * Only for testing, try not to use
+	 */	
+	private User() {
+	}
+
 	// User's name
 	private String _name;
 

@@ -3,11 +3,10 @@ package psl.memento.pervasive.recommendation.keywordfinder.centroid;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
-import psl.conversation.ConversationLogIterator;
-import psl.conversation.ConversationMessage;
+import psl.memento.pervasive.recommendation.ConversationLogMessageStream;
+import psl.memento.pervasive.recommendation.ConversationMessage;
 
-
-public class implConLogIterator implements ConversationLogIterator {
+public class implConLogIterator implements ConversationLogMessageStream {
 	private Vector messages = new Vector();
 	private int msgIndex = 0;
 	
