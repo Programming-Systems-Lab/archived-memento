@@ -1,0 +1,11 @@
+/**
+ * BeanShell script responsible for initializing a Frax component
+ *
+ * @author Buko O. (buko@cs.columbia.edu)
+ * @version 0.1
+ * @lastModified 5.20.2003
+ **/
+
+import memento.frax.*;
+
+return new DefaultFraxProvider();
