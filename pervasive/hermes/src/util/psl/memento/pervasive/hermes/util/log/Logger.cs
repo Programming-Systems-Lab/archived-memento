@@ -186,7 +186,7 @@ namespace psl.memento.pervasive.hermes.util.log
 		{
 			if(this._prioritySettings[priority] == true) 
 			{
-				this._rl.add((Logger.PRIORITY[priority] + "\r\n" + System.DateTime.Now + "\r\n" + error + "\r\n" + e.StackTrace + "\r\n" + Logger.PRIORITY[priority] + "\r\n"));
+				this._rl.add((Logger.PRIORITY[priority] + "\r\n" + System.DateTime.Now + "\r\n" + error + "\r\n" + "\r\n" + e.Message + "\r\n" + e.StackTrace + "\r\n" + Logger.PRIORITY[priority] + "\r\n"));
 			}
 		}
 	

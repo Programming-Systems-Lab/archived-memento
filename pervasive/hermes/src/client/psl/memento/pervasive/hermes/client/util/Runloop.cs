@@ -29,7 +29,7 @@ namespace psl.memento.pervasive.hermes.client.util
 
 		public void add(Object obj)
 		{
-			lock(this._dispatchManager)
+			lock(this._dispatchManager._list)
 			{
 				this._dispatchManager.enqueue(obj);
 			}

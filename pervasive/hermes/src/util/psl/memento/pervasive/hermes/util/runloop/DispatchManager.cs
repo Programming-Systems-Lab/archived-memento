@@ -12,7 +12,7 @@ namespace psl.memento.pervasive.hermes.util.runloop
 	{
 		//instance var
 
-		private System.Collections.Queue _queue;
+		public System.Collections.Queue _queue;
 		private Dispatcher _dispatcher;
 		private bool _isRunning;
 		private bool _isKilled;
@@ -41,13 +41,20 @@ namespace psl.memento.pervasive.hermes.util.runloop
 			{
 				if(this._isRunning)
 				{
-					lock(this)
-					{
+
+
 						if(this._queue.Count > 0)
 						{
-							this._dispatcher.dispatch(this._queue.Dequeue());
+							lock(this._queue)
+							{
+								this._dispatcher.dispatch(this._queue.Dequeue());
+							}
 						}
-					}
+						else
+						{
+							Thread.CurrentThread.Suspend();
+						}
+					
 				}
 				
 				else
@@ -71,7 +78,10 @@ namespace psl.memento.pervasive.hermes.util.runloop
 
 		public void enqueue(Object obj)
 		{
-			this._queue.Enqueue(obj);
+			lock(this._queue)
+			{
+				this._queue.Enqueue(obj);
+			}
 		}
 
 		public void kill()

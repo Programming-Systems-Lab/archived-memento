@@ -43,7 +43,7 @@ namespace psl.memento.pervasive.hermes.util.runloop
 	
 		public void add(Object obj)
 		{
-			lock(this._dispatchManager)
+			lock(this._dispatchManager._queue)
 			{
 		
 				this._dispatchManager.enqueue(obj);

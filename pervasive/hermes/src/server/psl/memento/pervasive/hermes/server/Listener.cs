@@ -21,7 +21,7 @@ namespace psl.memento.pervasive.hermes.server
 		//we are going to keep track of all of our clients in here
 		//we put client in this hashtable
 		private PVCServer _server;
-		private TcpListener _clientListener;
+		private Socket _serverSocket;
 		private int _port;
 		private bool _open;
 
@@ -47,8 +47,15 @@ namespace psl.memento.pervasive.hermes.server
 			//open our listener
 			try
 			{
-				this._clientListener = new TcpListener(this._port);
-				this._clientListener.Start();
+				this._serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+				this._serverSocket.Blocking = true ;
+
+				IPHostEntry IPHost = Dns.Resolve(Dns.GetHostName()); 
+				string[] aliases = IPHost.Aliases; 
+				IPAddress[] addr = IPHost.AddressList; 
+				IPEndPoint ipepServer = new IPEndPoint(addr[0], 5500);
+				this._serverSocket.Bind(ipepServer);
+				this._serverSocket.Listen(-1);
 			}
 			catch(Exception e)
 			{
@@ -61,7 +68,8 @@ namespace psl.memento.pervasive.hermes.server
 				Logger.getLogger().log(Logger.DEBUG_PRIORITY, "We are about to start listening." );
 				while(this._open)
 				{
-					Socket client = this._clientListener.AcceptSocket();
+					Socket client = this._serverSocket.Accept();
+					//client.Blocking = 0;
 					Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Incoming Client" );
 					
 					if(client.Connected)
@@ -70,6 +78,10 @@ namespace psl.memento.pervasive.hermes.server
 						ClientHandler incomingClient = new ClientHandler(client, this._server);
 						new Thread(new ThreadStart(incomingClient.start)).Start();
 						Logger.getLogger().log(Logger.INFO_PRIORITY, "New client has been recieved and spanwed off to thread.");
+					}
+					else 
+					{
+						Logger.getLogger().log(Logger.INFO_PRIORITY, "Client Lost.");
 					}
 
 					Logger.getLogger().log(Logger.INFO_PRIORITY, "Return to listening for clients.");
@@ -87,7 +99,7 @@ namespace psl.memento.pervasive.hermes.server
 		//stop the listener
 		public void stop()
 		{
-			this._clientListener.Stop();
+			this._serverSocket.Close();
 			this._open = false;
 		}
 

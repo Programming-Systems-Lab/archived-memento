@@ -78,6 +78,16 @@
                     HintPath = "..\..\..\..\..\..\util\psl\memento\pervasive\hermes\util\bin\Release\Utilities.dll"
                     Private = "True"
                 />
+                <Reference
+                    Name = "psl.memento.hermes.xml.Messages"
+                    AssemblyName = "psl.memento.hermes.xml.Messages"
+                    HintPath = "..\..\..\..\..\..\xml\psl\memento\pervasive\hermes\xml\messages\bin\Release\psl.memento.hermes.xml.Messages.dll"
+                />
+                <Reference
+                    Name = "psl.memento.hermes.xml.objects.ChatBuddy"
+                    AssemblyName = "psl.memento.hermes.xml.objects.ChatBuddy"
+                    HintPath = "..\..\..\..\..\..\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\psl.memento.hermes.xml.objects.ChatBuddy.dll"
+                />
             </References>
         </Build>
         <Files>
@@ -103,12 +113,37 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "RuntimeConstants.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ChatHelper\ChatRequest.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ChatHelper\ChatRequestHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "ClientHelp\ClientHandler.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
                     RelPath = "ClientHelp\ClientRequestHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHelp\ClientResponseHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHelp\XMLSocketParser.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

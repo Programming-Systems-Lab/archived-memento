@@ -103,6 +103,11 @@
                     AssemblyName = "psl.memento.hermes.xml.Messages"
                 />
                 <Reference
+                    Platform = "Windows CE"
+                    Name = "psl.memento.hermes.xml.objects.ChatBuddy"
+                    AssemblyName = "psl.memento.hermes.xml.objects.ChatBuddy"
+                />
+                <Reference
                     Platform = "Windows CE-Designer"
                     Name = "System.CF.Design"
                     AssemblyName = "System.CF.Design"
@@ -161,7 +166,32 @@
                     BuildAction = "EmbeddedResource"
                 />
                 <File
+                    RelPath = "RuntimeConstants.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHandler\ChatRequest.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "ClientHandler\ClientHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHandler\ClientRequestHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHandler\ServerResponseHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "ClientHandler\XMLSocketParser.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -2,7 +2,7 @@
     <ECSHARP>
         <Build>
             <Settings
-                DeploymentDevice = ""
+                DeploymentDevice = "Pocket PC Device (Default)"
                 ReferencePath = ""
             >
                 <Platform Name = "Pocket PC" />

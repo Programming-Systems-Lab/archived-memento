@@ -1,7 +1,7 @@
 <VisualStudioProject>
     <CSHARP>
         <Build>
-            <Settings ReferencePath = "C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\server\psl\memento\pervasive\hermes\server\bin\Release\" >
+            <Settings ReferencePath = "C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\server\psl\memento\pervasive\hermes\server\bin\Release\;C:\Documents and Settings\rmb51\My Documents\psl\memento\pervasive\hermes\src\server\psl\memento\pervasive\hermes\server\bin\Release\" >
                 <Config
                     Name = "Debug"
                     EnableASPDebugging = "false"

@@ -78,9 +78,11 @@ namespace psl.memento.pervasive.hermes.xml.messages
 			xtw.WriteEndElement();
 
 			xtw.WriteStartElement("chatBuddies");
+			
 			//we add a chat buddy for each one in the list of chat buddies
 
 			object[] buddies = chatBuddies.ToArray();
+			xtw.WriteAttributeString("chatBuddiesCount", buddies.Length.ToString());
 			//xtw.WriteAttributeString("chatBuddies", "buddyCount", "columbia-psl-memento-pervasive-hermes", buddies.Length.ToString());
 			//xtw.WriteEndAttribute();
 				
@@ -96,6 +98,12 @@ namespace psl.memento.pervasive.hermes.xml.messages
 					xtw.WriteEndElement();
 					xtw.WriteStartElement("chatName");
 					xtw.WriteString(chatBuddy.getChatName());
+					xtw.WriteEndElement();
+					xtw.WriteStartElement("status");
+					xtw.WriteString(chatBuddy.getStatus());
+					xtw.WriteEndElement();
+					xtw.WriteStartElement("clientID");
+					xtw.WriteString(chatBuddy.getID());
 					xtw.WriteEndElement();
 					xtw.WriteEndElement();
 				}
@@ -191,7 +199,7 @@ namespace psl.memento.pervasive.hermes.xml.messages
 
 		}
 
-		public static void openChat(XmlTextWriter xtw, string id, bool client, string messageID, ArrayList chatBuddies)
+		public static void rejectedInvite(XmlTextWriter xtw, string id, bool client, string messageID, string reason)
 		{
 			xtw.WriteStartDocument();
 			//open pvctd tag
@@ -199,30 +207,78 @@ namespace psl.memento.pervasive.hermes.xml.messages
 			//open message element
 			xtw.WriteStartElement("message");
 			//open connect element of message
-			xtw.WriteStartElement("openChat");
+			xtw.WriteStartElement("rejectedInvite");
 				
-			//open and close all your internal elements here
-			object[] buddies = chatBuddies.ToArray();
-			//xtw.WriteAttributeString("chatBuddies", "buddyCount", "columbia-psl-memento-pervasive-hermes", buddies.Length.ToString());
-			//xtw.WriteEndAttribute();
-				
-			if(buddies.Length > 0)
+			xtw.WriteStartElement("reason");
+			xtw.WriteString(reason);
+			xtw.WriteEndElement();
+			
+			xtw.WriteEndElement();
+			
+			//**********
+
+			//close 
+			xtw.WriteEndElement();
+			//close message
+			xtw.WriteEndElement();
+
+			//open time element
+			xtw.WriteStartElement("time");
+			xtw.WriteString(System.DateTime.Now.ToString());
+			xtw.WriteEndElement();
+			//open id
+			xtw.WriteStartElement("id");
+			xtw.WriteString(id);
+			xtw.WriteEndElement();
+			
+			//clientID or serverID
+			if(client)
 			{
-
-				for(int i = 0; i < buddies.Length; i++)
-				{					
-					ChatBuddy chatBuddy = (ChatBuddy)buddies[i];
-					xtw.WriteStartElement("chatBuddy");
-					xtw.WriteStartElement("ip");
-					xtw.WriteString(chatBuddy.getIP());
-					xtw.WriteEndElement();
-					xtw.WriteStartElement("chatName");
-					xtw.WriteString(chatBuddy.getChatName());
-					xtw.WriteEndElement();
-					xtw.WriteEndElement();
-				}
+				xtw.WriteStartElement("clientID");
 			}
+			else 
+			{
+				xtw.WriteStartElement("serverID");
+			}
+			xtw.WriteString(id);
+			xtw.WriteEndElement();
+			
+			//close it all up
+			xtw.WriteEndElement();
+			xtw.WriteEndDocument();
+			xtw.Flush();
 
+
+
+		}
+
+		public static void chatInvite(XmlTextWriter xtw, string id, bool client, string messageID, ChatBuddy chatBuddy)
+		{
+			xtw.WriteStartDocument();
+			//open pvctd tag
+			xtw.WriteStartElement("pvctd", "columbia-psl-memento-pervasive-hermes");
+			//open message element
+			xtw.WriteStartElement("message");
+			//open connect element of message
+			xtw.WriteStartElement("chatInvite");
+				
+			
+			xtw.WriteStartElement("chatBuddy");
+					
+			xtw.WriteStartElement("ip");
+			xtw.WriteString(chatBuddy.getIP());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("chatName");
+			xtw.WriteString(chatBuddy.getChatName());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("status");
+			xtw.WriteString(chatBuddy.getStatus());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("clientID");
+			xtw.WriteString(chatBuddy.getID());
+			xtw.WriteEndElement();
+			
+			xtw.WriteEndElement();
 			
 			//**********
 
@@ -310,7 +366,7 @@ namespace psl.memento.pervasive.hermes.xml.messages
 
 		}
 
-		public static void requestChat(XmlTextWriter xtw, string id, bool client, string messageID, ArrayList chatBuddies, string chatID)
+		public static void requestChat(XmlTextWriter xtw, string id, bool client, string messageID, ChatBuddy chatBuddy, string chatID)
 		{
 			xtw.WriteStartDocument();
 			//open pvctd tag
@@ -319,29 +375,24 @@ namespace psl.memento.pervasive.hermes.xml.messages
 			xtw.WriteStartElement("message");
 			//open connect element of message
 			xtw.WriteStartElement("requestChat");
-				
-			//open and close all your internal elements here
-			object[] buddies = chatBuddies.ToArray();
-			//xtw.WriteAttributeString("chatBuddies", "buddyCount", "columbia-psl-memento-pervasive-hermes", buddies.Length.ToString());
-			//xtw.WriteEndAttribute();
-				
-			if(buddies.Length > 0)
-			{
 
-				for(int i = 0; i < buddies.Length; i++)
-				{					
-					ChatBuddy chatBuddy = (ChatBuddy)buddies[i];
-					xtw.WriteStartElement("chatBuddy");
-					xtw.WriteStartElement("ip");
-					xtw.WriteString(chatBuddy.getIP());
-					xtw.WriteEndElement();
-					xtw.WriteStartElement("chatName");
-					xtw.WriteString(chatBuddy.getChatName());
-					xtw.WriteEndElement();
-					xtw.WriteEndElement();
-				}
-			}
-
+			xtw.WriteStartElement("chatBuddy");
+					
+			xtw.WriteStartElement("ip");
+			xtw.WriteString(chatBuddy.getIP());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("chatName");
+			xtw.WriteString(chatBuddy.getChatName());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("status");
+			xtw.WriteString(chatBuddy.getStatus());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("clientID");
+			xtw.WriteString(chatBuddy.getID());
+			xtw.WriteEndElement();
+			
+			xtw.WriteEndElement();
+		
 			xtw.WriteStartElement("chatID");
 			xtw.WriteString(chatID);
 			xtw.WriteEndElement();
@@ -564,14 +615,18 @@ namespace psl.memento.pervasive.hermes.xml.messages
 					ChatBuddy chatBuddy = (ChatBuddy)buddies[i];
 			
 					xtw.WriteStartElement("chatBuddy");
-					xtw.WriteStartElement("status");
-					xtw.WriteString(chatBuddy.getStatus());
-					xtw.WriteEndElement();
+					
 					xtw.WriteStartElement("ip");
 					xtw.WriteString(chatBuddy.getIP());
 					xtw.WriteEndElement();
 					xtw.WriteStartElement("chatName");
 					xtw.WriteString(chatBuddy.getChatName());
+					xtw.WriteEndElement();
+					xtw.WriteStartElement("status");
+					xtw.WriteString(chatBuddy.getStatus());
+					xtw.WriteEndElement();
+					xtw.WriteStartElement("clientID");
+					xtw.WriteString(chatBuddy.getID());
 					xtw.WriteEndElement();
 					xtw.WriteEndElement();
 				}
@@ -886,7 +941,7 @@ xtw.Flush();
 		}
 	
 
-		public static void chatBuddiesUpdate(XmlTextWriter xtw, string id, bool client, string messageID, ArrayList chatBuddies)
+		public static void chatBuddiesUpdate(XmlTextWriter xtw, string id, bool client, string messageID, ChatBuddy chatBuddy)
 		{
 			xtw.WriteStartDocument();
 			//open pvctd tag
@@ -896,31 +951,23 @@ xtw.Flush();
 			//open connect element of message
 			xtw.WriteStartElement("chatBuddiesUpdate");
 				
-			//open and close all your internal elements here
-			object[] buddies = chatBuddies.ToArray();
-			//xtw.WriteAttributeString("chatBuddies", "buddyCount", "columbia-psl-memento-pervasive-hermes", buddies.Length.ToString());
-			//xtw.WriteEndAttribute();
 				
-			if(buddies.Length > 0)
-			{
-
-				for(int i = 0; i < buddies.Length; i++)
-				{					
-					ChatBuddy chatBuddy = (ChatBuddy)buddies[i];
 			
-					xtw.WriteStartElement("chatBuddy");
-					xtw.WriteStartElement("status");
-					xtw.WriteString(chatBuddy.getStatus());
-					xtw.WriteEndElement();
-					xtw.WriteStartElement("ip");
-					xtw.WriteString(chatBuddy.getIP());
-					xtw.WriteEndElement();
-					xtw.WriteStartElement("chatName");
-					xtw.WriteString(chatBuddy.getChatName());
-					xtw.WriteEndElement();
-					xtw.WriteEndElement();
-				}
-			}
+			xtw.WriteStartElement("chatBuddy");
+					
+			xtw.WriteStartElement("ip");
+			xtw.WriteString(chatBuddy.getIP());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("chatName");
+			xtw.WriteString(chatBuddy.getChatName());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("status");
+			xtw.WriteString(chatBuddy.getStatus());
+			xtw.WriteEndElement();
+			xtw.WriteStartElement("clientID");
+			xtw.WriteString(chatBuddy.getID());
+			xtw.WriteEndElement();
+			xtw.WriteEndElement();
 
 			
 			//**********

@@ -16,17 +16,24 @@ namespace psl.memento.pervasive.hermes.server.ClientHelp
 	/// </summary>
 	public class ClientHandler
 	{
-		private PVCServer _server;
+		public PVCServer _server;
 		private Socket _stream;
-		private Client _client;
+		public Client _client;
 		private ClientRequestHandler _crh;
+		public ClientResponseHandler _responseHandler;
+		private int _messageID;
+		private object _lock;
 
 		public ClientHandler(Socket stream, PVCServer server)
 		{
+			this._lock = new object();
+			this._messageID = 1;
 			this._client = new Client();
+			//this._client._status =  RuntimeConstants.PENDING;
 			this._server = server;
 			this._stream = stream;
-			this._crh = new ClientRequestHandler(this, new NetworkStream(this._stream));
+			this._crh = new ClientRequestHandler(this, stream);
+			this._responseHandler = new ClientResponseHandler(stream, this);
 		}
 
 		//this is where the magic starts to happen.
@@ -50,6 +57,21 @@ namespace psl.memento.pervasive.hermes.server.ClientHelp
 		public string getClientID()
 		{
 			return this._client.getID();
+		}
+
+		public void cleanup()
+		{
+			
+		}
+
+		public int getMessageID()
+		{
+			lock(this._lock)
+			{
+				int tempID = this._messageID;
+				this._messageID++;
+				return tempID;
+			}
 		}
 		
 	}

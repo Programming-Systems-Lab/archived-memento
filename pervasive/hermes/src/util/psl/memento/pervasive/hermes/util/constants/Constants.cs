@@ -57,7 +57,7 @@ namespace psl.memento.pervasive.hermes.util.constants
 			catch(Exception e)
 			{
 				Logger.getLogger().log(Logger.FATAL_PRIORITY, "Trouble parsing constant file", e);
-				throw new ConstantNotFoundException("Cannot Parse this file", e);
+				//throw new ConstantNotFoundException("Cannot Parse this file", e);
 			}
 
 		}

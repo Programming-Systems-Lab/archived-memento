@@ -10,18 +10,23 @@ namespace psl.memento.pervasive.hermes.server
 		private string _ip;
 		private string _chatName;
 		private string _id;
-		private string _status;
+		public string _status;
+		public bool _chatPending;
+		public bool _canChat = true;
 
-		public Client(String ip, String chatName, String id)
+		public Client(String ip, String chatName, String id) : this()
 		{
+			this._chatPending = false;
 			this._ip = ip;
 			this._chatName = chatName;
 			this._id = id;
-			this._status = "1";
+			this._canChat = true;
+			
 		}
 		public Client()
 		{
-			
+			this._status = RuntimeConstants.PENDING;
+			this._canChat = true;
 		}
 	
 		//get methods
@@ -35,7 +40,7 @@ namespace psl.memento.pervasive.hermes.server
 		}
 		public string getID()
 		{
-			return this._ip;
+			return this._id;
 		}
 
 		public void setIP(string ip)
@@ -51,6 +56,18 @@ namespace psl.memento.pervasive.hermes.server
 		public void setID(string id)
 		{
 			this._id = id;
+		}
+
+		override public string ToString()
+		{
+			string temp;
+			temp = "Client Info:\r\n";
+			temp += "Client Name: " + this._chatName;
+			temp += "\r\nClient IP: " + this._ip;
+			temp += "\r\nClient ID: " + this._id;
+			temp += "\r\nClient Status: " + this._status;
+			temp += "\r\n";
+			return temp;
 		}
 
 	}

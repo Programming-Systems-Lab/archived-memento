@@ -54,5 +54,5 @@ using System.Runtime.CompilerServices;
 //       documentation for more information on this.
 //
 [assembly: AssemblyDelaySign(false)]
-[assembly: AssemblyKeyFile("..\\..\\PVCServer.snk")]
-[assembly: AssemblyKeyName("PVCServer")]
+[assembly: AssemblyKeyFile("")]
+[assembly: AssemblyKeyName("")]

@@ -10,7 +10,7 @@ namespace psl.memento.pervasive.hermes.client.util
 	{
 		
 		//incoming objects are stored in the array list
-		private System.Collections.ArrayList _list;
+		public System.Collections.ArrayList _list;
 		//the dispatcher is specified by the class that wants to use the runloop
 		//the dispatcher may do a number of different things like write to a stream
 		//or to a file
@@ -36,13 +36,18 @@ namespace psl.memento.pervasive.hermes.client.util
 			{
 				if(this._isRunning)
 				{
-					lock(this)
+					
+					if(this._list.Count > 0)
 					{
-						if(this._list.Count > 0)
+						lock(this)
 						{
 							this._dispatcher.dispatch(this._list[0]);
 							this._list.RemoveAt(0);
 						}
+					}
+					else
+					{
+						Thread.Sleep(1000);
 					}
 				}
 				else

@@ -1,6 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
 Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "messages", "messages.csdproj", "{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}"
 EndProject
+Project("{20D4826A-C6FA-45DB-90F4-C717570B9F32}") = "psl.memento.pervasive.hermes.xml.objects", "..\objects\psl.memento.pervasive.hermes.xml.objects.csdproj", "{116C38FF-85D6-4F32-A452-65AAA5AD62DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		ConfigName.0 = Debug
@@ -15,6 +17,12 @@ Global
 		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.ActiveCfg = Release|Pocket PC
 		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.Build.0 = Release|Pocket PC
 		{6BA435EF-8C96-4C7E-9F09-36C8A60526B2}.Release.Deploy.0 = Release|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Debug.ActiveCfg = Debug|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Debug.Build.0 = Debug|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Debug.Deploy.0 = Debug|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Release.ActiveCfg = Release|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Release.Build.0 = Release|Pocket PC
+		{116C38FF-85D6-4F32-A452-65AAA5AD62DC}.Release.Deploy.0 = Release|Pocket PC
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

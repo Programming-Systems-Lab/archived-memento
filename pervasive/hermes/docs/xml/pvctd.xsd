@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- edited with XML Spy v4.4 U (http://www.xmlspy.com) by Suhit Gupta (Columbia University Computer Science Dept) -->
-<xs:schema targetNamespace="voice_to_text_to_data_rmb51_cc_columbia_edu" xmlns="voice_to_text_to_data_rmb51_cc_columbia_edu" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xs:schema targetNamespace="voice_to_text_to_data_rmb51_cc_columbia_edu" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="voice_to_text_to_data_rmb51_cc_columbia_edu" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xs:element name="pvctd">
 		<xs:annotation>
 			<xs:documentation>PVCTD elements contain messages. </xs:documentation>
@@ -37,7 +37,7 @@
 											</xs:annotation>
 										</xs:element>
 										<xs:element name="chatBuddies">
-											<xs:complexType>
+											<xs:complexType mixed="0">
 												<xs:sequence maxOccurs="unbounded">
 													<xs:element name="chatBuddy">
 														<xs:complexType>
@@ -48,10 +48,17 @@
 																		<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
 																	</xs:annotation>
 																</xs:element>
+																<xs:element name="status" type="xs:int">
+																	<xs:annotation>
+																		<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+																	</xs:annotation>
+																</xs:element>
+																<xs:element name="clientID"/>
 															</xs:sequence>
 														</xs:complexType>
 													</xs:element>
 												</xs:sequence>
+												<xs:attribute name="chatBuddiesCount" type="xs:int" default="0"/>
 											</xs:complexType>
 										</xs:element>
 										<xs:element name="serverID" type="xs:string">
@@ -67,12 +74,26 @@
 									<xs:documentation>disconect is sent from the client or the server.  if sent from the client the server stops all chats and signs the user off. if sent from the server the client informs user that server is shutting down.</xs:documentation>
 								</xs:annotation>
 							</xs:element>
-							<xs:element name="openChat">
+							<xs:element name="rejectedInvite" id="message5">
 								<xs:annotation>
-									<xs:documentation>open chat is sent from client to server.  it contains the ip address of the buddy or buddies the client would like to chat with</xs:documentation>
+									<xs:documentation>server sends to client  if the chat is rejected</xs:documentation>
 								</xs:annotation>
 								<xs:complexType>
-									<xs:sequence maxOccurs="unbounded">
+									<xs:sequence>
+										<xs:element name="reason" type="xs:string">
+											<xs:annotation>
+												<xs:documentation>the reason for the rejecttion</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="chatInvite">
+								<xs:annotation>
+									<xs:documentation>a client sends this to the server to let the server. the server then invites the buddy to chat with the group or person.</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
 										<xs:element name="chatBuddy">
 											<xs:complexType>
 												<xs:sequence>
@@ -82,13 +103,19 @@
 															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
 														</xs:annotation>
 													</xs:element>
+													<xs:element name="status" type="xs:int">
+														<xs:annotation>
+															<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="clientID"/>
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>
 									</xs:sequence>
 								</xs:complexType>
 							</xs:element>
-							<xs:element name="confirmOpenChat" id="message5">
+							<xs:element name="confirmChatInvite" id="message5">
 								<xs:annotation>
 									<xs:documentation>confirms client request to open chat.</xs:documentation>
 								</xs:annotation>
@@ -120,6 +147,12 @@
 															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
 														</xs:annotation>
 													</xs:element>
+													<xs:element name="status" type="xs:int">
+														<xs:annotation>
+															<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="clientID"/>
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>
@@ -191,17 +224,18 @@
 												</xs:annotation>
 												<xs:complexType>
 													<xs:sequence>
-														<xs:element name="status" type="xs:int">
-															<xs:annotation>
-																<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
-															</xs:annotation>
-														</xs:element>
 														<xs:element name="ip" type="xs:string"/>
 														<xs:element name="chatName" type="xs:string">
 															<xs:annotation>
 																<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
 															</xs:annotation>
 														</xs:element>
+														<xs:element name="status" type="xs:int">
+															<xs:annotation>
+																<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+															</xs:annotation>
+														</xs:element>
+														<xs:element name="clientID"/>
 													</xs:sequence>
 												</xs:complexType>
 											</xs:element>
@@ -305,24 +339,25 @@
 							</xs:element>
 							<xs:element name="chatBuddiesUpdate">
 								<xs:annotation>
-									<xs:documentation>chatBuddiesUpdates are sent from server to clients.  it is only sent to clients that are not in an active chat.</xs:documentation>
+									<xs:documentation>chatBuddiesUpdates are sent from server to clients as info on what other buddies are doing.</xs:documentation>
 								</xs:annotation>
 								<xs:complexType>
-									<xs:sequence maxOccurs="unbounded">
+									<xs:sequence>
 										<xs:element name="chatBuddy">
 											<xs:complexType>
 												<xs:sequence>
-													<xs:element name="status" type="xs:int">
-														<xs:annotation>
-															<xs:documentation>1 chat buddy can be chatted with.   2 - chat buddy is in another chat. 3 - chat buddy is offline.</xs:documentation>
-														</xs:annotation>
-													</xs:element>
 													<xs:element name="ip" type="xs:string"/>
 													<xs:element name="chatName" type="xs:string">
 														<xs:annotation>
 															<xs:documentation>the name this client wishes to be displayed to other chat buddies.</xs:documentation>
 														</xs:annotation>
 													</xs:element>
+													<xs:element name="status" type="xs:int">
+														<xs:annotation>
+															<xs:documentation>1 - client accepts chatting and you can start sending  2 - did not accept 3 - could not be reached</xs:documentation>
+														</xs:annotation>
+													</xs:element>
+													<xs:element name="clientID"/>
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>

@@ -10,9 +10,13 @@ namespace psl.memento.pervasive.hermes.client
 		private string _clientID;
 		private string _chatName;
 		private string _clientIP;
+		public bool _chatPending;
+		public bool _isChatting;
 
 		public Client()
 		{
+			this._isChatting = false;
+			this._chatPending = false;
 			try
 			{
 				this._clientIP = (System.Net.Dns.GetHostByName(System.Net.Dns.GetHostName()).AddressList[0].ToString());
