@@ -7,6 +7,8 @@ using System.Threading ;
 using System.Collections;
 using psl.memento.pervasive.hermes.util.log;
 using psl.memento.pervasive.hermes.util.constants;
+using psl.memento.pervasive.hermes.util.exceptions;
+using psl.memento.pervasive.hermes.server.ClientHelp;
 
 
 namespace psl.memento.pervasive.hermes.server
@@ -21,6 +23,7 @@ namespace psl.memento.pervasive.hermes.server
 		private PVCServer _server;
 		private TcpListener _clientListener;
 		private int _port;
+		private bool _open;
 
 		public Listener(PVCServer server)
 		{
@@ -29,6 +32,7 @@ namespace psl.memento.pervasive.hermes.server
 
 		public void start()
 		{
+			this._open = true;
 			//get our port
 			try
 			{
@@ -36,14 +40,15 @@ namespace psl.memento.pervasive.hermes.server
 			}
 			catch(ConstantNotFoundException cnf)
 			{
-				Logger.getLogger().log(Logger.EXCEPTION_PRIORITY, "ServerPort constant not found.  Reverting to port 1754", cnf);
-				this._port = 1754;
+				Logger.getLogger().log(Logger.EXCEPTION_PRIORITY, "ServerPort constant not found.  Reverting to port 5500", cnf);
+				this._port = 5500;
 			}
 			
 			//open our listener
 			try
 			{
 				this._clientListener = new TcpListener(this._port);
+				this._clientListener.Start();
 			}
 			catch(Exception e)
 			{
@@ -53,14 +58,21 @@ namespace psl.memento.pervasive.hermes.server
 			//as a connection comes in create a new client and add it to the server hashtable
 			try
 			{
-				while(true)
+				Logger.getLogger().log(Logger.DEBUG_PRIORITY, "We are about to start listening." );
+				while(this._open)
 				{
 					Socket client = this._clientListener.AcceptSocket();
+					Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Incoming Client" );
 					
 					if(client.Connected)
 					{
-						this._server.addClient(new ClientHandler(client, this._server));
+						//as a client comes in we grab it and send it to a new thread for handling
+						ClientHandler incomingClient = new ClientHandler(client, this._server);
+						new Thread(new ThreadStart(incomingClient.start)).Start();
+						Logger.getLogger().log(Logger.INFO_PRIORITY, "New client has been recieved and spanwed off to thread.");
 					}
+
+					Logger.getLogger().log(Logger.INFO_PRIORITY, "Return to listening for clients.");
 
 				}
 			}
@@ -70,6 +82,13 @@ namespace psl.memento.pervasive.hermes.server
 			}
 				
 			Logger.getLogger().log(Logger.INFO_PRIORITY, "Listener is exiting. Restart is possible.");
+		}
+
+		//stop the listener
+		public void stop()
+		{
+			this._clientListener.Stop();
+			this._open = false;
 		}
 
 			

@@ -69,13 +69,14 @@
                 />
                 <Reference
                     Name = "System.XML"
-                    AssemblyName = "System.XML"
+                    AssemblyName = "System.Xml"
                     HintPath = "..\..\..\..\..\..\..\..\WINDOWS\Microsoft.NET\Framework\v1.0.3705\System.XML.dll"
                 />
                 <Reference
                     Name = "Utilities"
                     AssemblyName = "Utilities"
-                    HintPath = "..\utilities\Utilities\bin\Release\Utilities.dll"
+                    HintPath = "..\..\..\..\..\..\util\psl\memento\pervasive\hermes\util\bin\Release\Utilities.dll"
+                    Private = "True"
                 />
             </References>
         </Build>
@@ -83,6 +84,11 @@
             <Include>
                 <File
                     RelPath = "AssemblyInfo.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "Client.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
@@ -97,12 +103,12 @@
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "ClientHandler\ClientHandler.cs"
+                    RelPath = "ClientHelp\ClientHandler.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />
                 <File
-                    RelPath = "ClientHandler\ClientRequestHandler.cs"
+                    RelPath = "ClientHelp\ClientRequestHandler.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

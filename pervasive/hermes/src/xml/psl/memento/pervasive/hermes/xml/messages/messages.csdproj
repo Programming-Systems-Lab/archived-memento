@@ -81,12 +81,6 @@
                     Private = "False"
                 />
                 <Reference
-                    Platform = "Pocket PC"
-                    Name = "psl.memento.hermes.xml.objects.ChatBuddy"
-                    AssemblyName = "psl.memento.hermes.xml.objects.ChatBuddy"
-                    Private = "False"
-                />
-                <Reference
                     Platform = "Pocket PC-Designer"
                     Name = "System.CF.Design"
                     AssemblyName = "System.CF.Design"

@@ -13,7 +13,7 @@
                 AssemblyOriginatorKeyFile = ""
                 DelaySign = "false"
                 OutputType = "WinExe"
-                OutputFileFolder = "\Windows"
+                OutputFileFolder = "\"
                 RootNamespace = "Client"
                 StartupObject = ""
             >
@@ -93,6 +93,16 @@
                     Private = "False"
                 />
                 <Reference
+                    Platform = "Windows CE"
+                    Name = "Utilities"
+                    AssemblyName = "Utilities"
+                />
+                <Reference
+                    Platform = "Windows CE"
+                    Name = "psl.memento.hermes.xml.Messages"
+                    AssemblyName = "psl.memento.hermes.xml.Messages"
+                />
+                <Reference
                     Platform = "Windows CE-Designer"
                     Name = "System.CF.Design"
                     AssemblyName = "System.CF.Design"
@@ -126,6 +136,11 @@
                     BuildAction = "Compile"
                 />
                 <File
+                    RelPath = "Client.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
                     RelPath = "DialogBox.cs"
                     SubType = "Form"
                     BuildAction = "Compile"
@@ -147,6 +162,26 @@
                 />
                 <File
                     RelPath = "ClientHandler\ClientHandler.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "util\Dispatcher.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "util\DispatchManager.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "util\Logger.cs"
+                    SubType = "Code"
+                    BuildAction = "Compile"
+                />
+                <File
+                    RelPath = "util\Runloop.cs"
                     SubType = "Code"
                     BuildAction = "Compile"
                 />

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
+using psl.memento.pervasive.hermes.client.util;
 
 namespace psl.memento.pervasive.hermes.client
 {
@@ -51,8 +52,8 @@ namespace psl.memento.pervasive.hermes.client
 			// label1
 			// 
 			this.label1.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular);
-			this.label1.Location = new System.Drawing.Point(8, 32);
-			this.label1.Size = new System.Drawing.Size(192, 32);
+			this.label1.Location = new System.Drawing.Point(8, 16);
+			this.label1.Size = new System.Drawing.Size(120, 48);
 			this.label1.Text = "Please enter the IP address of the Hermes Server.";
 			this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
 			// 
@@ -61,12 +62,12 @@ namespace psl.memento.pervasive.hermes.client
 			this.textBox1.BackColor = System.Drawing.Color.Black;
 			this.textBox1.ForeColor = System.Drawing.Color.White;
 			this.textBox1.Location = new System.Drawing.Point(8, 72);
-			this.textBox1.Size = new System.Drawing.Size(184, 20);
+			this.textBox1.Size = new System.Drawing.Size(120, 20);
 			this.textBox1.Text = "";
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(48, 96);
+			this.button1.Location = new System.Drawing.Point(16, 96);
 			this.button1.Size = new System.Drawing.Size(104, 32);
 			this.button1.Text = "Connect";
 			this.button1.Click += new System.EventHandler(this.button1_Click);
@@ -74,13 +75,14 @@ namespace psl.memento.pervasive.hermes.client
 			// DialogBox
 			// 
 			this.BackColor = System.Drawing.Color.Red;
-			this.ClientSize = new System.Drawing.Size(210, 151);
+			this.ClientSize = new System.Drawing.Size(136, 135);
 			this.Controls.Add(this.button1);
 			this.Controls.Add(this.textBox1);
 			this.Controls.Add(this.label1);
 			this.ForeColor = System.Drawing.Color.Black;
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
 			this.Text = "Server IP Address";
+			this.Closed += new System.EventHandler(this.parent.connecting);
 
 		}
 		#endregion
@@ -88,17 +90,21 @@ namespace psl.memento.pervasive.hermes.client
 
 		private void button1_Click(object sender, System.EventArgs e)
 		{
+			Logger.getLogger().log(Logger.INFO_PRIORITY, "At this point we have the ip address: " + this.textBox1.Text);
 			string ip = this.textBox1.Text;
-			try
-			{
-				this.parent.clientHandler.setIP(ip);
-			}
-			catch(System.Exception badIP)
-			{
+			//try
+			//{
+				this.parent._clientHandler.setIP(ip);
+			//}
+			//catch(System.Exception badIP)
+			//{
 				//do error handling here for bad ip
-			}
+			//}
+			//this.parent.testClose();
 			this.Close();
+			//Logger.getLogger().log(Logger.INFO_PRIORITY, "No we should return to our close.");
 		}
+
 
 
 	}

@@ -1,9 +1,14 @@
 using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Drawing;
 using System.Collections;
 using System.Windows.Forms;
 using System.Data;
 using psl.memento.pervasive.hermes.client.ClientHandler;
+using psl.memento.pervasive.hermes.xml.messages;
+using psl.memento.pervasive.hermes.client.util;
 
 namespace psl.memento.pervasive.hermes.client
 {
@@ -12,11 +17,11 @@ namespace psl.memento.pervasive.hermes.client
 	/// </summary>
 	public class MainForm : System.Windows.Forms.Form
 	{
-		public client.ClientHandler.ClientHandler clientHandler;
+		public client.ClientHandler.ClientHandler _clientHandler;
 
 		public MainForm()
 		{
-			this.clientHandler = new client.ClientHandler.ClientHandler();
+			this._clientHandler = new client.ClientHandler.ClientHandler();
 				
 			//
 			// Required for Windows Form Designer support
@@ -47,6 +52,7 @@ namespace psl.memento.pervasive.hermes.client
 			this.ClientSize = new System.Drawing.Size(194, 275);
 			this.Text = "Hermes";
 			this.Load += new System.EventHandler(this.MainForm_Load);
+			this.Closed += new System.EventHandler(this.MainForm_Close);
 
 		}
 		#endregion
@@ -62,16 +68,36 @@ namespace psl.memento.pervasive.hermes.client
 
 		private void MainForm_Load(object sender, System.EventArgs e)
 		{
-			System.Console.WriteLine("made it this far old man.");
+			//System.Console.WriteLine("made it this far old man.");
+			Logger.getLogger().log(Logger.INFO_PRIORITY, "Start up this bad boy and go.");
+			//Logger.getLogger().log(Logger.INFO_PRIORITY, "Everything is going now.");
 			DialogBox db = new DialogBox(this);
 			db.ShowDialog();
-			db.Closed += new System.EventHandler(this.connecting);
+			//db.Closed += new System.EventHandler(this.testClose);
+			//db.Closed += new System.EventHandler(this.connecting);
+		}
 
+		private void MainForm_Close(object sender, System.EventArgs e)
+		{
+			Logger.getLogger().log(Logger.INFO_PRIORITY, "Debugger is closing down.");
+			Logger.getLogger().kill();
 		}
 
 		public void connecting(object sender, System.EventArgs e)
 		{
-
+			Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Now we are gtoing to try and connect.");
+			try
+			{
+				//the first thing we do is send off a connection xml object.
+				Logger.getLogger().log(Logger.DEBUG_PRIORITY, "Now we are trying to connect");
+				this._clientHandler.connect();
+			}
+			catch(Exception eeee)
+			{
+				Logger.getLogger().log(Logger.EXCEPTION_PRIORITY, "Problem connecting.", eeee);
+			}
+			//this._clientHandler.connect();
+			
 		}
 	}
 }

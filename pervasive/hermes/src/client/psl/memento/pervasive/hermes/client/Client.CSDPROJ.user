@@ -2,8 +2,8 @@
     <ECSHARP>
         <Build>
             <Settings
-                DeploymentDevice = "Windows CE Emulator"
-                ReferencePath = ""
+                DeploymentDevice = "Pocket PC Emulator"
+                ReferencePath = "C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\util\psl\memento\pervasive\hermes\util\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl.memento.hermes.xml.Messages\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\messages\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\"
             >
                 <Platform Name = "Windows CE" />
                 <Config
@@ -39,8 +39,8 @@
                     StartURL = ""
                     StartWorkingDirectory = ""
                     StartWithIE = "false"
-                    SelectedDevice = "Windows CE Emulator"
-                    DeploymentPlatform = "Windows CE"
+                    SelectedDevice = "Pocket PC Emulator"
+                    DeploymentPlatform = "Pocket PC"
                 />
             </Settings>
         </Build>
