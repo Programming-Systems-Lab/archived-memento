@@ -34,7 +34,7 @@ namespace psl.memento.pervasive.hermes.server.ChatHelper
 			ClientHandler request = cr._requestClient;
 			if(!invited._client._canChat || invited._client._chatPending || !invited._client._status.Equals(RuntimeConstants.CONNECTED))
 			{
-				ThreadPool.QueueUserWorkItem(new WaitCallback(request._responseHandler.chatInviteRejected), "This buddy cannot be chatted with currently.");
+				ThreadPool.QueueUserWorkItem(new WaitCallback(cr._requestClient._responseHandler.chatInviteRejected), "Cannot chat with this guy.");
 				request._client._chatPending = false;
 			}
 			else

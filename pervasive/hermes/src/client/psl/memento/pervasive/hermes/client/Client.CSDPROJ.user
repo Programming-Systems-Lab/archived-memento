@@ -2,7 +2,7 @@
     <ECSHARP>
         <Build>
             <Settings
-                DeploymentDevice = "Pocket PC Device (Default)"
+                DeploymentDevice = "Pocket PC Emulator"
                 ReferencePath = "C:\Documents and Settings\rmb51\My Documents\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\util\psl\memento\pervasive\hermes\util\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl.memento.hermes.xml.Messages\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\messages\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\;C:\Documents and Settings\rmb51\My Documents\psl\memento\pervasive\hermes\src\util\psl\memento\pervasive\hermes\util\bin\Release\;C:\Documents and Settings\rmb51\My Documents\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\messages\bin\Release\"
             >
                 <Platform Name = "Windows CE" />
