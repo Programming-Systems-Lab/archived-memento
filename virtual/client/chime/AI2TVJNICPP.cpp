@@ -8,12 +8,13 @@
  *
  * CVS version control block - do not edit manually
  *  $RCSfile: AI2TVJNICPP.cpp,v $
- *  $Revision: 1.5 $
- *  $Date: 2003-09-06 04:51:01 $
+ *  $Revision: 1.6 $
+ *  $Date: 2003-09-08 19:19:15 $
  *  $Source: /local/psl-cvs/psl/memento/virtual/client/chime/AI2TVJNICPP.cpp,v $
  */
 
 #include "cssysdef.h"
+#include "ChimeSystemDriver.h"
 #include "AI2TVJNICPP.h"
 
 // The global pointer to ChimeSystemDriver
@@ -37,8 +38,10 @@ AI2TVJNICPP::AI2TVJNICPP(){
   JAVACLASS = "psl/ai2tv/client/AI2TVJNIJava"; 
  
   classpath = "-Djava.class.path=c:/pslroot/psl/ai2tv/client/build;c:/pslroot/jars/siena-1.4.3.jar;.";
+  
+  // the libpath refers to at least the location of the AI2TVJNICPP.dll.  
+  libpath = "-Djava.library.path=c:/pslroot/psl/ai2tv/client/;c:/pslroot/psl/memento/virtual/cilent/chime;c:/pslroot/psl/memento/virtual/client/libs/;c:/pslroot/psl/memento/virtual/client/chime/Debug";
 
-  libpath = "-Djava.library.path=c:/pslroot/psl/ai2tv/client/";
   // this is the default base video URL 
   baseURL = "-Dai2tv.baseURL=http://wall.psl.cs.columbia.edu/ai2tv/";
 
@@ -422,10 +425,9 @@ JNIEXPORT void JNICALL
 Java_psl_ai2tv_client_AI2TVJNIJava_loadImage(JNIEnv *env, jobject obj, jstring frame) {
   jboolean* isCopy = new jboolean(false);
   const char *frameString = env->GetStringUTFChars(frame,isCopy);
+  printf("c++ : loading frame %s\n", frameString);
 
-  printf("c++ : loading frame %s\n", frameStringstr);
-
-  driver->GetAi2tvInterface ()->LoadFrame (frameString, frameString);
+  driver->LoadFrame (frameString, frameString);
 
   delete isCopy;
   env->ReleaseStringUTFChars(frame, frameString);
@@ -445,7 +447,7 @@ Java_psl_ai2tv_client_AI2TVJNIJava_displayImage(JNIEnv *env, jobject obj, jstrin
 
   printf("c++ : Displayed frame %s\n", frameString);
 
-  driver->GetAi2tvInterface ()->DisplayFrame (frameString);
+  driver->DisplayFrame (frameString);
 
   delete isCopy;
   delete displaySuccessful;

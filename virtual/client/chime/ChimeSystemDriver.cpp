@@ -1184,9 +1184,11 @@ bool ChimeSystemDriver::BuildAi2tvScreen ()
 /************************************************************
  * Load given image under given frame name
  ************************************************************/
-void ChimeSystemDriver::LoadFrame (char *strFileName, char *strMaterialName)
+void ChimeSystemDriver::LoadFrame (const char *strFileName, const char *strMaterialName)
 {
-	// add AI2TV folder location to file name
+  printf("ChimeSystemDriver::LoadFrame %s %s\n", *strFileName, *strMaterialName);
+  // add AI2TV folder location to file name
+  /*
 	char full_name[100];
 	strcpy (full_name, "lib/ai2tv/");
 	strcat (full_name, strFileName);
@@ -1206,20 +1208,24 @@ void ChimeSystemDriver::LoadFrame (char *strFileName, char *strMaterialName)
 	if (!material)
 		return;
 	material->Register (csTxtManager);
+  */
 }
 
 
 /************************************************************
  * Display given frame on screen
  ************************************************************/
-void ChimeSystemDriver::DisplayFrame (char *strFrameName)
+void ChimeSystemDriver::DisplayFrame (const char *strFrameName)
 {
+  printf("ChimeSystemDriver::DisplayFrame %s\n", strFrameName);
+  /*
 	// find material
 	iMaterialWrapper *material = csEngine->FindMaterial (strFrameName);
 
 	// display material on screen
 	if (material && chCurrentSector)
 		chCurrentSector->DisplayImageOnScreen (material);
+  */
 }
 
 
