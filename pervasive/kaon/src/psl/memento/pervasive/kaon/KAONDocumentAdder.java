@@ -16,7 +16,7 @@ public class KAONDocumentAdder extends Thread {
 	 * Initializes the DocumentAdder. It creates a single
 	 * instance of the KAONInterfacer
 	 */
-	public KAONDocumentAdder {
+	public KAONDocumentAdder () {
 
 	}
 

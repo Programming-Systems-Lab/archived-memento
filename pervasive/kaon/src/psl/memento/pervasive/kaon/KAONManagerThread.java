@@ -22,8 +22,8 @@ public class KAONManagerThread extends Thread {
 	private KAONConnection connection;
 
 	//final variables
-	public final int DOCUMENT_ADDER = 0;
-	public final int ONTOLOGY_QUERY = 1;
+	public static final int DOCUMENT_ADDER = 0;
+	public static final int ONTOLOGY_QUERY = 1;
 
 	/**
 	 * This method constructs the KAONManagerThread. It is

@@ -29,11 +29,12 @@ import edu.unika.aifb.kaon.engineeringserver.loader.*;
 import edu.unika.aifb.kaon.engineeringserver.query.*;
 
 import java.util.*;
+import java.io.*;
 
 public class KAONManager {
 	//instance variables
 	Vector queue;
-	Threads connections;
+	Thread[] connections;
 
 	//Settings variables
 	private int documentPort;
@@ -51,7 +52,7 @@ public class KAONManager {
 	 */
 	private void setupSettings() {
 		//Load Properties File
-		Properties = settings = new Properties();
+		Properties settings = new Properties();
 		try {
 			settings.load(new FileInputStream(PROPERTIES_FILE));
 		} catch (Exception e) {
@@ -116,7 +117,7 @@ public class KAONManager {
 	 * @return the removed document
 	 */
 	public synchronized File dequeueDocument() {
-
+		return null;
 	}
 
 	/**
@@ -125,7 +126,7 @@ public class KAONManager {
 	 * @return the size of the queue
 	 */
 	public synchronized int getQueueSize() {
-
+		return 0;
 	}
 
 	/**
@@ -157,7 +158,7 @@ public class KAONManager {
 		  * Listen on the document port and spawn a new instance
 		  * of the KAONManagerThread for the client
 		  */
-		 public listenOnPort() {
+		 public void listenOnPort() {
 
 		 }
 	}

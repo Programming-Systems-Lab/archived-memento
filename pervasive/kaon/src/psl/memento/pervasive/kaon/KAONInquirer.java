@@ -206,7 +206,7 @@ public class KAONInquirer {
 
 	public static void main(String[] args) {
 		if (args.length != 2) {
-			System.out.println("Not enough arguments.");
+			System.out.println("Not enough arguments.\nUsage: java KAONInquirer [first term to compare] [second term to compare]");
 			return;
 		}
 
