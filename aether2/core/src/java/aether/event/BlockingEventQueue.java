@@ -3,7 +3,7 @@ package aether.event;
 import java.util.LinkedList;
 
 /**
- * A BlockingEventQueue that can be used to synchronized event processing
+ * A BlockingEventQueue that can be used to synchronize event processing
  * between threads.
  *
  * @author Buko O. (buko@concedere.net)

@@ -4,7 +4,8 @@ import org.elvin.je4.Notification;
 import org.elvin.je4.Subscription;
 
 /**
- * Indicates an Event that has a specific destination.
+ * Indicates an Event that has a specific destination. Message events are used
+ * to allow point-to-point communication over the underlying event network.
  *
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
@@ -38,7 +39,7 @@ public abstract class Message extends Event implements Attribute.Message
 	 */
 	public String getLink()
 	{
-		return notification.getString(LinkId);
+		return notification.getString(LINK_ID);
 	}
 
 	/**
@@ -48,7 +49,7 @@ public abstract class Message extends Event implements Attribute.Message
 	 */
 	public void setLink(String link)
 	{
-		notification.put(LinkId, link);
+		notification.put(LINK_ID, link);
 	}
 
 	/**
@@ -60,7 +61,7 @@ public abstract class Message extends Event implements Attribute.Message
 	 */
 	public String getDestination()
 	{
-		return notification.getString(Destination);
+		return notification.getString(DESTINATION);
 	}
 
 	/**
@@ -70,14 +71,14 @@ public abstract class Message extends Event implements Attribute.Message
 	 */
 	public void setDestination(String dest)
 	{
-		notification.put(Destination, dest);
+		notification.put(DESTINATION, dest);
 	}
 
 	/**
 	 * Construct a Subscription indicating that a component wants to receive
 	 * messages sent to a certain destination.
 	 *
-	 * @param dest Destination to subscribe to
+	 * @param dest DESTINATION to subscribe to
 	 */
 	public static Subscription createSubForDestination(String dest)
 	{
@@ -88,7 +89,7 @@ public abstract class Message extends Event implements Attribute.Message
 		}
 
 		// some destinations may be regexable URLS!
-   		String expr = "regex(" + Attribute.Message.Destination + ", " +
+   		String expr = "regex(" + Attribute.Message.DESTINATION + ", " +
 				   " \"" + dest + "\")";
 		return new Subscription(expr);
 	}

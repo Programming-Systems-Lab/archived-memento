@@ -59,7 +59,7 @@ public class DefaultConnectionTest extends AetherTestCase
 	{
 		// subscribe to everything
 		Consumer consumer = new Consumer(conn.elvinConnection());
-		Subscription sub = new Subscription("require(" + Attribute.Event.EventId + ")");
+		Subscription sub = new Subscription("require(" + Attribute.Event.EVENT_ID + ")");
 		sub.addNotificationListener(new NotificationListener()
 		{
 			public void notificationAction(Notification notification)
@@ -98,7 +98,7 @@ public class DefaultConnectionTest extends AetherTestCase
 		// wait for the event to come back!
 		Thread.sleep(1000);
 
-		// first event should be the notification
+		// first event should be the getNotification
 		Notice not = (Notice) queue.dequeue();
 
 		assertEquals(not.getHeader("Priority"), "High");

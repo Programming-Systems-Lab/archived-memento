@@ -11,66 +11,11 @@ import org.elvin.je4.Subscription;
  **/
 public class Response extends Message implements Attribute.Response
 {
-    /**
-	 * Construct a new Response containing empty data.
-	 */
-	public Response()
-	{
-		super();
-        setEventType(aether.event.EventType.Response);
-	}
 
-	/**
-	 * Construct a Response from an existing notification.
-	 *
-	 * @param notif Notification containing response data
-	 * @throws EventException
-	 *         if <code>notif</code> is invalid
-	 */
-	public Response(Notification notif) throws EventException
-	{
-		super(notif);
-	}
-
-    /**
-	 * Get the response code for this response.
-	 *
-	 * @return response code for this response or <code>-1</code>
-	 */
-	public int getCode()
-	{
-		return notification.getInt(Code);
-	}
-
-	/**
-	 * Set the response code for this response.
-	 *
-	 * @param code response code for this response
-	 */
-	public void setCode(int code)
-	{
-		notification.put(Code, code);
-	}
-
-    /**
-	 * Get the reason line for this response.
-	 *
-	 * @return reason line for this response
-	 */
-	public String getReasonLine()
-	{
-        return notification.getString(ReasonLine);
-	}
-
-	/**
-	 * Set the reason line for this response.
-	 *
-	 * @param rl reason line for this response
-	 */
-	public void setReasonLine(String rl)
-	{
-		notification.put(ReasonLine, rl);
-	}
+    public String getEventType()
+    {
+        return aether.event.EventType.RESPONSE;
+    }
 
 	/**
 	 * Construct a Subscription necessary to receive responses over a given
@@ -88,9 +33,9 @@ public class Response extends Message implements Attribute.Response
 		}
 
 		// receive all events that are responses and were sent over this link
-        String expr = Attribute.Event.EventType + " == \"" +
-				aether.event.EventType.Response + "\" && " +
-				LinkId + " == \"" + linkId + "\"";
+        String expr = Attribute.Event.EVENT_TYPE + " == \"" +
+				aether.event.EventType.RESPONSE + "\" && " +
+				LINK_ID + " == \"" + linkId + "\"";
 		return new Subscription(expr);
 	}
 }

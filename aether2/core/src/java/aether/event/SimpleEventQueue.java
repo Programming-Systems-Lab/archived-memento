@@ -34,4 +34,9 @@ public class SimpleEventQueue implements EventQueue
 
         return (Event) list.removeFirst();
 	}
+
+    public synchronized void close()
+    {
+        list.clear();
+    }
 }

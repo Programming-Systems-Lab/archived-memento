@@ -58,71 +58,6 @@ public class AbstractMonitor implements Monitor
 			new QueueNotificationListener();
 
 
-	/**
-	 * Monitor a resource in the Aether.
-	 *
-	 * @param guid guid of the component to monitor
-	 * @throws IOException
-	 *         if the resource can't be monitored
-	 */
-	public synchronized void watch(String guid) throws IOException
-	{
-        if (guid == null)
-		{
-			String msg = "no parameter can be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		if (!isOpen())
-		{
-			String msg = "monitor is closed";
-			throw new IllegalStateException(msg);
-		}
-
-        // have we already subscribed to this URI? if so, ignore it!
-		if (!subscriptionMap.containsKey(guid))
-		{
-			// create the Subscription from the uri and add our listener to it
-			Subscription subscription = Notice.createSourceSubscription(guid);
-            subscription.addNotificationListener(queueListener);
-
-			// subscribe to it
-			consumer.addSubscription(subscription);
-
-			// put it in the map
-			subscriptionMap.put(guid, subscription);
-		}
-	}
-
-	/**
-	 * Stop monitoring a resource in the Aether.
-	 *
-	 * @param guid guid of the component to ignore
-	 * @throws IOException
-	 *         if the halt monitor procedure fails
-	 */
-	public synchronized void ignore(String guid) throws IOException
-	{
-		if (guid == null)
-		{
-			String msg = "no parameter can be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		if (!isOpen())
-		{
-			String msg = "monitor is closed";
-			throw new IllegalStateException(msg);
-		}
-
-        // if subscribed to this guid, remove the subscription
-		if (subscriptionMap.containsKey(guid))
-		{
-			Subscription sub = (Subscription) subscriptionMap.remove(guid);
-			consumer.removeSubscription(sub);
-		}
-	}
-
 	public void subscribe(String topic) throws IOException
 	{
 		if (topic == null)
@@ -279,9 +214,9 @@ public class AbstractMonitor implements Monitor
 	}
 
 	/**
-	 * Fire an incoming Notice to all registered listeners.
+	 * Fire an incoming NOTICE to all registered listeners.
 	 *
-	 * @param notice Notice to be delivered to all listeners
+	 * @param notice NOTICE to be delivered to all listeners
 	 */
 	protected void fireNoticeReceived(Notice notice)
 	{
@@ -297,7 +232,7 @@ public class AbstractMonitor implements Monitor
 	}
 
 	/**
-	 * NotificationListener that enqueues all incoming Notice objects.
+	 * NotificationListener that enqueues all incoming NOTICE objects.
 	 *
 	 * @author Buko O. (buko@concedere.net)
 	 * @version 0.1
@@ -310,13 +245,13 @@ public class AbstractMonitor implements Monitor
 			{
 				try
 				{
-					Notice n = new Notice(notification);
-					n.onReceive();
+					Notice n = new Notice();
+					n.parse(notification);
 					fireNoticeReceived(n);
 				}
 				catch (EventException me)
 				{
-					String msg = "receieved bad notification!";
+					String msg = "receieved bad getNotification!";
 					throw new Error(msg, me);
 				}
 			}

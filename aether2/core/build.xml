@@ -6,7 +6,7 @@
 	<property name="project.version" value="0.1" />
 	<property name="project.title" value="${project.name}-${project.version}" />
 	<property name="project.author.name" value="Buko Obele" />
-	<property name="project.author.email" value="buko@cs.columbia.net"  />
+	<property name="project.author.email" value="buko@cs.columbia.edu"  />
 
 	<!-- setup project directories -->
 	<property name="src.dir" location="src/java" />

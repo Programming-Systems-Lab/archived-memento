@@ -50,19 +50,18 @@ public interface Link
 
     /**
 	 * Construct a Request to be sent over this link.
-	 *
-	 * @param verb Verb that the Request will applied to the component or
-	 *             resource on the other end
+     *
+     * @return Request that may be sent over this Link
 	 */
-	public Request createRequest(String verb);
+	public Request createRequest();
 
 	/**
 	 * Send a Request over this link.
 	 *
-	 * @param request Request to send
-	 * @return Response to the given request
+	 * @param Request Request to send
+	 * @return Response to the given Request
 	 * @throws IOException
 	 *         if something goes wrong
 	 */
-	public Response send(Request request) throws IOException;
+	public Response send(Request Request) throws IOException;
 }

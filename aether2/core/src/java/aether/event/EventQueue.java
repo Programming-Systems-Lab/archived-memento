@@ -23,4 +23,9 @@ public interface EventQueue
 	 * @return Event dequeued from the queue
 	 */
 	public Event dequeue();
+
+    /**
+     * Close the event queue to halt all further processing.
+     */
+    public void close();
 }

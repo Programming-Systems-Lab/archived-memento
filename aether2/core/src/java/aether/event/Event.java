@@ -12,8 +12,7 @@ import java.util.*;
  * @author Buko O. (buko@concedere.net)
  * @version 0.1
  **/
-public abstract class Event extends java.util.EventObject
-		implements Attribute.Event
+public abstract class Event implements Attribute.Event
 {
 	static
 	{
@@ -21,11 +20,8 @@ public abstract class Event extends java.util.EventObject
         Notification.throwExceptions(false);
 	}
 
-	private Map headers = new HashMap();
-    private Map procInstructions = new HashMap();
-
     /**
-	 * Underlying Elvin notification that'll actually be published.
+	 * Underlying Elvin getNotification that'll actually be published.
 	 */
 	protected Notification notification;
 
@@ -34,26 +30,22 @@ public abstract class Event extends java.util.EventObject
 	 */
 	protected Event()
 	{
-		super(new Object());
-		// TODO: fix this, what should be the source of this event?
-
 		this.notification = new Notification();
 
-		// assign a unique event id
-		this.notification.put(EventId, GuidFactory.createId());
+        // create the unique event id and set the event type
+        setEventID(GuidFactory.createId());
+        setEventType(getEventType());
 	}
 
-	/**
-	 * Construct a new Event from an existing Notification data.
-	 *
-	 * @param notif Notificaton containing Event data
-	 * @throws EventException
-	 *         if <code>notif</code> contains invalid data
-	 */
-	protected Event(Notification notif) throws EventException
-	{
-		super(new Object());
-
+    /**
+     * Initialize an event structure from an existing Notification.
+     *
+     * @param notif Notification containing Event data
+     * @throws EventException
+     *         if <code>notif</code> is malformed
+     */
+    public void parse(Notification notif) throws EventException
+    {
         if (notif == null)
 		{
 			String msg = "notif can't be null";
@@ -61,20 +53,17 @@ public abstract class Event extends java.util.EventObject
 		}
 
 		this.notification = notif;
+    }
 
-		// initialize the headers
-		readHeaders(notif);
-	}
-
-	/**
-	 * Get the underlying Notification object of the event.
-	 *
-	 * @return underlying Notification object
-	 */
-	Notification getNotification()
-	{
-		return notification;
-	}
+    /**
+     * Set the unique event ID.
+     *
+     * @param id unique event ID
+     */
+    private void setEventID(String id)
+    {
+		this.notification.put(EVENT_ID, id);
+    }
 
 	/**
 	 * Get the unqiue event ID for this event.
@@ -83,7 +72,7 @@ public abstract class Event extends java.util.EventObject
 	 */
 	public String getEventId()
 	{
-		return notification.getString(EventId);
+		return notification.getString(EVENT_ID);
 	}
 
 	/**
@@ -93,7 +82,7 @@ public abstract class Event extends java.util.EventObject
 	 */
 	public long getTime()
 	{
-		return notification.getLong(Time);
+		return notification.getLong(TIME);
 	}
 
 	/**
@@ -103,7 +92,7 @@ public abstract class Event extends java.util.EventObject
 	 */
 	public void setTime(long time)
 	{
-		notification.put(Time, time);
+		notification.put(TIME, time);
 	}
 
 	/**
@@ -113,7 +102,7 @@ public abstract class Event extends java.util.EventObject
 	 */
 	public String getSourceId()
 	{
-		return notification.getString(SourceId);
+		return notification.getString(SOURCE_ID);
 	}
 
 	/**
@@ -123,221 +112,52 @@ public abstract class Event extends java.util.EventObject
 	 */
 	public void setSourceId(String guid)
 	{
-		notification.put(SourceId, guid);
+		notification.put(SOURCE_ID, guid);
 	}
 
     /**
-	 * Get the body of this event.
-	 *
-	 * @return body of this event or <code>null</code>
-	 */
-	public byte[] getBody()
-	{
-		return notification.getBytes(Body);
-	}
-
-	/**
-	 * Set the body of this event.
-	 *
-	 * @param body body of this event
-	 */
-	public void setBody(byte[] body)
-	{
-		notification.put(Body, body);
-	}
-
-	/**
-	 * Get the event type of this event.
-	 */
-    public String getMessageType()
-	{
-		return notification.getString(EventType);
-	}
-
-	/**
-	 * Set the event type of this event.
-	 *
-	 * @param type type of this event. this must be one of the EventType
-	 *             constants
-	 */
-	protected void setEventType(String type)
-	{
-		notification.put(EventType, type);
-	}
+     * Get the event type of the Event.
+     *
+     * @return EVENT_TYPE of the Event
+     */
+    public abstract String getEventType();
 
     /**
-	 * Set a header on this event.
-	 *
-	 * @param name name of the header
-	 * @param val  value of the header
-	 */
-	public void setHeader(String name, String val)
-	{
-		if (name == null)
-		{
-			String msg = "name can't be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		headers.put(name, val);
-	}
-
-    /**
-	 * Get a header from this event.
-	 *
-	 * @param name name of the header
-	 * @return value of the header with <code>name</code> or <code>null</code>
-	 */
-	public String getHeader(String name)
-	{
-		if (name == null)
-		{
-			String msg = "name can't be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		return (String) headers.get(name);
-	}
+     * Set the EVENT_TYPE for the event.
+     *
+     * @param type type of the event
+     */
+    private void setEventType(String type)
+    {
+        notification.put(EVENT_TYPE, type);
+    }
 
 	/**
-	 * Retrieve an enumeration over the headers.
+	 * Get the underlying Elvin getNotification.
 	 *
-	 * @return enumeration of he headers of this event
+	 * @return underlying Elvin getNotification
 	 */
-	public Enumeration headers()
-	{
-		return Collections.enumeration(headers.keySet());
-	}
-
-	/**
-	 * Store all the headers on the Event in the underlying event.
-	 */
-	private void writeHeaders(Map headers)
-	{
-		StringBuffer sb = new StringBuffer();
-
-        for (Iterator i = headers.entrySet().iterator(); i.hasNext(); )
-		{
-			Map.Entry me = (Map.Entry) i.next();
-
-			// add it to the space-separated list of headers
-            sb.append((String) me.getKey()).append(' ');
-
-            // store it in the notification
-			notification.put("aether.event.header." + (String) me.getKey(),
-							 (String) me.getValue());
-		}
-
-		// store the list of headers in the notification
-		notification.put(Headers, sb.toString());
-	}
-
-	/**
-	 * Initialize the headers map from Notification.
-	 */
-	private void readHeaders(Notification notif)
-	{
-		// skip processing if no headers were defined
-        if (!notification.containsKey(Headers)) return;
-
-        // get the list of headers and tokenize it
-		StringTokenizer tokenizer =
-				new StringTokenizer(notif.getString(Headers));
-
-		// set each header
-		while (tokenizer.hasMoreTokens())
-		{
-			String key = tokenizer.nextToken();
-
-			String val = notification.getString("aether.event.header." + key);
-			setHeader(key, val);
-		}
-	}
-
-	/**
-	 * Set a processing instruction on the event.
-	 *
-	 * @param name name of of the PI
-	 * @param val  object to bind to the PI
-	 */
-	public void setProcessingInstruction(String name, Object val)
-	{
-		if (name == null)
-		{
-			String msg = "name can't be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		procInstructions.put(name, val);
-	}
-
-    /**
-	 * Get a processing instruction set on this event.
-	 *
-	 * @param name name of the PI
-	 * @return Object bound to <code>name</code> or <code>null</code>
-	 */
-	public Object getProcessingInstruction(String name)
-	{
-		if (name == null)
-		{
-			String msg = "name can't be null";
-			throw new IllegalArgumentException(msg);
-		}
-
-		return procInstructions.get(name);
-	}
-
-    /**
-	 * Allow this event to perform any lifecycle logic right before it is
-	 * published.
-	 *
-	 * @throws EventException
-	 *         if this event can't be queued
-	 */
-	public void onPublish() throws EventException
-	{
-		writeHeaders(headers);
-	}
-
-	/**
-	 * Allow a Event to perform lifecycle logic right after it's been
-	 * received.
-	 *
-	 * @throws EventException
-	 *         if something goes wrong
-	 */
-	public void onReceive() throws EventException
-	{
-		; // do nothing
-	}
-
-	/**
-	 * Get the underlying Elvin notification.
-	 *
-	 * @return underlying Elvin notification
-	 */
-	public Notification notification()
+	public Notification getNotification()
 	{
 		return notification;
 	}
 
 	/**
-	 * Determine if an Elvin notification contains Notice data.
+	 * Determine if an Elvin getNotification contains NOTICE data.
 	 *
-	 * @param notification  notification to query
-	 * @return <code>true</code> iff <code>notification</code> is a Notice
+	 * @param notification  getNotification to query
+	 * @return <code>true</code> iff <code>getNotification</code> is a NOTICE
 	 */
 	public static boolean isNotice(Notification notification)
 	{
 		if (notification == null)
 		{
-			String msg = "notification can't be null";
+			String msg = "getNotification can't be null";
 			throw new IllegalArgumentException(msg);
 		}
 
-		return aether.event.EventType.Notice.equals(
-				notification.getString(EventType));
+		return aether.event.EventType.NOTICE.equals(
+				notification.getString(EVENT_TYPE));
 	}
 
 	/**
@@ -354,8 +174,8 @@ public abstract class Event extends java.util.EventObject
 			throw new IllegalArgumentException(msg);
 		}
 
-		return aether.event.EventType.Request.equals(
-				notif.getString(EventType));
+		return aether.event.EventType.REQUEST.equals(
+				notif.getString(EVENT_TYPE));
 	}
 
 	/**
@@ -372,7 +192,7 @@ public abstract class Event extends java.util.EventObject
 			throw new IllegalArgumentException(msg);
 		}
 
-		return aether.event.EventType.Response.equals(
-				notif.getString(EventType));
+		return aether.event.EventType.RESPONSE.equals(
+				notif.getString(EVENT_TYPE));
 	}
 }

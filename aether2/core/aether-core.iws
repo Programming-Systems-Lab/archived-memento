@@ -1,67 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="3" relativePaths="true">
-  <component name="WebReferencesConfigurable">
-    <property name="CUSTOM_MAP_LOOKUP" type="list" />
-    <property name="INTERFACE_POSTFIX" value="" type="string" />
-    <property name="electric.home" value="/electric" type="string" />
-    <property name="INTERFACE_PREFIX" value="I" type="string" />
-    <property name="INCLUDE_SYSTEM_MAP" value="true" type="boolean" />
-    <property name="THROW_EXCEPTIONS" value="false" type="boolean" />
-    <property name="ENABLED" value="false" type="boolean" />
-  </component>
   <component name="FileEditorManager">
     <history>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Request.java" line="181" column="4" vertical-scroll-proportion="0.8980892" horizontal-scroll-proportion="0.0436205" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/util/BytesHelper.java" line="34" column="9" vertical-scroll-proportion="0.3710191" horizontal-scroll-proportion="0.098146126" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Response.java" line="72" column="51" vertical-scroll-proportion="0.04299363" horizontal-scroll-proportion="0.53326064" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Message.java" line="72" column="57" vertical-scroll-proportion="0.20541401" horizontal-scroll-proportion="0.59651035" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Event.java" line="162" column="29" vertical-scroll-proportion="0.36942676" horizontal-scroll-proportion="0.3031625" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Notice.java" line="81" column="60" vertical-scroll-proportion="0.5557325" horizontal-scroll-proportion="0.65430754" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/Attribute.java" line="19" column="0" vertical-scroll-proportion="0.45700637" horizontal-scroll-proportion="0.0" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Monitor.java" line="11" column="33" vertical-scroll-proportion="0.4442675" horizontal-scroll-proportion="0.35986915" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/test/aether/net/DefaultMonitorTest.java" line="98" column="48" vertical-scroll-proportion="0.35828024" horizontal-scroll-proportion="0.523446" />
-      <source-position-entry url="file://$PROJECT_DIR$/build.xml" line="144" column="86" vertical-scroll-proportion="0.0756579" horizontal-scroll-proportion="0.93784076" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultMonitor.java" line="15" column="13" vertical-scroll-proportion="-10.814145" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractMonitor.java" line="174" column="68" vertical-scroll-proportion="0.66611844" horizontal-scroll-proportion="0.74154854">
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/EventQueue.java" line="27" column="60" vertical-scroll-proportion="0.81707317" horizontal-scroll-proportion="0.5825243" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/UriFactory.java" line="11" column="13" vertical-scroll-proportion="0.4169675" horizontal-scroll-proportion="0.200883">
         <folding>
-          <element signature="class#QueueNotificationListener;class#AbstractMonitor" expanded="true" />
-        </folding>
-      </source-position-entry>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultConnection.java" line="16" column="13" vertical-scroll-proportion="-0.0049342103" horizontal-scroll-proportion="0.14176664" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="85" column="14" vertical-scroll-proportion="0.35197368" horizontal-scroll-proportion="0.15267175" />
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractLink.java" line="45" column="32" vertical-scroll-proportion="0.14808917" horizontal-scroll-proportion="0.348964">
-        <folding>
-          <element signature="class#LinkNotificationListener;class#AbstractLink" expanded="true" />
           <element signature="imports" expanded="true" />
         </folding>
       </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/SimpleEventQueue.java" line="0" column="24" vertical-scroll-proportion="0.0" horizontal-scroll-proportion="0.37086093" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/event/BlockingEventQueue.java" line="11" column="13" vertical-scroll-proportion="0.33212996" horizontal-scroll-proportion="0.200883" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractConnection.java" line="2" column="26" vertical-scroll-proportion="0.07317073" horizontal-scroll-proportion="0.2524272">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Link.java" line="53" column="54" vertical-scroll-proportion="0.4512195" horizontal-scroll-proportion="0.52427185" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractLink.java" line="252" column="51" vertical-scroll-proportion="0.9268293" horizontal-scroll-proportion="0.49514562">
+        <folding>
+          <element signature="imports" expanded="true" />
+        </folding>
+      </source-position-entry>
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultLink.java" line="15" column="13" vertical-scroll-proportion="0.5487805" horizontal-scroll-proportion="0.1262136" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Connection.java" line="11" column="17" vertical-scroll-proportion="-0.10627177" horizontal-scroll-proportion="0.16504854" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Publisher.java" line="12" column="17" vertical-scroll-proportion="0.36585367" horizontal-scroll-proportion="0.16504854" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/Monitor.java" line="91" column="0" vertical-scroll-proportion="0.9602888" horizontal-scroll-proportion="0.0" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractMonitor.java" line="260" column="40" vertical-scroll-proportion="0.9602888" horizontal-scroll-proportion="0.3883495" />
+      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/DefaultConnection.java" line="8" column="25" vertical-scroll-proportion="0.028880866" horizontal-scroll-proportion="0.24271844" />
+      <source-position-entry url="file://$PROJECT_DIR$/.cvsignore" line="6" column="15" vertical-scroll-proportion="0.22743683" horizontal-scroll-proportion="0.14563107" />
+      <source-position-entry url="file://$PROJECT_DIR$/build.xml" line="161" column="69" vertical-scroll-proportion="0.9241877" horizontal-scroll-proportion="0.6699029" />
     </history>
-    <open-files>
-      <source-position-entry url="file://$PROJECT_DIR$/src/java/aether/net/AbstractLink.java" line="45" column="32" vertical-scroll-proportion="0.14808917" horizontal-scroll-proportion="0.348964" selected="true">
-        <folding>
-          <element signature="class#LinkNotificationListener;class#AbstractLink" expanded="true" />
-          <element signature="imports" expanded="true" />
-        </folding>
-      </source-position-entry>
-    </open-files>
+    <open-files />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="-4" width="1032" height="776" extended-state="0" />
+    <frame x="65" y="12" width="834" height="719" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.44585988" order="5" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32991204" order="2" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32991204" order="7" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="sliding" type="sliding" visible="false" weight="0.4004065" order="0" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.3343496" order="0" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.33375636" order="0" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="3" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.25" order="1" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.32991204" order="1" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="true" internal_type="docked" type="docked" visible="false" weight="0.32961783" order="1" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="true" internal_type="sliding" type="sliding" visible="false" weight="0.32991204" order="8" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.40029326" order="6" />
       <window_info id="Web" active="false" anchor="left" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="2" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="5" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.33" order="0" />
       <window_info id="EJB" active="false" anchor="bottom" auto_hide="false" internal_type="docked" type="docked" visible="false" weight="0.25" order="4" />
     </layout>
@@ -100,6 +87,7 @@
     <option name="SKIP_SYNTHETIC_METHODS" value="true" />
     <option name="SKIP_CONSTRUCTORS" value="false" />
     <option name="STEP_THREAD_SUSPEND_POLICY" value="SuspendThread" />
+    <option name="EVALUATION_TIMEOUT" value="1000" />
     <default_breakpoint_settings>
       <option name="NOTIFY_CAUGHT" value="true" />
       <option name="NOTIFY_UNCAUGHT" value="true" />
@@ -167,6 +155,12 @@
     <option name="GROUP_GETTERS_AND_SETTERS" value="true" />
   </component>
   <component name="CvsConfiguration">
+    <cvs_root>
+      <option name="METHOD" value="pserver" />
+      <option name="USER_NAME" value="buko" />
+      <option name="HOST" value="church.psl.cs.columbia.edu" />
+      <option name="REPOSITORY" value="psl/memento/aether2/core" />
+    </cvs_root>
     <Checkout>
       <option name="DATE_TAG" value="" />
       <option name="REVISION_TAG" value="" />
@@ -218,7 +212,7 @@
     <Remove>
       <option name="NON_RECURSIVE" value="false" />
       <option name="FORCE_RECURSIVE" value="false" />
-      <option name="DELETE_FILE" value="false" />
+      <option name="DELETE_FILE" value="true" />
     </Remove>
     <Log>
       <option name="DEFAULT_BRANCH" value="false" />
@@ -230,14 +224,14 @@
       <option name="NON_RECURSIVE" value="false" />
       <option name="FORCE_RECURSIVE" value="false" />
     </Editors>
-    <option name="CLIENT_PATH" value="" />
-    <option name="EXTERNAL_DIFF_PATH" />
+    <option name="CLIENT_PATH" value="$PROJECT_DIR$/../../../../../../../Program Files/TortoiseCVS/cvs.exe" />
+    <option name="EXTERNAL_DIFF_PATH" value="" />
     <option name="USE_EXTERNAL_DIFF" value="false" />
     <option name="WORKING_FILES_READONLY" value="false" />
-    <option name="COMPRESSION_LEVEL" value="0" />
+    <option name="COMPRESSION_LEVEL" value="9" />
     <option name="ADDITIONAL_OPTIONS" value="" />
-    <option name="BINARY_FILES_EXTENSIONS" />
-    <option name="REUSE_LAST_LOG_MESSAGE" value="false" />
+    <option name="BINARY_FILES_EXTENSIONS" value="" />
+    <option name="REUSE_LAST_LOG_MESSAGE" value="true" />
     <option name="PUT_FOCUS_INTO_LOG_MESSAGE" value="false" />
     <option name="SHOW_UPDATE_OPTIONS" value="true" />
     <option name="SHOW_COMMIT_OPTIONS" value="true" />
@@ -254,15 +248,14 @@
     <option name="HIDE_UP_TO_DATE_FILES" value="false" />
   </component>
   <component name="CvsVcs">
-    <expanded_paths />
+    <expanded_paths>
+      <path value="$PROJECT_DIR$" />
+    </expanded_paths>
   </component>
   <component name="ProjectViewSettings">
     <navigator currentView="ProjectPane" flattenPackages="true" showMembers="false" showStructure="false" autoscrollToSource="false" splitterProportion="0.5" />
     <view id="ProjectPane">
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java" />
       <expanded_node type="directory" url="file://$PROJECT_DIR$" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src" />
-      <expanded_node type="directory" url="file://$PROJECT_DIR$/src/java/aether/net" />
     </view>
     <view id="SourcepathPane" />
     <view id="ClasspathPane" />
@@ -511,8 +504,8 @@
     </inspection_tool>
     <inspection_tool class="Deprecated API usage" enabled="true" />
     <inspection_tool class="equals() and hashCode() not paired" enabled="true" />
-    <group name="Declaration Redundancy" />
     <group name="Local Code Analysis" />
+    <group name="Declaration Redundancy" />
   </component>
   <component name="TodoView" selected-index="0">
     <todo-panel id="selected-file">
@@ -527,7 +520,7 @@
     </todo-panel>
   </component>
   <component name="VcsManagerConfiguration">
-    <option name="ACTIVE_VCS_NAME" value="" />
+    <option name="ACTIVE_VCS_NAME" value="CVS" />
   </component>
   <component name="StarteamConfiguration">
     <option name="SERVER" value="" />

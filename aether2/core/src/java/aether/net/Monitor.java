@@ -16,25 +16,6 @@ import java.io.IOException;
  **/
 public interface Monitor
 {
-    /**
-	 * Watch a resource in the Aether. Any Notices emitted by the resource
-	 * will be received.
-	 *
-	 * @param guid GUID of the component to monitor
-	 * @throws IOException
-	 *         if the resource can't be monitored
-	 */
-	public void watch(String guid) throws IOException;
-
-    /**
-	 * Stop watching a resource in the Aether.
-	 *
-	 * @param  guid GUID of the component to monitor
-	 * @throws IOException
-	 *         if the halt monitor procedure fails
-	 */
-	public void ignore(String guid) throws IOException;
-
 	/**
 	 * Subscribe to a topic in the Aether. Any Notices broadcast to the topic
 	 * will be received.

@@ -107,14 +107,8 @@ public abstract class AbstractLink implements Link
 		return destination;
 	}
 
-	public Request createRequest(String verb)
-	{
-		if (verb == null)
-		{
-			String msg = "verb cannot be null";
-			throw new IllegalArgumentException(msg);
-		}
-
+	public Request createRequest()
+    {
 		if (closed)
 		{
 			String msg = "link is closed";
@@ -123,14 +117,12 @@ public abstract class AbstractLink implements Link
 
 		Request request = new Request();
 
-		// set the verb, linkId, destination
-		request.setVerb(verb);
+		// set the linkId, destination
 		request.setLink(this.linkId);
 		request.setDestination(this.destination);
 
 		return request;
 	}
-
 
 	public synchronized Response send(Request req) throws IOException
 	{
@@ -147,6 +139,11 @@ public abstract class AbstractLink implements Link
 		}
 
         // make sure that this is a request that we created!!
+        if (!linkId.equals(req.getLink()))
+        {
+            String msg = "request wasn't created by this link!";
+            throw new IllegalArgumentException(msg);
+        }
 
 		// now send the request!!
 		connection.publish(req);
@@ -160,7 +157,7 @@ public abstract class AbstractLink implements Link
 	 * until a response event is received. This method causes the blocking to
 	 * occur.
 	 *
-	 * @return Response of the request
+	 * @return RESPONSE of the request
 	 * @throws IOException
 	 *         if something goes wrong
 	 */
@@ -200,7 +197,7 @@ public abstract class AbstractLink implements Link
 	}
 
 	/**
-	 * Timeout this connection.
+	 * Timeout this Link's most recent request/response transaction.
 	 */
 	public synchronized void timeOut()
 	{
@@ -227,7 +224,7 @@ public abstract class AbstractLink implements Link
 	{
 		public void notificationAction(Notification notification)
 		{
-			// if this notification is a response  let's process it
+			// if this getNotification is a response  let's process it
         	if (Event.isResponse(notification))
 			{
 				try
@@ -235,7 +232,8 @@ public abstract class AbstractLink implements Link
 					// obtain the lock on the outer object first!
 					synchronized (AbstractLink.this)
 					{
-            			response = new Response(notification);
+            			response = new Response();
+                        response.parse(notification);
 
 						// wake up any threads sleeping on this object, waiting
 						// for a response

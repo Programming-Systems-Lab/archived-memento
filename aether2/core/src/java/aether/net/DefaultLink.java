@@ -22,7 +22,7 @@ public class DefaultLink extends AbstractLink
 	 *
 	 * @param host host of the event server to use
 	 * @param port port of the event server to use
-	 * @param dest Destination to send requests to
+	 * @param dest DESTINATION to send requests to
 	 */
 	public DefaultLink(String host, int port, String dest)
 	{

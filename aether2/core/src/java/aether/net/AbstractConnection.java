@@ -1,7 +1,6 @@
 package aether.net;
 
 import aether.event.Event;
-import aether.event.EventException;
 import org.elvin.je4.ElvinURL;
 import org.elvin.je4.Producer;
 
@@ -78,19 +77,7 @@ public class AbstractConnection implements Connection
 			throw new IllegalStateException(emsg);
 		}
 
-		try
-		{
-			msg.onPublish();
-		}
-		catch (EventException me)
-		{
-			String emsg = "event wasn't ready to be published";
-			IOException ioe = new IOException(emsg);
-			ioe.initCause(me);
-			throw ioe;
-		}
-
-		producer.notify(msg.notification());
+		producer.notify(msg.getNotification());
 	}
 
 	public boolean isOpen()

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="3" relativePaths="true">
   <component name="ProjectRootManager" version="2">
-    <jdk name="java version &quot;1.4.1_01&quot;" />
+    <jdk name="java version &quot;1.4.2&quot;" />
     <projectPath>
       <root type="composite">
         <root type="simple" url="file://$PROJECT_DIR$" />
@@ -9,14 +9,14 @@
     </projectPath>
     <sourcePath>
       <root type="composite">
-        <root type="jdk" rootType="sourcePath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="sourcePath" name="java version &quot;1.4.2&quot;" />
         <root type="simple" url="file://$PROJECT_DIR$/src/java" />
         <root type="simple" url="file://$PROJECT_DIR$/src/test" />
       </root>
     </sourcePath>
     <classPath>
       <root type="composite">
-        <root type="jdk" rootType="classPath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="classPath" name="java version &quot;1.4.2&quot;" />
         <root type="output" />
         <root type="simple" url="jar://$PROJECT_DIR$/../lib/je4.jar!/" />
         <root type="simple" url="jar://$PROJECT_DIR$/../lib/junit.jar!/" />
@@ -30,7 +30,7 @@
     </excludePath>
     <javadocPath>
       <root type="composite">
-        <root type="jdk" rootType="javadocPath" name="java version &quot;1.4.1_01&quot;" />
+        <root type="jdk" rootType="javadocPath" name="java version &quot;1.4.2&quot;" />
       </root>
     </javadocPath>
     <assert_keyword enabled="no" />
@@ -75,7 +75,7 @@
       <maximumHeapSize value="128" />
       <viewClosedWhenNoErrors value="false" />
       <additionalClassPath>
-        <entry path="file://file://$PROJECT_DIR$/../../common-lib/junit.jar" />
+        <entry path="file://file://file://$PROJECT_DIR$/../../common-lib/junit.jar" />
       </additionalClassPath>
       <targetFilters>
         <filter targetName="init" isVisible="false" />
@@ -127,13 +127,12 @@
   </component>
   <component name="CodeStyleManager">
     <option name="USE_DEFAULT_CODE_STYLE_SCHEME" value="true" />
-    <option name="CODE_STYLE_SCHEME" value="Default (1)" />
+    <option name="CODE_STYLE_SCHEME" value="" />
   </component>
   <component name="ExportToHTMLSettings">
     <option name="PRINT_LINE_NUMBERS" value="false" />
     <option name="OPEN_IN_BROWSER" value="false" />
     <option name="OUTPUT_DIRECTORY" />
   </component>
-  <component name="WebReferencesManager" />
 </project>
 

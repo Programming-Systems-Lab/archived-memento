@@ -56,7 +56,7 @@ public class DefaultLinkTest extends AetherTestCase
 			// subscribe to all requests
             this.consumer = new Consumer(conn.elvinConnection());
 			Subscription sub =
-					new Subscription("regex(" + Attribute.Message.Destination +
+					new Subscription("regex(" + Attribute.Message.DESTINATION +
 									 ", \"*\")");
 			sub.addNotificationListener(new NotificationListener()
 			{
@@ -69,7 +69,7 @@ public class DefaultLinkTest extends AetherTestCase
 						resp.setLink(req.getLink());
 
 						resp.setCode(200);
-						resp.setReasonLine("AutoResponder Response!");
+						resp.setReasonLine("AutoResponder RESPONSE!");
 						conn.publish(resp);
 					}
 					catch (Exception e)

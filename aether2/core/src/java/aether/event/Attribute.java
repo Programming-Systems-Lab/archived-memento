@@ -8,36 +8,45 @@ package aether.event;
  **/
 public interface Attribute
 {
+    /**
+     * Attributes common to all events.
+     */
 	public interface Event
 	{
-		public static final String EventId = "aether.event.id";
-		public static final String Time = "aether.event.time";
-		public static final String EventType = "aether.event.type";
-		public static final String SourceId = "aether.event.source.id";
-		public static final String Headers = "aether.event.headers";
-		public static final String Body = "aether.event.body";
+		public static final String EVENT_ID = "aether.event.id";
+		public static final String TIME = "aether.event.time";
+		public static final String EVENT_TYPE = "aether.event.type";
+		public static final String SOURCE_ID = "aether.event.source.id";
 	}
 
+    /**
+     * Attributes unique to NOTICE events.
+     */
 	public interface Notice extends Event
 	{
-		public static final String TopicId = "aether.notice.topic.id";
+		public static final String TOPIC_ID = "aether.notice.topic.id";
 	}
 
+    /**
+     * Attributes unique to Message events.
+     */
 	public interface Message
 	{
-		public static final String LinkId = "aether.message.link.id";
-		public static final String Destination = "aether.message.dest";
+		public static final String LINK_ID = "aether.message.link.id";
+		public static final String DESTINATION = "aether.message.dest";
 	}
 
+    /**
+     * Attributes unique to REQUEST events.
+     */
 	public interface Request extends Message
 	{
-		public static final String Verb = "aether.request.verb";
-		public static final String Query = "aether.request.query";
 	}
 
+    /**
+     * Attributes unique to RESPONSE events.
+     */
 	public interface Response extends Message
 	{
-		public static final String Code = "aether.response.code";
-		public static final String ReasonLine = "aether.response.reasonLine";
 	}
 }
