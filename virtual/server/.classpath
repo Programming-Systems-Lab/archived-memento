@@ -23,5 +23,13 @@
     <classpathentry kind="lib" path="libs/pgjdbc2.jar"/>
     <classpathentry kind="lib" path="libs/xerces.jar"/>
     <classpathentry kind="src" path="/aether2"/>
+    <classpathentry kind="lib" path="/aether2/lib/aether-core-0.1.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/concurrent.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/dom4j.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/dom4jutil-0.1.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/dundee-0.1.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/je4.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/junit.jar"/>
+    <classpathentry kind="lib" path="/aether2/lib/log4j.jar"/>
     <classpathentry kind="output" path="build/class"/>
 </classpath>
