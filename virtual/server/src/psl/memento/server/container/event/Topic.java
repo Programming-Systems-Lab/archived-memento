@@ -8,20 +8,20 @@ import java.net.MalformedURLException;;
  * @author Buko O. (buko@cs.columbia.edu)
  * @version 0.1
  */
-public class TopicUrl
+public class Topic
 {
 	private String name;
 	private String host;
 	private int port;
 	
 	/**
-	 * Construct a new TopicUrl with the given URL of an event topic.
+	 * Construct a new Topic with the given URL of an event topic.
 	 * 
 	 * @param topicUrl A topic URL of the form {topic}@{host}:{port}
 	 * @throws ParseException
 	 *         if the topic URL is malformed
 	 **/
-	public TopicUrl(String topicUrl) throws MalformedURLException
+	public Topic(String topicUrl) throws MalformedURLException
 	{
 		if (topicUrl == null)
 		{
@@ -138,7 +138,7 @@ public class TopicUrl
 	}
 	
 	/**
-	 * Retrieve the TopicUrl in the URL form. This is {topic}@{host}:{port}.
+	 * Retrieve the Topic in the URL form. This is {topic}@{host}:{port}.
 	 * 
 	 * @return the topic URL in URL form
 	 **/
@@ -150,7 +150,7 @@ public class TopicUrl
 	}
 	
 	/**
-	 * Determine if this TopicUrl is the same as another.
+	 * Determine if this Topic is the same as another.
 	 * 
 	 * @param o Object to test for equality
 	 * @return <c>true</c> if this topic is the same as <c>o</c> else 
@@ -158,22 +158,22 @@ public class TopicUrl
 	 **/
 	public boolean equals(Object o)
 	{
-		if ((o == null) || !(o instanceof TopicUrl))
+		if ((o == null) || !(o instanceof Topic))
 		{
 			return false;
 		}
 		else
 		{
-			TopicUrl t = (TopicUrl) o;
+			Topic t = (Topic) o;
 			return (t.host.equals(host)) && (t.name.equals(name)) 
 				&& (t.port == port);
 		}
 	}
 	
 	/**
-	 * Get a distinct hashcode for this TopicUrl.
+	 * Get a distinct hashcode for this Topic.
 	 * 
-	 * @return distinct hashcode for this TopicUrl
+	 * @return distinct hashcode for this Topic
 	 **/
 	public int hashCode()
 	{

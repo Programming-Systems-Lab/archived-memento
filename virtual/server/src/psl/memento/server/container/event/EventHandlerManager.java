@@ -24,7 +24,7 @@ class EventHandlerManager
 	 * @param topic   Topic the handler is subscribing to
 	 * @param handler handler to handle events coming from that topic
 	 **/
-	public void add(TopicUrl topic, EventHandler handler)
+	public void add(Topic topic, EventHandler handler)
 	{
 		if ((topic == null) || (handler == null))
 		{
@@ -52,7 +52,7 @@ class EventHandlerManager
 	 * @param topic   topic to unsubscirbe the handler from
 	 * @param handler handler to unsubscribe
 	 **/
-	public void remove(TopicUrl topic, EventHandler handler)
+	public void remove(Topic topic, EventHandler handler)
 	{
 		if ((topic == null) || (handler == null))
 		{
@@ -73,7 +73,7 @@ class EventHandlerManager
 	 * @param topic topic to retrieve the list of event handlers subscribed to
 	 *              that topic
 	 **/
-	public Collection getHandlers(TopicUrl topic)
+	public EventHandler[] getHandlers(Topic topic)
 	{
 		if (topic == null)
 		{
@@ -83,11 +83,13 @@ class EventHandlerManager
 		
 		if (handlerMap.containsKey(topic))
 		{
-			return new ArrayList( ((Collection) handlerMap.get(topic)) );
+			return (EventHandler[])  
+				((Collection) handlerMap.get(topic)).toArray(new EventHandler[0]);
+			
 		}
 		else
 		{
-			return Collections.EMPTY_LIST;
+			return new EventHandler[0];
 		}
 	}
 	
@@ -97,7 +99,7 @@ class EventHandlerManager
 	 * @param topic a hosted topic in the network
 	 * @return number of handlers subscribed to the topic
 	 **/
-	public int numSubscribed(TopicUrl topic)
+	public int numSubscribed(Topic topic)
 	{
 		if (topic == null)
 		{

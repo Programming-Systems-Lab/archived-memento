@@ -1,5 +1,7 @@
 package psl.memento.server.container.event;
 
+import psl.memento.server.container.component.Component;
+
 /**
  * Represents the main interface to the event system.
  * 
@@ -10,7 +12,29 @@ public abstract class EventService
 {
 	private VirtualConnectionManager vcm = new VirtualConnectionManager();
 	private EventHandlerManager ehm = new EventHandlerManager();
-	private EventQueue eventQueue = new EventQueue();
+	private EventDispatcher dispatcher;
+	
+	/**
+	 * Default ctor.
+	 **/
+	protected EventService()
+	{
+		dispatcher = new EventDispatcher(ehm);
+	}
+	
+	/**
+	 * Retrieve a connection to a topic hosted within the network.
+	 * 
+	 * @param topic  topic hosted within the network
+	 * @param source component requesting this connection
+	 * @throws EventException
+	 *         if the connection couldn't be established to the topic
+	 **/
+	public TopicConnection openConnection(Topic topic, Component source) 
+		throws EventException
+	{
+		return new TopicConnection(topic, this, source);
+	}
 	
 	/**
 	 * Open a connection to an event hub. Before subscribing to a topic or 
@@ -22,7 +46,7 @@ public abstract class EventService
 	 * @throws EventException
 	 *         if no connection can be made
 	 **/
-	public void openConnection(String host, int port) throws EventException
+	void openVirtualConnection(String host, int port) throws EventException
 	{
 		if (host == null)
 		{
@@ -30,10 +54,10 @@ public abstract class EventService
 			throw new IllegalArgumentException(msg);
 		}
 		
-		// if not connected to this event hub then open a physical connection
+		// if not connected to this event hub then open a real connection
 		if (!vcm.isConnected(host, port))
 		{
-			openPhysicalConnection(host, port);
+			openConnection(host, port);
 		}
 		
 		// increment the virtual connection count
@@ -48,7 +72,7 @@ public abstract class EventService
 	 * @param host host of the event hub
 	 * @param port port of the event hub
 	 **/
-	public void closeConnection(String host, int port)
+	void closeVirtualConnection(String host, int port)
 	{
 		if (host == null)
 		{
@@ -59,11 +83,11 @@ public abstract class EventService
 		// close the virtual connection
 		vcm.closeConnection(host, port);
 		
-		// if there are no more virtual connections then close the physical
+		// if there are no more virtual connections then close the real
 		// connection
 		if (!vcm.isConnected(host, port))
 		{
-			closePhysicalConnection(host, port);
+			closeConnection(host, port);
 		}
 	}
 	
@@ -77,7 +101,7 @@ public abstract class EventService
 	 * @throws EventException
 	 * 		   if the connection can't be made
 	 **/
-	protected abstract void openPhysicalConnection(String host, int port)
+	protected abstract void openConnection(String host, int port)
 		throws EventException;
 		
 	/**
@@ -88,20 +112,20 @@ public abstract class EventService
 	 * @param host host or IP of the event hub to disconnect from
 	 * @param port port of the event hub
 	 **/
-	protected abstract void closePhysicalConnection(String host, int port);
+	protected abstract void closeConnection(String host, int port);
 	
 	/**
 	 * Publish an event to a given topic.
 	 * 
 	 * @param topic Topic to publish the event to
 	 * @param event event to publish to the given topic
-	 * @param source entity sending the event
+	 * @param source component publishing the event
 	 * @throws IllegalStateException
 	 *         if no connection exists to the hub hosting the topic
 	 * @throws EventException
 	 *         if the event can't be sent
 	 **/
-	public void publish(TopicUrl topic, Event event, NetworkEntity source) 
+	void publish(Topic topic, Event event, Component source) 
 		throws EventException
 	{
 		if ((topic == null) || (event == null) || (source == null))
@@ -118,67 +142,23 @@ public abstract class EventService
 		}
 		
 		// add the routing info
-		event.setSource(source.getEntityId());
-		event.setSourceHub(new EventHub(topic.getHost(), topic.getPort()));
+		event.setSource(source.getAddress());
 		event.setTopic(topic);
-		event.setTarget(null);
 		
 		// send the event
-		send(topic, event);
+		publish(topic, event);
 	}
-	
-	/**
-	 * Send an event to a specific entity within the network using the 
-	 * point-to-point framework.
-	 * 
-	 * @param entity entity to send the event to
-	 * @param event  event to send
-	 * @param source the entity generating this event
-	 **/
-	public void send(NetworkEntity entity, Event event, NetworkEntity source)
-		throws EventException
-	{
-		if ((entity == null) || (event == null))
-		{
-			String msg = "no parameter can be null";
-			throw new IllegalArgumentException(msg);
-		}
-		
-		if (entity.getAddress() == null)
-		{
-			String msg = "cannot send to " + entity + " it's not addressable";
-			throw new IllegalArgumentException(msg);
-		}
-		
-		// make sure a connection exists
-		TopicUrl topic = entity.getAddress();
-		if (!vcm.isConnected(topic.getHost(), topic.getPort()))
-		{
-			String msg = "no connection exists to " + topic.getHost() + ":" +
-				topic.getPort();
-			throw new IllegalStateException(msg);
-		}
-		
-		// add the routing info
-		event.setSource(source.getEntityId());
-		event.setSourceHub(new EventHub(topic.getHost(), topic.getPort()));
-		event.setTopic(null);
-		event.setTarget(entity.getEntityId());
-		
-		// send the event
-		send(topic, event);
-	}	
 		
 	
 	/**
-	 * Send an event over the underlying event service.
+	 * Publish an event over the underlying event service.
 	 * 
 	 * @param topic topic the event should be published to
 	 * @param event event to actually send
 	 * @throws EventException
 	 *         if the event can't be sent
 	 **/
-	protected abstract void send(TopicUrl topic, Event event) 
+	protected abstract void publish(Topic topic, Event event) 
 		throws EventException;
 	
 	/**
@@ -189,7 +169,7 @@ public abstract class EventService
 	 * @throws EventException
 	 *         if the subscription couldn't happen
 	 **/
-	public void subscribe(TopicUrl topic, EventHandler handler)
+	void subscribe(Topic topic, EventHandler handler)
 		throws EventException
 	{
 		if ((topic == null) || (handler == null))
@@ -224,7 +204,7 @@ public abstract class EventService
 	 * @throws EventException
 	 *         if the subscription couldn't happen
 	 **/
-	protected abstract void addSubscription(TopicUrl topic) 
+	protected abstract void addSubscription(Topic topic) 
 		throws EventException;
 	
 	
@@ -237,7 +217,7 @@ public abstract class EventService
 	 * @throws EventException
 	 *         if the unsubscriotion doesn't happen
 	 **/
-	public void unsubscribe(TopicUrl topic, EventHandler handler)
+	void unsubscribe(Topic topic, EventHandler handler)
 		throws EventException
 	{
 		if ((topic == null) || (handler == null))
@@ -272,23 +252,8 @@ public abstract class EventService
 	 * @throws EventException
 	 *         if the subscription couldn't be removed
 	 **/	
-	protected abstract void removeSubscription(TopicUrl topic)
+	protected abstract void removeSubscription(Topic topic)
 		throws EventException;
-	
-	/**
-	 * When an event is recieved subclasses should call this method so that
-	 * the event can be dispatched to handlers.
-	 * 
-	 * @param event event which has been received from the underlying event
-	 *              system
-	 **/
-	protected void eventReceived(Event event)
-	{
-		if (event != null)
-		{
-			eventQueue.enqueue(event);
-		}
-	}
 	
 	/**
 	 * Create an empty event. 
@@ -297,4 +262,14 @@ public abstract class EventService
 	 **/
 	public abstract Event createEmptyEvent();
 	
+	/**
+	 * When subclass implementations receive an incoming event they must call
+	 * this method to dispatch the event to the appropriate handlers.
+	 * 
+	 * @param event event to dispatch
+	 **/
+	protected void dispatch(Event event)
+	{
+		dispatcher.dispatch(event);
+	}
 }

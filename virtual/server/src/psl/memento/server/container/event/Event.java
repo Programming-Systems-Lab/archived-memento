@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.util.Enumeration;
 import java.util.Map;
 
+import psl.memento.server.container.component.*;
 import psl.memento.server.util.Uid;
 
 /**
@@ -14,11 +15,8 @@ import psl.memento.server.util.Uid;
  */
 public abstract class Event
 {
-	private TopicUrl topicUrl;
-	private Uid target;
-	private EventHub sourceHub;
-	private Uid source;
-	private Session session;
+	private Topic topicUrl;
+	private Address source;
 	
 	/**
 	 * If this event was sent to a topic, retrieve the URL of the topic it was
@@ -26,13 +24,13 @@ public abstract class Event
 	 * 
 	 * @return topic the event was published to or <c>null</c>
 	 **/
-	public TopicUrl getTopic()
+	public Topic getTopic()
 	{
 		if (topicUrl == null)
 		{
 			try
 			{
-				topicUrl = new TopicUrl(this.getString("event.topic"));
+				topicUrl = new Topic(this.getString("event.topic"));
 			}
 			catch (MalformedURLException mue)
 			{
@@ -48,7 +46,7 @@ public abstract class Event
 	 * 
 	 * @param topicUrl topic this event will be published to
 	 **/
-	void setTopic(TopicUrl topicUrl)
+	void setTopic(Topic topicUrl)
 	{	
 		this.topicUrl = topicUrl;
 		
@@ -59,82 +57,18 @@ public abstract class Event
 	}
 	
 	/**
-	 * If the event was sent to a specific entity (using the point-to-point
-	 * system) get the id of the entity it was sent to.
+	 * Get the address of the component which generated this event.
 	 * 
-	 * @return entity id of the entity this event was sent to or <c>null</c>
+	 * @return the address of the entity which published this event
 	 **/
-	public Uid getTarget()
-	{
-		if (target == null && containsKey("event.target"))
-		{
-			target = new Uid(getString("event.target"));
-		}
-			
-		return target;
-	}
-	
-	/**
-	 * Set the specific target this event was sent to.
-	 * 
-	 * @param target the specific entity the event was sent to
-	 **/
-	void setTarget(Uid target)
-	{
-		this.target = target;
-		
-		if (target != null)
-		{
-			this.put("event.target", target.toString());
-		}
-	}
-	
-	/**
-	 * Get the EventHub that this event came from.
-	 * 
-	 * @return event hub this event was routed from
-	 **/
-	public EventHub getSourceHub()
-	{
-		if (sourceHub == null)
-		{
-			String host = getString("event.sourceHub.host");
-			int port = getInteger("event.sourceHub.port");
-			sourceHub = new EventHub(host, port);
-		}
-		
-		return sourceHub;
-	}
-	
-	/**
-	 * Set the event hub which sent this event.
-	 * 
-	 * @param sourceHub event hub which sent this event
-	 **/
-	void setSourceHub(EventHub sourceHub)
-	{
-		if (sourceHub == null)
-		{
-			String msg = "sourceHub can't be null";
-			throw new IllegalArgumentException(msg);
-		}
-		
-		this.sourceHub = sourceHub;
-		
-		put("event.sourceHub.host", sourceHub.getHost());
-		put("event.sourceHub.port", sourceHub.getPort());
-	}
-	
-	/**
-	 * Get the id of the entity which sent this event.
-	 * 
-	 * @return the entity which sent this event
-	 **/
-	public Uid getSource()
+	public Address getSource()
 	{
 		if (source == null)
 		{
-			source = new Uid(getString("event.source"));
+			Uid compId = new Uid(getString("event.source.component-id"));
+			Uid entityId = new Uid(getString("event.source.entity-id"));
+			String ipAddr = getString("event.source.ip");
+			source = new Address(ipAddr, entityId, compId);
 		}
 		
 		return source;
@@ -143,9 +77,9 @@ public abstract class Event
 	/**
 	 * Set the entity who sent this event.
 	 * 
-	 * @param source entity who sent this event
+	 * @param source Address of the component which published this event
 	 **/
-	void setSource(Uid source)
+	void setSource(Address source)
 	{
 		if (source == null)
 		{
@@ -154,27 +88,10 @@ public abstract class Event
 		}
 		
 		this.source = source;
-		put("event.source", source.toString());
-	}
-	
-	/**
-	 * Get the Session associated with the client who sent this event.
-	 * 
-	 * @return Session associated with the client who sent this event
-	 **/
-	public Session getSession()
-	{
-		return session;
-	}
-	
-	/**
-	 * Set the session assocaited with the client who sent this event.
-	 * 
-	 * @param sess Session associated with the client who sent this event
-	 **/
-	void setSession(Session session)
-	{
-		this.session = session;
+		put("event.source.component-id", source.getComponentId().toString());
+		put("event.source.entity-id", source.getEntityId().toString());
+		put("event.source.ip", source.getIpAddress());
+		
 	}
 	
 	 /**
