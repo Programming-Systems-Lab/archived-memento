@@ -11,7 +11,7 @@ import java.awt.Rectangle;
 import java.awt.Polygon;
 
 /**
- *
+ * Advanced layout class
  * @author  Vladislav
  */
 public class AdvancedLayout extends Layout {
