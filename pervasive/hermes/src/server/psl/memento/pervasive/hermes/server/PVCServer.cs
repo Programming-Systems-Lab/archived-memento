@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Threading;
 
-namespace PVCServer
+namespace psl.memento.pervasive.hermes.server
 {
 	/// <summary>
 	/// Summary description for Class1.

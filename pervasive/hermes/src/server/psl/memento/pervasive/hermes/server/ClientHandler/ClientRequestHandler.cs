@@ -3,11 +3,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading ;
 using System.Collections;
-using Utilities.log;
+using psl.memento.pervasive.hermes.util.log;
 using System.Xml;
 
 
-namespace PVCServer.ClientHandler
+namespace psl.memento.pervasive.hermes.server.ClientHandler
 {
 	/// <summary>
 	/// This class will be responsible for reading in xml from the client, parsing it to xml and figuring out what method to call on the client handler.

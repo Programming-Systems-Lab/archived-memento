@@ -5,11 +5,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading ;
 using System.Collections;
-using Utilities.log;
-using Utilities.constants;
+using psl.memento.pervasive.hermes.util.log;
+using psl.memento.pervasive.hermes.util.constants;
 
 
-namespace PVCServer
+namespace psl.memento.pervasive.hermes.server
 {
 	/// <summary>
 	/// Summary description for Listener.
