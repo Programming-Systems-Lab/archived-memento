@@ -22,6 +22,7 @@ public class DefaultObjectModeler extends ObjectModelerBase
 
     /** Creates a new instance of DefaultObjectModeler */
     public DefaultObjectModeler() {
+	super();
 	initialize();
     }
     

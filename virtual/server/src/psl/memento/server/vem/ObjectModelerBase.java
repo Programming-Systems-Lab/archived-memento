@@ -21,13 +21,18 @@ public abstract class ObjectModelerBase {
     
     protected ResourceFileManager rfm = ResourceFileManager.getInstance();    
     
-    protected Hashtable viewMap = new Hashtable();    
-    protected LinkedList rules = new LinkedList();
+    protected Hashtable viewMap;    
+    protected LinkedList rules;
     
     protected static final String MATCH_EXTENSION = "\\.[^\\./]+$";
     protected static final String MATCH_START = "^";
     protected static final String MATCH_END = "$";
     protected static final String MATCH_ALL = ".*";
+    
+    public ObjectModelerBase() {
+	viewMap = new Hashtable();
+	rules = new LinkedList();
+    }
     
     protected void addRule(ModelerRule iRule) {
 	rules.addLast(iRule);

@@ -347,6 +347,7 @@ public class RoomViewer extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+	psl.memento.server.vem.util.ResourceFileManager.getInstance("/mnt/data/vem", true);
 	new RoomViewer().show();
     }
     
