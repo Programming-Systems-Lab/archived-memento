@@ -1,0 +1,55 @@
+<VisualStudioProject>
+    <ECSHARP>
+        <Build>
+            <Settings
+                DeploymentDevice = "Pocket PC Device (Default)"
+                ReferencePath = "C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl\memento\pervasive\hermes\xml\objects\bin\Release\;C:\Documents and Settings\rob\My Documents\workspace\psl\psl\memento\pervasive\hermes\src\xml\psl.memento.hermes.xml.objects.ChatBuddy\obj\Release\"
+            >
+                <Platform Name = "Pocket PC" />
+                <Config
+                    Name = "Debug|Pocket PC"
+                    EnableASPDebugging = "false"
+                    EnableASPXDebugging = "false"
+                    EnableUnmanagedDebugging = "false"
+                    EnableSQLServerDebugging = "false"
+                    RemoteDebugEnabled = "false"
+                    RemoteDebugMachine = ""
+                    StartAction = "Project"
+                    StartArguments = ""
+                    StartPage = ""
+                    StartProgram = ""
+                    StartURL = ""
+                    StartWorkingDirectory = ""
+                    StartWithIE = "false"
+                    SelectedDevice = "Pocket PC Device"
+                    DeploymentPlatform = "Pocket PC"
+                />
+                <Config
+                    Name = "Release|Pocket PC"
+                    EnableASPDebugging = "false"
+                    EnableASPXDebugging = "false"
+                    EnableUnmanagedDebugging = "false"
+                    EnableSQLServerDebugging = "false"
+                    RemoteDebugEnabled = "false"
+                    RemoteDebugMachine = ""
+                    StartAction = "Project"
+                    StartArguments = ""
+                    StartPage = ""
+                    StartProgram = ""
+                    StartURL = ""
+                    StartWorkingDirectory = ""
+                    StartWithIE = "false"
+                    SelectedDevice = "Pocket PC Device"
+                    DeploymentPlatform = "Pocket PC"
+                />
+            </Settings>
+        </Build>
+        <OtherProjectSettings
+            CopyProjectDestinationFolder = ""
+            CopyProjectUncPath = ""
+            CopyProjectOption = "0"
+            ProjectView = "ProjectFiles"
+        />
+    </ECSHARP>
+</VisualStudioProject>
+
