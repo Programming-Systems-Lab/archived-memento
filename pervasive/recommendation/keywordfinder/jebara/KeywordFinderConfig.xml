@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <configuration>
-	<args topics="psl/memento/pervasive/recommendation/keywordfinder/jebara/shakes.txt" questions="psl/memento/pervasive/recommendation/keywordfinder/jebara\
-/quest.txt" stats="psl/memento/pervasive/recommendation/keywordfinder/jebara\
-/plays.stats" counts="psl/memento/pervasive/recommendation/keywordfinder/jebara\
-/plays.counts"/>
+	<args topics="psl/memento/pervasive/recommendation/keywordfinder/jebara/shakes.txt" questions="psl/memento/pervasive/recommendation/keywordfinder/jebara/quest.txt" stats="psl/memento/pervasive/recommendation/keywordfinder/jebara/plays.stats" counts="psl/memento/pervasive/recommendation/keywordfinder/jebara/plays.counts"/>
 	<!-- In testReset, set attribute "value" to either "true" or "false". 
 		If any other value or the attribute "value" doesn't exist, default 
 		value is false. -->

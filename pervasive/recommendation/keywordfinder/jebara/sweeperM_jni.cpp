@@ -73,8 +73,6 @@ loadStats(char *sFile, map<string,double *> &classes,map<string,double> &tab )
   int     c;
   int     totwords = 0;
 
-  printf("WE ARE HERE2\n");
-
   if ((fp = fopen(sFile,"r"))==NULL)
     {
       fprintf(stdout,"I can't open %s for input.\n",sFile);
@@ -224,12 +222,14 @@ bool parse_args (string const args)
      }else if (currArgName == "-col3") {
        col3 = atof(currArgValue);
      }else{
+       //       cout << currArgName << " " << currArgValue << endl;
+
        cout << "found something unexpected" << endl; 
-       free(words);
+       delete words;
        return false; // did not parse successfully.
      }
    }
-   free(words);
+   delete words;
    return true;
  }
 
@@ -246,16 +246,15 @@ JNIEXPORT jboolean JNICALL Java_psl_memento_pervasive_recommendation_keywordfind
 {
   // &&& Parse argv  from string to integer
 
-  printf("WE ARE HERE");
-
   // Parse Arguments
   const char *args = env->GetStringUTFChars(str, 0);
+
+  //  printf("%s", args);
+
   if(!parse_args(args)) {
     return JNI_FALSE;
   }
 
-  printf("WE ARE HERE 1!\n");
-  
   // Load the topics
   loadTopics(tFile); //JC(2/26/2003):value of tFile comes from cmd line arg: topic file 
   // JC(2/26/2003):The topic file contains the list of files that hold training set for a topic.
@@ -388,10 +387,14 @@ JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_j
   } // end for loop
 
    // JC(2/28/2003):clean up memory
-  free(words);
+  //  printf("11111111111111\n");
+    delete words; 
+  //  printf("22222222222222\n");
 
   // Release memory used to hold input params
   env->ReleaseStringUTFChars(str, wordSequence);
+
+  //  printf("33333333333333\n");
 
   //Return the keyword found using a callback method in Java
   jclass cls = env->GetObjectClass(obj);
@@ -400,17 +403,27 @@ JNIEXPORT void JNICALL Java_psl_memento_pervasive_recommendation_keywordfinder_j
     return;
   }
 
-  int len = strlen(question.c_str());
+  //  printf("44444444444444\n");
+
+  /*  int len = strlen(question.c_str());
   wchar_t *buf = 0;
   jstring jQuestion = 0;
   if(len > 0) {
+    //    printf("4aaaaaaaa1\n");
     len = mbstowcs(NULL, question.c_str(), MB_CUR_MAX);
+    //    printf("4aaaaaaaa2\n");
     buf = (wchar_t *)malloc(len*2 + 1);
+    //    printf("4aaaaaaaa3\n");
     mbstowcs(buf, question.c_str(), len);
+    //    printf("4aaaaaaaa4\n");
     jQuestion = env->NewString((jchar *)buf, len*2 + 1);
-    free(buf);
-    env->CallVoidMethod(obj, mid, jQuestion);
-  }
+    //    printf("4aaaaaaaa5\n");
+        env->CallVoidMethod(obj, mid, jQuestion);
+    //    printf("4bbbbbbbb\n");
+    free(buf);    
+    }*/
+  //  printf("5555555555555\n");
+
 }
 
 

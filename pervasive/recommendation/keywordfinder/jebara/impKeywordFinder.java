@@ -145,7 +145,9 @@ public class impKeywordFinder implements KeywordFinder {
 						// call to native function, disregard previous messages.
 					}
 
+					synchronized (this) {
 					addConversationWord(msgText); // call to native function
+					}
 				}
 			}
 		} else {
