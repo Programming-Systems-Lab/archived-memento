@@ -4,7 +4,7 @@
  * Created on February 8, 2003, 12:30 PM
  */
 
-package psl.memento.server.vem;
+package psl.memento.server.vem.modeler;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,9 +68,6 @@ public class DefaultObjectModeler
 		return properties;
 	}
 
-	protected static Vocab[] properties =	{
-			HTMLVocab.kLinks,
-			HTMLVocab.kImages,
-			FileVocab.kContents
-	};
+	protected static Vocab[] properties =
+		{ HTMLVocab.kLinks, HTMLVocab.kImages, FileVocab.kContents };
 }

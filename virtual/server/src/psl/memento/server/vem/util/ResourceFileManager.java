@@ -14,7 +14,7 @@ import java.io.*;
  * Class for managing resource files such as 3DS files and images.
  *
  * @author  Vladislav Shchogolev
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ResourceFileManager {
 	// singleton object
@@ -84,8 +84,10 @@ public class ResourceFileManager {
 
 		// FIXME: need to recurse through subdirectories too
 		for (int i = 0; i < contents.length; i++) {
-			relativePath = contents[i].getName();
-			addResourceFile(relativePath);
+			if (!contents[i].isDirectory() && contents[i].canRead()) {
+				relativePath = contents[i].getName();
+				addResourceFile(relativePath);
+			}
 		}
 	}
 

@@ -21,6 +21,8 @@ public class RoomObject implements Comparable {
     private String type;
     private boolean fixed;
     private boolean placed;
+    private String name;
+    private String model;
     
     /** Creates a new instance of RoomObject */
     public RoomObject() {
@@ -120,4 +122,33 @@ public class RoomObject implements Comparable {
 	public boolean isPlaced() {
 		return placed;
 	}
+	
+	/**
+	 * @return
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setName(String string) {
+		name = string;
+	}
+
+	/**
+	 * @return
+	 */
+	public String getModel() {
+		return model;
+	}
+
+	/**
+	 * @param string
+	 */
+	public void setModel(String string) {
+		model = string;
+	}
+
 }

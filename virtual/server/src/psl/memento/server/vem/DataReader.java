@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import psl.memento.server.frax.vocabulary.Vocab;
+import psl.memento.server.vem.modeler.*;
 
 import com.hp.hpl.mesa.rdf.jena.model.Container;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
@@ -90,7 +91,6 @@ public class DataReader {
 
 				while (iter.hasNext()) {
 					name = iter.next().toString();
-
 					ro = om.createRoomObjectView(prop, name);
 					addRoomObject(ro);
 				}

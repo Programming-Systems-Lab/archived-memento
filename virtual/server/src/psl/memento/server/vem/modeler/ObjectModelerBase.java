@@ -4,12 +4,13 @@
  * Created on February 9, 2003, 2:20 AM
  */
 
-package psl.memento.server.vem;
+package psl.memento.server.vem.modeler;
 
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import psl.memento.server.vem.RoomObject;
 import psl.memento.server.vem.util.ModelResourceFile;
 import psl.memento.server.vem.util.ResourceFile;
 import psl.memento.server.vem.util.ResourceFileManager;
@@ -21,6 +22,8 @@ import com.hp.hpl.mesa.rdf.jena.model.Property;
  * @author  vlad
  */
 public abstract class ObjectModelerBase {
+
+	public static final String kDefaultModelFile = "default.3ds";
 
 	protected ResourceFileManager rfm = ResourceFileManager.getInstance();
 
@@ -69,14 +72,15 @@ public abstract class ObjectModelerBase {
 		return (ResourceFile) viewMap.get(type);
 	}
 
-	public RoomObject createRoomObjectView(Object iVocab, String iName) {
+	public RoomObject createRoomObjectView(Property iVocab, String iName) {
 
-		iName = preprocess((Property) iVocab, iName);
+		iName = preprocess(iVocab, iName);
 
 		/* traverse rules */
 		Iterator iter = rules.iterator();
 		ModelerRule r;
 		String type;
+		String model;
 		RoomObject ro;
 		ModelResourceFile mrf;
 		ResourceFile rf;
@@ -87,26 +91,36 @@ public abstract class ObjectModelerBase {
 			if (r.matches(iName)) {
 				type = r.getType();
 				rf = getView(type);
-
+				model = kDefaultModelFile;
+				
 				if (rf != null) {
 					mrf = (ModelResourceFile) rf;
+					model = mrf.getRelativePath();
 					
-					 System.out.println(type + " [" + 
-					mrf.getWidth() + ", " + 
-					mrf.getLength() + ", " + 
-					mrf.getHeight() +"]");	
-					
+//					System.out.println(
+//						type
+//							+ " ["
+//							+ mrf.getWidth()
+//							+ ", "
+//							+ mrf.getLength()
+//							+ ", "
+//							+ mrf.getHeight()
+//							+ "]");
+
 					ro =
 						new RoomObject(
 							mrf.getWidth(),
 							mrf.getLength(),
 							mrf.getHeight());
+					
 				} else {
 					ro = new RoomObject(15, 15, 15);
-					/* System.out.println(iName); */
 				}
 
 				ro.setType(type);
+				ro.setName(iName);
+				ro.setModel(model);
+				
 				return ro;
 			}
 		}

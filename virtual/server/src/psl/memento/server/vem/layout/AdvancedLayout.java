@@ -65,7 +65,6 @@ public class AdvancedLayout extends SimpleLayout implements Layout {
 	protected int placeObjects(Iterator iter, int numObj, Rectangle bound) {
 		if (bound == null) return 0;
 		
-		//System.out.println("***Begin***");
 		RoomObject ro = null;
 		
 		int ytmp, xtmp, limitX = -1, limitY = -1, startX = -1, startY = -1;

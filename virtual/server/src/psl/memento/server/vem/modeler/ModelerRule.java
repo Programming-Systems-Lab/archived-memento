@@ -4,7 +4,7 @@
  * Created on February 8, 2003, 12:27 PM
  */
 
-package psl.memento.server.vem;
+package psl.memento.server.vem.modeler;
 
 import org.apache.oro.text.regex.*;
 /**

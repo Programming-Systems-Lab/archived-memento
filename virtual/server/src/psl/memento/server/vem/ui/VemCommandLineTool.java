@@ -6,8 +6,11 @@
 
 package psl.memento.server.vem.ui;
 
+import memento.world.model.DefaultWorldModel;
+import memento.world.model.Sector;
 import psl.memento.server.vem.*;
 import psl.memento.server.vem.layout.*;
+import psl.memento.server.vem.modeler.*;
 import psl.memento.server.vem.util.*;
 import com.hp.hpl.mesa.rdf.jena.model.Model;
 
@@ -28,9 +31,15 @@ public class VemCommandLineTool {
 		Model m = fraxAdapter.getModel(uri);
 		ObjectModeler om = new DefaultObjectModeler();
 		Layout layout = new AdvancedLayout();
-		VemService service = new VemService(null);
+		VemService service = new VemService(new DefaultWorldModel());
 
-		service.createSector(m, om, layout);
+		Sector s = service.createSector(m, om, layout);
+		try {
+			Serializer.serialize(s, System.out);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		System.out.println("done.");
 	}
 

@@ -12,9 +12,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
-import psl.memento.server.vem.DefaultObjectModeler;
 import psl.memento.server.vem.Door;
 import psl.memento.server.vem.RoomObject;
+import psl.memento.server.vem.modeler.DefaultObjectModeler;
 import psl.memento.server.vem.util.*;
 
 import com.hp.hpl.mesa.rdf.jena.model.Model;

@@ -16,6 +16,8 @@ import memento.world.model.Sector;
 import memento.world.model.WorldModel;
 
 import psl.memento.server.vem.layout.*;
+import psl.memento.server.vem.modeler.*;
+
 import com.hp.hpl.mesa.rdf.jena.model.Model;
 
 /**
@@ -59,11 +61,12 @@ public class VemService {
 		data.setRoom(300, 300, 300);
 		data.getObjectsFromModel(m, om);
 
-		Dimension size = sector.getSize();
-
-		size.setWidth(data.getRoom().getWidth());
-		size.setLength(data.getRoom().getLength());
-		size.setHeight(data.getRoom().getHeight());
+		Dimension size =
+			new Dimension(
+				data.getRoom().getWidth(),
+				data.getRoom().getHeight(),
+				data.getRoom().getLength());
+		sector.setSize(size);
 
 		layout.doLayout(data);
 
@@ -83,13 +86,15 @@ public class VemService {
 			(LocatableWorldObject) worldModel.create(
 				LocatableWorldObject.class,
 				new HashMap());
-		
+
 		o.setPosition(new Position(ro.getXloc(), ro.getYloc(), ro.getZloc()));
-		
-		Dimension d = o.getSize();
-		d.setWidth(ro.getWidth());
-		d.setHeight(ro.getHeight());
-		d.setLength(ro.getLength());
+
+		Dimension d =
+			new Dimension(ro.getWidth(), ro.getHeight(), ro.getLength());
+		o.setSize(d);
+
+		o.setName(ro.getName());
+		o.setModel(ro.getModel());
 
 		return o;
 	}
