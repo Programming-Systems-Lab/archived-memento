@@ -19,7 +19,7 @@ public class XMLFraxConfiguration implements FraxConfiguration {
   private static final String kErrorCouldNotFindClass =
     "Could not find class: ";
 
-  private static final String kDefaultFileName = "etc/frax-config.xml";
+  private static final String kDefaultFileName = "etc/frax/frax-config.xml";
   
   private static Log sLog = LogFactory.getLog(XMLFraxConfiguration.class);
   

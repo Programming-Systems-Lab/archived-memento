@@ -11,31 +11,31 @@
   
   <!-- Metadata extractors. -->
   <extractors>
-    <extractor scheme="http" class="psl.chime4.server.frax.HTTPExtractor"/>
-    <extractor scheme="file" class="psl.chime4.server.frax.FileExtractor"/>
-    <extractor scheme="ftp" class="psl.chime4.server.frax.FTPExtractor"/>
-    <extractor scheme="cvs" class="psl.chime4.server.frax.CVSExtractor"/>
-    <extractor scheme="ldap" class="psl.chime4.server.frax.LDAPExtractor"/>
-    <extractor scheme="bscw" class="psl.chime4.server.frax.BSCWExtractor"/>
+    <extractor scheme="http" class="psl.memento.server.frax.HTTPExtractor"/>
+    <extractor scheme="file" class="psl.memento.server.frax.FileExtractor"/>
+    <extractor scheme="ftp" class="psl.memento.server.frax.FTPExtractor"/>
+    <extractor scheme="cvs" class="psl.memento.server.frax.CVSExtractor"/>
+    <extractor scheme="ldap" class="psl.memento.server.frax.LDAPExtractor"/>
+    <extractor scheme="bscw" class="psl.memento.server.frax.BSCWExtractor"/>
   </extractors>
   
   <!-- Content plugs. -->
   <plugs>
-    <plug mimetype="image/jpeg" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/gif" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/bmp" class="psl.chime4.server.frax.ImagePlug"/>    
-    <plug mimetype="image/x-pcx" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/png" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/x-cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="application/x-cmu-raster" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="image/x-portable-bitmap" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="application/x-shockwave-flash" class="psl.chime4.server.frax.ImagePlug"/>
-    <plug mimetype="application/msword" class="psl.chime4.server.frax.OLEPlug"/>
-    <plug mimetype="application/excel" class="psl.chime4.server.frax.OLEPlug"/>
-    <plug mimetype="application/x-excel" class="psl.chime4.server.frax.OLEPlug"/>
-    <plug mimetype="application/x-msexcel" class="psl.chime4.server.frax.OLEPlug"/>
-    <plug mimetype="text/html" class="psl.chime4.server.frax.HTMLPlug"/>
+    <plug mimetype="image/jpeg" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/gif" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/bmp" class="psl.memento.server.frax.ImagePlug"/>    
+    <plug mimetype="image/x-pcx" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/png" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/x-cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="application/x-cmu-raster" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="image/x-portable-bitmap" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="application/x-shockwave-flash" class="psl.memento.server.frax.ImagePlug"/>
+    <plug mimetype="application/msword" class="psl.memento.server.frax.OLEPlug"/>
+    <plug mimetype="application/excel" class="psl.memento.server.frax.OLEPlug"/>
+    <plug mimetype="application/x-excel" class="psl.memento.server.frax.OLEPlug"/>
+    <plug mimetype="application/x-msexcel" class="psl.memento.server.frax.OLEPlug"/>
+    <plug mimetype="text/html" class="psl.memento.server.frax.HTMLPlug"/>
   </plugs>
   
   <!-- A mapping of extensions to MIME types. -->

@@ -133,12 +133,12 @@ public class FraxGUI implements ActionListener {
       buttonPanel.setLayout(new BorderLayout());      
       add(buttonPanel, BorderLayout.EAST);
       
-      mExtractButton = new JButton("Extract", new ImageIcon("Export24.gif"));
+      mExtractButton = new JButton("Extract", new ImageIcon("etc/frax/Export24.gif"));
       mExtractButton.addActionListener(this);
       mExtractButton.setToolTipText("Extract metadata.");      
       buttonPanel.add(mExtractButton, BorderLayout.WEST);
       
-      mStopButton = new JButton("Stop", new ImageIcon("Stop24.gif"));
+      mStopButton = new JButton("Stop", new ImageIcon("etc/frax/Stop24.gif"));
       mStopButton.addActionListener(this);
       mStopButton.setToolTipText("Stop the extraction.");      
       mStopButton.setEnabled(false);
