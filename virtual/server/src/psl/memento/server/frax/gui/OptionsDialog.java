@@ -195,6 +195,10 @@ public class OptionsDialog extends javax.swing.JDialog {
     if (evt.getValueIsAdjusting()) {
       return;
     }
+
+    if (((JList) evt.getSource()).getSelectedIndex() < 0) {
+      return;
+    }
     
     StringBuffer labelText = new StringBuffer();
     
@@ -236,12 +240,19 @@ public class OptionsDialog extends javax.swing.JDialog {
       return;
     }
     
+    if (((JList) evt.getSource()).getSelectedIndex() < 0) {
+      return;
+    }
+    
     StringBuffer labelText = new StringBuffer();
     
-    labelText.append("EXTRACTOR CLASS:\n");    
-    String extractorClassName = Frax.getInstance().getConfiguration()
-      .getExtractorClass((String) ((JList) evt.getSource()).getSelectedValue())
-      .getName();    
+    labelText.append("EXTRACTOR CLASS:\n");
+    
+    FraxConfiguration config = Frax.getInstance().getConfiguration();
+    JList source = (JList) evt.getSource();
+    String selectedValue = (String) source.getSelectedValue();
+    Class c = config.getExtractorClass(selectedValue);
+    String extractorClassName = c.getName();
     labelText.append(extractorClassName);
     
     labelText.append("\n\nDEPENDENCIES:\n");    
